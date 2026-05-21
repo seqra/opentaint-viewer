@@ -1,0 +1,10 @@
+.area { display: flex; flex-direction: column; height: 100%; }
+.head { display: flex; align-items: center; background: var(--bg-2); border-bottom: 1px solid var(--border); }
+.tab { padding: 5px 14px; color: var(--fg-dim); background: transparent; border: none; border-right: 1px solid var(--border); cursor: pointer; }
+.tab.active { background: var(--bg); color: var(--fg); }
+.toggle { margin-left: auto; padding-right: 8px; }
+.toggleBtn { background: transparent; border: none; color: var(--fg-dim); cursor: pointer; padding: 4px 8px; }
+.toggleBtn.active { color: var(--accent); }
+.panes { display: flex; flex: 1; min-height: 0; }
+.pane { flex: 1; min-width: 0; }
+.pane.code { flex: 1.4; border-right: 1px solid var(--border); }
