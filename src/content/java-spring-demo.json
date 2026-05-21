@@ -1,0 +1,25 @@
+{
+  "projectId": "java-spring-demo",
+  "scenarios": [
+    { "id": "sqli", "title": "SQL Injection", "blurb": "User input flows from an HTTP endpoint to a SQL sink across files.", "startFile": "UserController.java", "defaultFindingId": "sqli-0" }
+  ],
+  "files": [
+    { "path": "UserController.java", "language": "java", "content": "@RestController\npublic class UserController {\n  @GetMapping(\"/users/search\")\n  String search(@RequestParam String name) {\n    String sql = \"SELECT * FROM users WHERE name='\" + name + \"'\";\n    return repo.search(sql);\n  }\n}\n" },
+    { "path": "UserRepository.java", "language": "java", "content": "@Repository\npublic class UserRepository {\n  String search(String sql) {\n    return stmt.execute(sql);\n  }\n}\n" }
+  ],
+  "findings": [
+    {
+      "id": "sqli-0", "ruleId": "sqli", "vulnClass": "SQL Injection", "severity": "error",
+      "endpoint": "GET /users/search", "message": "User input reaches a SQL sink.",
+      "steps": [
+        { "index": 0, "kind": "source", "file": "UserController.java", "line": 4, "label": "@RequestParam name", "crossesFile": false },
+        { "index": 1, "kind": "propagation", "file": "UserController.java", "line": 5, "label": "concatenated into sql", "crossesFile": false },
+        { "index": 2, "kind": "propagation", "file": "UserController.java", "line": 6, "label": "repo.search(sql)", "crossesFile": false },
+        { "index": 3, "kind": "sink", "file": "UserRepository.java", "line": 4, "label": "stmt.execute(sql)", "crossesFile": true }
+      ]
+    }
+  ],
+  "rules": [
+    { "id": "sqli", "origin": "builtin", "kind": "rule", "path": "Builtin/rule/sqli.yaml", "content": "id: sqli\nmode: taint\nsources:\n  - getParameter(...)\n  - \"@RequestParam\"\nsanitizers:\n  - PreparedStatement\nsinks:\n  - Statement.execute(...)\n" }
+  ]
+}
