@@ -10,7 +10,6 @@
     "noUnusedParameters": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "noEmit": true,
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
   "include": ["src", "scripts", "e2e"]
