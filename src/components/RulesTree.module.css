@@ -1,0 +1,6 @@
+.tree { font-family: var(--mono); font-size: 12px; color: var(--fg); padding: 8px; }
+.origin { padding: 3px 4px; }
+.kind { padding: 2px 4px 2px 16px; color: var(--fg-dim); font-size: 11px; }
+.leaf { padding: 2px 4px 2px 26px; color: var(--fg-dim); cursor: pointer; font-size: 11px; }
+.leaf.active { background: #2d3340; color: var(--fg); border-radius: 4px; }
+.empty { color: var(--border); }
