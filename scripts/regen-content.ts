@@ -49,7 +49,13 @@ function collectFiles(): ProjectFile[] {
     }));
 }
 
-// Scenarios are curated by hand; defaultFindingId is filled after the scan.
+// Scenarios are curated by hand. Before committing regenerated output, FINALIZE each entry:
+//   - startFile must be a real path present in the scanned project (the value below is a
+//     placeholder; replace the `.../` segment with the actual package path).
+//   - defaultFindingId is currently set to the first finding for every scenario (see main);
+//     when more than one scenario exists, point each at its own finding id.
+//   - rules() returns [] for now; populate it (or read a committed seed) so regenerated
+//     output keeps the rules the SPA expects.
 const SCENARIOS: Omit<Scenario, 'defaultFindingId'>[] = [
   { id: 'sqli', title: 'SQL Injection', blurb: 'User input flows from an HTTP endpoint to a SQL sink across files.', startFile: 'src/main/java/.../UserController.java' },
 ];
@@ -88,4 +94,10 @@ function main(): void {
   console.log(`Wrote ${OUT}: ${findings.length} findings, ${content.files.length} files`);
 }
 
-main();
+try {
+  main();
+} catch (error) {
+  console.error('regen-content failed:', error instanceof Error ? error.message : error);
+  console.error('Check that Docker is running and ./java-spring-demo is checked out.');
+  process.exit(1);
+}

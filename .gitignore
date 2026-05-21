@@ -2,3 +2,5 @@
 node_modules/
 dist/
 *.tsbuildinfo
+# regen-content.ts clones the demo here and writes results.sarif inside it
+/java-spring-demo/
