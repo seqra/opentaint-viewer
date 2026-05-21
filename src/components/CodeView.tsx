@@ -3,6 +3,7 @@ import Editor, { type OnMount } from '@monaco-editor/react';
 import { useStore } from '../state/store';
 import { fileByPath, findingById } from '../content/loadContent';
 import { decorationsForFile } from '../taint/decorations';
+import { fileTabLabel } from './fileTabLabel';
 
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
@@ -70,7 +71,7 @@ export function CodeView() {
             onClick={() => selectFile(path)}
             style={{ padding: '4px 10px', background: path === activeFile ? 'var(--bg)' : 'transparent', color: 'var(--fg-dim)', border: 'none', borderRight: '1px solid var(--border)', cursor: 'pointer' }}
           >
-            {path.split('/').pop()}
+            {fileTabLabel(path, tabFiles)}
           </button>
         ))}
       </div>
