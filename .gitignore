@@ -2,6 +2,8 @@
 node_modules/
 dist/
 coverage/
+test-results/
+playwright-report/
 *.tsbuildinfo
 # regen-content.ts clones the demo here and writes results.sarif inside it
 /java-spring-demo/
