@@ -1,0 +1,27 @@
+{
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "sqli",
+          "level": "error",
+          "message": { "text": "User input reaches a SQL sink." },
+          "properties": { "endpoint": "GET /users/search" },
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "UserController.java" }, "region": { "startLine": 8 } }, "message": { "text": "req.getParameter(\"name\")" } } },
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "UserController.java" }, "region": { "startLine": 9 } }, "message": { "text": "concatenated into sql" } } },
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "UserRepository.java" }, "region": { "startLine": 31 } }, "message": { "text": "stmt.execute(sql)" } } }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
