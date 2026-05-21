@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FindingsTree } from './FindingsTree';
 import { useStore } from '../state/store';
@@ -26,6 +26,20 @@ describe('FindingsTree', () => {
   it('clicking a step selects it in the store', async () => {
     render(<FindingsTree />);
     await userEvent.click(screen.getByText(/stmt.execute/));
+    expect(useStore.getState().activeStepIndex).toBe(3);
+    expect(useStore.getState().activeFile).toBe('UserRepository.java');
+  });
+
+  it('exposes step rows as focusable buttons', () => {
+    render(<FindingsTree />);
+    const sink = screen.getByText(/stmt.execute/);
+    expect(sink).toHaveAttribute('role', 'button');
+    expect(sink).toHaveAttribute('tabindex', '0');
+  });
+
+  it('activates a step row from the keyboard (Enter)', () => {
+    render(<FindingsTree />);
+    fireEvent.keyDown(screen.getByText(/stmt.execute/), { key: 'Enter' });
     expect(useStore.getState().activeStepIndex).toBe(3);
     expect(useStore.getState().activeFile).toBe('UserRepository.java');
   });

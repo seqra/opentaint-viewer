@@ -1,4 +1,5 @@
 import { useStore } from '../state/store';
+import { keyActivate } from './keyActivate';
 import styles from './FindingsTree.module.css';
 
 export function FindingsTree() {
@@ -15,7 +16,13 @@ export function FindingsTree() {
         const isActive = f.id === activeFindingId;
         return (
           <div key={f.id}>
-            <div className={styles.finding} onClick={() => selectFinding(f.id)}>
+            <div
+              className={styles.finding}
+              role="button"
+              tabIndex={0}
+              onClick={() => selectFinding(f.id)}
+              onKeyDown={keyActivate(() => selectFinding(f.id))}
+            >
               {isActive ? '▾' : '▸'} 🔴 <span>{f.vulnClass}</span>
             </div>
             {f.endpoint && <div className={styles.endpoint}><span>{f.endpoint}</span></div>}
@@ -24,7 +31,10 @@ export function FindingsTree() {
                 <div
                   key={s.index}
                   className={`${styles.step} ${activeStepIndex === s.index ? styles.active : ''}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => selectStep(f.id, s.index)}
+                  onKeyDown={keyActivate(() => selectStep(f.id, s.index))}
                 >
                   <span className={styles.marker}>{s.index + 1}</span>
                   {s.label}

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RulesTree } from './RulesTree';
 import { useStore } from '../state/store';
@@ -27,6 +27,20 @@ describe('RulesTree', () => {
   it('clicking a rule selects it and switches the editor to rules', async () => {
     render(<RulesTree />);
     await userEvent.click(screen.getByText((content) => content.includes('sqli.yaml')));
+    expect(useStore.getState().activeRuleId).toBe('sqli');
+    expect(useStore.getState().activeTab).toBe('rules');
+  });
+
+  it('exposes rule leaves as focusable buttons', () => {
+    render(<RulesTree />);
+    const leaf = screen.getByText((content) => content.includes('sqli.yaml'));
+    expect(leaf).toHaveAttribute('role', 'button');
+    expect(leaf).toHaveAttribute('tabindex', '0');
+  });
+
+  it('activates a rule leaf from the keyboard (Enter)', () => {
+    render(<RulesTree />);
+    fireEvent.keyDown(screen.getByText((content) => content.includes('sqli.yaml')), { key: 'Enter' });
     expect(useStore.getState().activeRuleId).toBe('sqli');
     expect(useStore.getState().activeTab).toBe('rules');
   });

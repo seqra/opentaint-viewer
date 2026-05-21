@@ -1,4 +1,5 @@
 import { useStore } from '../state/store';
+import { keyActivate } from './keyActivate';
 import { rulesByOrigin } from '../content/loadContent';
 import type { RuleKind, RuleOrigin, RuleSpec } from '../types/content';
 import styles from './RulesTree.module.css';
@@ -36,7 +37,10 @@ export function RulesTree() {
                   <div
                     key={r.id}
                     className={`${styles.leaf} ${activeRuleId === r.id ? styles.active : ''}`}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => selectRule(r.id)}
+                    onKeyDown={keyActivate(() => selectRule(r.id))}
                   >
                     ⚖ {r.path.split('/').pop()}
                   </div>
