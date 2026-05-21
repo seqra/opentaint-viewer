@@ -16,6 +16,9 @@ export function encodeViewState(v: ViewState): string {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+const isStringOrNull = (x: unknown): boolean => x === null || typeof x === 'string';
+const isNumberOrNull = (x: unknown): boolean => x === null || typeof x === 'number';
+
 export function decodeViewState(s: string): ViewState | null {
   if (!s) return null;
   try {
@@ -25,6 +28,11 @@ export function decodeViewState(s: string): ViewState | null {
     if (typeof v !== 'object' || v === null) return null;
     if (v.viewMode !== 'tabs' && v.viewMode !== 'split') return null;
     if (v.activeTab !== 'code' && v.activeTab !== 'rules') return null;
+    if (!isStringOrNull(v.scenarioId)) return null;
+    if (!isStringOrNull(v.findingId)) return null;
+    if (!isNumberOrNull(v.stepIndex)) return null;
+    if (!isStringOrNull(v.file)) return null;
+    if (!isStringOrNull(v.ruleId)) return null;
     return v;
   } catch {
     return null;
