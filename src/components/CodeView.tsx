@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useStore } from '../state/store';
 import { fileByPath, findingById } from '../content/loadContent';
@@ -7,6 +7,11 @@ import { decorationsForFile } from '../taint/decorations';
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
 };
+
+/** Minimal handle for a Monaco decoration collection — avoids pulling in the full monaco-editor types. */
+interface DecorationCollection {
+  clear: () => void;
+}
 
 export function CodeView() {
   const content = useStore((s) => s.content);
@@ -23,16 +28,35 @@ export function CodeView() {
     return [...set];
   }, [finding, activeFile]);
 
-  const onMount: OnMount = (editor, monaco) => {
+  const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
+  const decoRef = useRef<DecorationCollection | null>(null);
+
+  const applyDecorations = () => {
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+    if (!editor || !monaco) return;
+    decoRef.current?.clear();
     if (!finding || !activeFile) return;
     const decos = decorationsForFile(finding.steps, activeFile);
-    editor.createDecorationsCollection(
+    decoRef.current = editor.createDecorationsCollection(
       decos.map((d) => ({
         range: new monaco.Range(d.line, 1, d.line, 1),
         options: { isWholeLine: true, className: d.className, glyphMarginClassName: d.className, linesDecorationsClassName: d.className },
       })),
-    );
+    ) as DecorationCollection;
   };
+
+  const onMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+    applyDecorations();
+  };
+
+  useEffect(() => {
+    applyDecorations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFindingId, activeFile]);
 
   if (!file) return null;
   return (

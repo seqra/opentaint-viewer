@@ -81,6 +81,14 @@ function main(): void {
     defaultFindingId: findings[0]?.id ?? '',
   }));
 
+  const placeholder = scenarios.find((s) => s.startFile.includes('...'));
+  if (placeholder) {
+    throw new Error(
+      `SCENARIOS[${SCENARIOS.findIndex((s) => s.id === placeholder.id)}].startFile still contains a placeholder ('...'). ` +
+      'Replace it with the real path before running regen.',
+    );
+  }
+
   const content = {
     projectId: 'java-spring-demo',
     scenarios,
