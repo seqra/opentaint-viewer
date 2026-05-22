@@ -1,3 +1,4 @@
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { useStore } from '../state/store';
 import { CodeView } from './CodeView';
 import { RulesView } from './RulesView';
@@ -22,10 +23,15 @@ export function EditorArea() {
       </div>
       <div className={styles.panes}>
         {split ? (
-          <>
-            <div className={`${styles.pane} ${styles.code}`}><CodeView /></div>
-            <div className={styles.pane}><RulesView /></div>
-          </>
+          <PanelGroup direction="horizontal" autoSaveId="ot-editor">
+            <Panel defaultSize={58} minSize={20} className={styles.pane}>
+              <CodeView />
+            </Panel>
+            <PanelResizeHandle className={styles.hHandle} />
+            <Panel defaultSize={42} minSize={20} className={styles.pane}>
+              <RulesView />
+            </Panel>
+          </PanelGroup>
         ) : (
           <div className={styles.pane} style={{ flex: 1 }}>
             {activeTab === 'code' ? <CodeView /> : <RulesView />}

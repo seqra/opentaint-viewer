@@ -18,7 +18,7 @@ export function RulesView() {
           language="yaml"
           value={rule.content}
           theme="vs-dark"
-          options={{ readOnly: true, minimap: { enabled: false }, fontSize: 13 }}
+          options={{ readOnly: true, minimap: { enabled: false }, fontSize: 13, automaticLayout: true }}
         />
       </div>
     </div>

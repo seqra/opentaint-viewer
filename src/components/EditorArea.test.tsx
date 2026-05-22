@@ -36,4 +36,10 @@ describe('EditorArea', () => {
     expect(useStore.getState().activeTab).toBe('rules');
     expect(screen.getByTestId('rules-view')).toBeInTheDocument();
   });
+
+  it('split mode places a draggable resize handle between Code and Rules', async () => {
+    render(<EditorArea />);
+    await userEvent.click(screen.getByRole('button', { name: /split/i }));
+    expect(screen.getByRole('separator')).toBeInTheDocument();
+  });
 });

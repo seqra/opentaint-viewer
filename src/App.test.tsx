@@ -25,4 +25,11 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: /share/i }));
     expect(screen.getByTestId('share-url')).toBeInTheDocument();
   });
+
+  it('shows both the findings and rules trees with a resize handle between them', () => {
+    render(<App />);
+    expect(screen.getByTestId('findings-tree')).toBeInTheDocument();
+    expect(screen.getByTestId('rules-tree')).toBeInTheDocument();
+    expect(screen.getAllByRole('separator').length).toBeGreaterThan(0);
+  });
 });
