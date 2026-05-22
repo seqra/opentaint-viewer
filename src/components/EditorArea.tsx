@@ -14,8 +14,12 @@ export function EditorArea() {
   return (
     <div className={styles.area} data-testid="editor-area">
       <div className={styles.head}>
-        <button role="tab" aria-selected={activeTab === 'code'} className={`${styles.tab} ${activeTab === 'code' ? styles.active : ''}`} onClick={() => setActiveTab('code')}>⟨⟩ Code</button>
-        <button role="tab" aria-selected={activeTab === 'rules'} className={`${styles.tab} ${activeTab === 'rules' ? styles.active : ''}`} onClick={() => setActiveTab('rules')}>⚖ Rules</button>
+        {!split && (
+          <>
+            <button role="tab" aria-selected={activeTab === 'code'} className={`${styles.tab} ${activeTab === 'code' ? styles.active : ''}`} onClick={() => setActiveTab('code')}>⟨⟩ Code</button>
+            <button role="tab" aria-selected={activeTab === 'rules'} className={`${styles.tab} ${activeTab === 'rules' ? styles.active : ''}`} onClick={() => setActiveTab('rules')}>⚖ Rules</button>
+          </>
+        )}
         <span className={styles.toggle}>
           <button className={`${styles.toggleBtn} ${!split ? styles.active : ''}`} onClick={() => setViewMode('tabs')}>⊟ tabs</button>
           <button className={`${styles.toggleBtn} ${split ? styles.active : ''}`} onClick={() => setViewMode('split')}>⊞ split</button>

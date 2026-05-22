@@ -42,4 +42,14 @@ describe('EditorArea', () => {
     await userEvent.click(screen.getByRole('button', { name: /split/i }));
     expect(screen.getByRole('separator')).toBeInTheDocument();
   });
+
+  it('hides the Code/Rules tabs in split mode (both panes are shown)', async () => {
+    render(<EditorArea />);
+    expect(screen.getByRole('tab', { name: /Code/ })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /split/i }));
+    expect(screen.queryByRole('tab', { name: /Code/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Rules/ })).not.toBeInTheDocument();
+    // the tabs/split toggle remains
+    expect(screen.getByRole('button', { name: /tabs/i })).toBeInTheDocument();
+  });
 });
