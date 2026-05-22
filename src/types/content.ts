@@ -29,6 +29,8 @@ export interface Finding {
   file: string | null;
   /** Path of the rule file that defines `ruleId`, if known (filled during regen). */
   ruleFile: string | null;
+  /** CWE tags from the report (e.g. ["CWE-94"]). */
+  cwe?: string[];
   message: string;
   steps: TaintStep[];
 }

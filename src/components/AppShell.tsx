@@ -4,7 +4,7 @@ import { TopBar } from './TopBar';
 import { FindingsTree } from './FindingsTree';
 import { RulesTree } from './RulesTree';
 import { EditorArea } from './EditorArea';
-import { CompareToGrep } from './CompareToGrep';
+import { FindingInfo } from './FindingInfo';
 import { ShareDialog } from './ShareDialog';
 import { useStepKeys } from './useStepKeys';
 import { useTheme } from '../state/theme';
@@ -42,7 +42,7 @@ export function AppShell() {
           <PanelResizeHandle className={styles.bodyHandle} />
           <Panel defaultSize={78} minSize={30} className={styles.main}>
             <div className={styles.editor}><EditorArea /></div>
-            <div className={styles.compare}><CompareToGrep /></div>
+            <div className={styles.compare}><FindingInfo /></div>
           </Panel>
         </PanelGroup>
       </div>

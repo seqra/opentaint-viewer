@@ -52,8 +52,25 @@ interface SarifResult {
   locations?: Array<{ physicalLocation?: SarifPhysical }>;
   codeFlows?: Array<{ threadFlows?: Array<{ locations?: SarifTfl[] }> }>;
 }
+interface SarifRule {
+  id?: string;
+  properties?: { tags?: string[] };
+}
 interface SarifLog {
-  runs?: Array<{ results?: SarifResult[] }>;
+  runs?: Array<{ results?: SarifResult[]; tool?: { driver?: { rules?: SarifRule[] } } }>;
+}
+
+/** Map ruleId -> CWE tags declared on the report's rule descriptors. */
+function cweByRule(log: SarifLog): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const run of log.runs ?? []) {
+    for (const rule of run.tool?.driver?.rules ?? []) {
+      if (!rule.id) continue;
+      const cwe = (rule.properties?.tags ?? []).filter((t) => /^CWE/i.test(t));
+      if (cwe.length) map.set(rule.id, cwe);
+    }
+  }
+  return map;
 }
 
 const basename = (uri: string): string => uri.split('/').pop() ?? uri;
@@ -72,7 +89,7 @@ function primaryLocation(res: SarifResult): string | null {
   return line ? `${basename(uri)}:${line}` : basename(uri);
 }
 
-function buildFinding(res: SarifResult, idx: number): Finding {
+function buildFinding(res: SarifResult, idx: number, cwes: Map<string, string[]>): Finding {
   const ruleId = res.ruleId ?? 'unknown';
   const locs = res.codeFlows?.[0]?.threadFlows?.[0]?.locations ?? [];
   const steps: TaintStep[] = locs.map((tfl, i) => {
@@ -103,12 +120,14 @@ function buildFinding(res: SarifResult, idx: number): Finding {
     location: primaryLocation(res),
     file: primaryFile(res),
     ruleFile: null,
+    cwe: cwes.get(ruleId) ?? [],
     message: res.message?.text ?? '',
     steps,
   };
 }
 
 export function transformSarif(log: SarifLog): Finding[] {
+  const cwes = cweByRule(log);
   const results = log.runs?.flatMap((r) => r.results ?? []) ?? [];
-  return results.map(buildFinding);
+  return results.map((res, idx) => buildFinding(res, idx, cwes));
 }

@@ -1,5 +1,0 @@
-.wrap { display: flex; gap: 12px; padding: 12px; font-size: 12px; }
-.col { flex: 1; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
-.num { font-size: 22px; font-weight: 700; }
-.miss { color: var(--snk); }
-.win { color: var(--src); }

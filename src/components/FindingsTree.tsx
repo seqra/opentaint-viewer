@@ -151,7 +151,7 @@ export function FindingsTree() {
           <option value="">All findings ({findings.length})</option>
           {ruleOptions.map((r) => (
             <option key={r.ruleId} value={r.ruleId}>
-              {r.vulnClass} ({r.count})
+              {r.ruleId} ({r.count})
             </option>
           ))}
         </select>

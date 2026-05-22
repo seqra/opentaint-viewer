@@ -40,6 +40,10 @@ describe('transformSarif', () => {
     expect(findings[0].steps[1]).toMatchObject({ startColumn: 5, endLine: 12, endColumn: 30 });
   });
 
+  it('attaches CWE tags from the report rule descriptors', () => {
+    expect(findings[0].cwe).toEqual(['CWE-79']);
+  });
+
   it('marks the hop that changes file as crossesFile', () => {
     const steps = findings[0].steps;
     expect(steps[1]).toMatchObject({ file: 'src/main/java/org/seqra/complexity/HtmlPageBuilder.java', crossesFile: true });
