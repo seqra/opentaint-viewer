@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
-import { StepNav } from './StepNav';
 import { buildPathTree, type PathTree } from './tree';
 import type { Finding } from '../types/content';
 import styles from './FindingsTree.module.css';
@@ -77,7 +76,6 @@ export function FindingsTree() {
           {isOpen ? '▾' : '▸'} 🔴 <span>{f.vulnClass}</span>
           {(f.endpoint ?? f.location) && <span className={styles.loc}>{f.endpoint ?? f.location}</span>}
         </div>
-        {isOpen && f.id === activeFindingId && <StepNav />}
         {isOpen &&
           f.steps.map((s) => (
             <div
