@@ -11,6 +11,7 @@ export function RulesView() {
   const content = useStore((s) => s.content);
   const activeRuleId = useStore((s) => s.activeRuleId);
   const activeRuleAnchor = useStore((s) => s.activeRuleAnchor);
+  const ruleFocusTick = useStore((s) => s.ruleFocusTick);
   const monacoTheme = useTheme((s) => (s.theme === 'light' ? 'vs' : 'vs-dark'));
   const rule = content?.rules.find((r) => r.id === activeRuleId);
 
@@ -42,7 +43,7 @@ export function RulesView() {
   useEffect(() => {
     focusRule();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRuleId, activeRuleAnchor, rule?.content]);
+  }, [activeRuleId, activeRuleAnchor, ruleFocusTick, rule?.content]);
 
   if (!rule) return null;
 

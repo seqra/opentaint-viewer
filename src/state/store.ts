@@ -15,6 +15,8 @@ interface State {
   activeRuleId: string | null;
   /** Rule id to scroll to within the active rule file (a file holds many rules). */
   activeRuleAnchor: string | null;
+  /** Bumped on every selectRule call so the editor re-focuses even when the file/anchor are unchanged. */
+  ruleFocusTick: number;
   viewMode: ViewMode;
   activeTab: EditorTab;
 }
@@ -34,7 +36,7 @@ interface Actions {
 
 const initial: State = {
   content: null, scenarioId: null, activeFindingId: null, activeStepIndex: null,
-  activeFile: null, activeRuleId: null, activeRuleAnchor: null, viewMode: 'tabs', activeTab: 'code',
+  activeFile: null, activeRuleId: null, activeRuleAnchor: null, ruleFocusTick: 0, viewMode: 'tabs', activeTab: 'code',
 };
 
 export const useStore = create<State & Actions>((set, get) => ({
@@ -82,7 +84,8 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   selectFile: (path) => set({ activeFile: path }),
-  selectRule: (id, anchor = null) => set({ activeRuleId: id, activeRuleAnchor: anchor, activeTab: 'rules' }),
+  selectRule: (id, anchor = null) =>
+    set((s) => ({ activeRuleId: id, activeRuleAnchor: anchor, activeTab: 'rules', ruleFocusTick: s.ruleFocusTick + 1 })),
   setViewMode: (viewMode) => set({ viewMode }),
   setActiveTab: (activeTab) => set({ activeTab }),
   reset: () => set({ ...initial }),

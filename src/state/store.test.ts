@@ -41,13 +41,23 @@ describe('playground store', () => {
     expect(before.viewMode).toBe('tabs'); // snapshot unchanged
   });
 
-  it('selectRule sets the active rule and switches tab to rules', () => {
+  it('selectRule sets the active rule, its anchor, and switches tab to rules', () => {
     useStore.getState().loadContent(content);
     const rule = content.rules[0];
-    useStore.getState().selectRule(rule.id);
+    useStore.getState().selectRule(rule.id, 'java.security.ssti');
     const s = useStore.getState();
     expect(s.activeRuleId).toBe(rule.id);
+    expect(s.activeRuleAnchor).toBe('java.security.ssti');
     expect(s.activeTab).toBe('rules');
+  });
+
+  it('selectRule re-requests focus on every call so re-clicking a link re-centers the rule', () => {
+    useStore.getState().loadContent(content);
+    useStore.getState().selectRule('java/security/code-injection.yaml', 'java.security.ssti');
+    const first = useStore.getState().ruleFocusTick;
+    // Identical arguments: nothing else in the store changes, but focus must re-fire.
+    useStore.getState().selectRule('java/security/code-injection.yaml', 'java.security.ssti');
+    expect(useStore.getState().ruleFocusTick).toBeGreaterThan(first);
   });
 
   it('step(op) navigates the active finding and follows the step file', () => {
