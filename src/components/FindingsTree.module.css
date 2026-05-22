@@ -1,7 +1,11 @@
 .tree { font-family: var(--mono); font-size: 12px; color: var(--fg); padding: 8px; }
-.finding { padding: 3px 4px; cursor: pointer; }
-.endpoint { color: var(--fg-dim); padding-left: 14px; font-size: 11px; }
-.step { padding: 2px 4px 2px 16px; color: var(--fg-dim); border-left: 1px dashed var(--border); margin-left: 6px; cursor: pointer; }
+.filterRow { padding: 0 4px 8px; }
+.filter { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; font-size: 11px; font-family: var(--mono); }
+.dir { padding: 2px 4px; cursor: pointer; color: var(--fg-dim); }
+.finding { padding: 2px 4px; cursor: pointer; border-radius: 4px; }
+.finding.activeFinding { background: #232a3a; }
+.loc { color: var(--fg-dim); font-size: 10px; margin-left: 6px; }
+.step { padding: 2px 4px; color: var(--fg-dim); cursor: pointer; }
 .step.active { background: #2d3340; color: var(--fg); border-radius: 4px; }
 .marker { background: var(--accent); color: #fff; border-radius: 50%; padding: 0 5px; font-size: 9px; margin-right: 4px; }
 .cross { color: var(--mid); font-size: 9px; margin-left: 4px; }

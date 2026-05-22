@@ -8,6 +8,7 @@ import { loadContent, rulesByOrigin } from '../content/loadContent';
 const content = loadContent();
 const firstBuiltin = rulesByOrigin(content).builtin[0];
 const leafName = firstBuiltin.path.split('/').pop()!;
+const dirPath = firstBuiltin.path.split('/').slice(0, -1).join('/');
 const leafEl = () => screen.getAllByText((c) => c.includes(leafName))[0];
 
 describe('RulesTree', () => {
@@ -40,5 +41,14 @@ describe('RulesTree', () => {
     fireEvent.keyDown(leafEl(), { key: 'Enter' });
     expect(useStore.getState().activeRuleId).toBe(firstBuiltin.id);
     expect(useStore.getState().activeTab).toBe('rules');
+  });
+
+  it('collapsing a directory hides the rule files inside it', () => {
+    const { container } = render(<RulesTree />);
+    expect(screen.queryAllByText((c) => c.includes(leafName)).length).toBeGreaterThan(0);
+    const dirRow = container.querySelector(`[data-dir="${dirPath}"]`) as HTMLElement;
+    expect(dirRow).not.toBeNull();
+    fireEvent.click(dirRow);
+    expect(screen.queryAllByText((c) => c.includes(leafName)).length).toBe(0);
   });
 });

@@ -3,13 +3,13 @@ import { readFileSync } from 'node:fs';
 
 // Derive expectations from the real committed content so the test survives regen.
 interface Step { file: string; label: string }
-interface Finding { id: string; vulnClass: string; steps: Step[] }
+interface Finding { id: string; vulnClass: string; location: string; steps: Step[] }
 interface Content { scenarios: { defaultFindingId: string; startFile: string }[]; findings: Finding[] }
 
 const content: Content = JSON.parse(readFileSync('src/content/java-spring-demo.json', 'utf8'));
 const scenario = content.scenarios[0];
 const active = content.findings.find((f) => f.id === scenario.defaultFindingId)!;
-const vulnClass = active.vulnClass;
+const location = active.location; // unique to the finding row (vuln class also appears in the filter select)
 const startBase = scenario.startFile.split('/').pop()!;
 const lastStep = active.steps[active.steps.length - 1];
 const sinkBase = lastStep.file.split('/').pop()!;
@@ -18,9 +18,9 @@ const stepText = lastStep.label.slice(0, 30);
 test('explore a finding, jump cross-file, split, and share', async ({ page }) => {
   await page.goto('/');
 
-  // The first scenario's finding is visible on first paint (scoped to the tree;
-  // the vuln class also appears in the scenario <select>).
-  await expect(page.getByTestId('findings-tree').getByText(vulnClass).first()).toBeVisible();
+  // The first scenario's finding is visible on first paint (its location is unique to
+  // the finding row; the vuln class also appears in selects).
+  await expect(page.getByTestId('findings-tree').getByText(location)).toBeVisible();
 
   // Code view shows the scenario's start file as a tab.
   await expect(page.getByRole('tab', { name: startBase })).toBeVisible();

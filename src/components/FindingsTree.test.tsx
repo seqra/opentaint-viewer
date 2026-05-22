@@ -7,9 +7,11 @@ import { loadContent } from '../content/loadContent';
 
 const content = loadContent();
 const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
-const lastIdx = active.steps.length - 1;
-const lastStep = active.steps[lastIdx];
+const lastStep = active.steps[active.steps.length - 1];
+const otherRule = content.findings.find((f) => f.ruleId !== active.ruleId)!;
+const dirPath = (active.file ?? '').split('/').slice(0, -1).join('/');
 const stepEl = (label: string) => screen.getByText((c) => c.includes(label));
+const filter = () => screen.getByRole('combobox', { name: /filter findings by rule/i });
 
 describe('FindingsTree', () => {
   beforeEach(() => {
@@ -17,22 +19,16 @@ describe('FindingsTree', () => {
     useStore.getState().loadContent(content);
   });
 
-  it('lists the active finding by vuln class and its location', () => {
+  it('renders a rule filter: All option plus one per distinct rule', () => {
     render(<FindingsTree />);
-    expect(screen.getAllByText(active.vulnClass).length).toBeGreaterThan(0);
-    if (active.location) expect(screen.getByText(active.location)).toBeInTheDocument();
+    const ruleCount = new Set(content.findings.map((f) => f.ruleId)).size;
+    expect(filter().querySelectorAll('option')).toHaveLength(ruleCount + 1);
   });
 
-  it('renders the steps of the active finding', () => {
-    render(<FindingsTree />);
-    expect(stepEl(active.steps[0].label)).toBeInTheDocument();
-    expect(stepEl(lastStep.label)).toBeInTheDocument();
-  });
-
-  it('clicking the sink step selects it in the store', async () => {
+  it('shows the active finding steps by default and selects a step on click', async () => {
     render(<FindingsTree />);
     await userEvent.click(stepEl(lastStep.label));
-    expect(useStore.getState().activeStepIndex).toBe(lastIdx);
+    expect(useStore.getState().activeStepIndex).toBe(active.steps.length - 1);
     expect(useStore.getState().activeFile).toBe(lastStep.file);
   });
 
@@ -42,10 +38,20 @@ describe('FindingsTree', () => {
     expect(stepEl(lastStep.label)).toHaveAttribute('tabindex', '0');
   });
 
-  it('activates a step row from the keyboard (Enter)', () => {
+  it('filtering to one rule hides findings from other rules', () => {
     render(<FindingsTree />);
-    fireEvent.keyDown(stepEl(lastStep.label), { key: 'Enter' });
-    expect(useStore.getState().activeStepIndex).toBe(lastIdx);
-    expect(useStore.getState().activeFile).toBe(lastStep.file);
+    expect(screen.getAllByText(active.vulnClass).length).toBeGreaterThan(0);
+    fireEvent.change(filter(), { target: { value: otherRule.ruleId } });
+    expect(screen.queryByText(active.vulnClass)).not.toBeInTheDocument();
+    expect(screen.getAllByText(otherRule.vulnClass).length).toBeGreaterThan(0);
+  });
+
+  it('collapsing a directory hides the findings inside it', () => {
+    const { container } = render(<FindingsTree />);
+    expect(screen.getAllByText(active.vulnClass).length).toBeGreaterThan(0);
+    const dirRow = container.querySelector(`[data-dir="${dirPath}"]`) as HTMLElement;
+    expect(dirRow).not.toBeNull();
+    fireEvent.click(dirRow);
+    expect(screen.queryByText(active.vulnClass)).not.toBeInTheDocument();
   });
 });
