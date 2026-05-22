@@ -31,6 +31,8 @@ export interface Finding {
   ruleFile: string | null;
   /** CWE tags from the report (e.g. ["CWE-94"]). */
   cwe?: string[];
+  /** Full rule description from the report (markdown). */
+  description?: string;
   message: string;
   steps: TaintStep[];
 }

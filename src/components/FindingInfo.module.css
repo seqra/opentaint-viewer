@@ -1,4 +1,4 @@
-.info { padding: 8px 10px; font-size: 12px; max-height: 100%; overflow: auto; }
+.info { padding: 8px 10px; font-size: 12px; height: 100%; overflow: auto; }
 .head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .vuln { font-weight: 600; color: var(--fg); }
 .sev { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; padding: 1px 6px; border-radius: 10px; border: 1px solid currentColor; }
@@ -10,3 +10,10 @@
 .msg { margin: 6px 0; color: var(--fg-dim); line-height: 1.5; }
 .rule { font-family: var(--mono); font-size: 11px; color: var(--fg-dim); }
 .ruleLink { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; font-family: var(--mono); font-size: 11px; text-decoration: underline; }
+.desc { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; color: var(--fg); line-height: 1.5; }
+.desc :global(p) { margin: 6px 0; color: var(--fg-dim); }
+.desc :global(h1), .desc :global(h2), .desc :global(h3), .desc :global(h4) { font-size: 12px; margin: 10px 0 4px; color: var(--fg); }
+.desc :global(pre) { background: var(--bg-2); border: 1px solid var(--border); padding: 8px; border-radius: 6px; overflow-x: auto; }
+.desc :global(code) { font-family: var(--mono); font-size: 11px; }
+.desc :global(ul), .desc :global(ol) { margin: 6px 0; padding-left: 18px; color: var(--fg-dim); }
+.desc :global(a) { color: var(--accent); }

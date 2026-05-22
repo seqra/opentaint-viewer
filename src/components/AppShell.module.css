@@ -8,6 +8,5 @@
 .scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .vHandle { height: 6px; background: var(--bg-3); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); cursor: row-resize; }
 .vHandle:hover, .vHandle[data-resize-handle-active] { background: var(--accent); }
-.main { display: flex; flex-direction: column; min-width: 0; }
-.editor { flex: 1; min-height: 0; }
-.compare { border-top: 1px solid var(--border); }
+.main { min-width: 0; }
+.mainPane { min-height: 0; overflow: hidden; }

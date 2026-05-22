@@ -9,6 +9,7 @@
               "id": "java.security.xss-in-spring-app",
               "name": "java.security.xss-in-spring-app",
               "shortDescription": { "text": "Cross-site scripting (XSS) in HTML response" },
+              "fullDescription": { "text": "Cross-site scripting (XSS) occurs when untrusted input reaches an HTML response without encoding.\n\n```java\nout.println(req.getParameter(\"name\"));\n```" },
               "properties": { "tags": ["CWE-79"] }
             }
           ]

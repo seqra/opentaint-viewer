@@ -41,8 +41,15 @@ export function AppShell() {
           </Panel>
           <PanelResizeHandle className={styles.bodyHandle} />
           <Panel defaultSize={78} minSize={30} className={styles.main}>
-            <div className={styles.editor}><EditorArea /></div>
-            <div className={styles.compare}><FindingInfo /></div>
+            <PanelGroup direction="vertical" autoSaveId="ot-main">
+              <Panel defaultSize={68} minSize={20} className={styles.mainPane}>
+                <EditorArea />
+              </Panel>
+              <PanelResizeHandle className={styles.vHandle} />
+              <Panel defaultSize={32} minSize={10} className={styles.mainPane}>
+                <FindingInfo />
+              </Panel>
+            </PanelGroup>
           </Panel>
         </PanelGroup>
       </div>

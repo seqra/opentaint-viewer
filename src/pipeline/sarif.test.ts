@@ -40,8 +40,9 @@ describe('transformSarif', () => {
     expect(findings[0].steps[1]).toMatchObject({ startColumn: 5, endLine: 12, endColumn: 30 });
   });
 
-  it('attaches CWE tags from the report rule descriptors', () => {
+  it('attaches CWE tags and the full markdown description from the report', () => {
     expect(findings[0].cwe).toEqual(['CWE-79']);
+    expect(findings[0].description).toContain('Cross-site scripting (XSS) occurs when');
   });
 
   it('marks the hop that changes file as crossesFile', () => {

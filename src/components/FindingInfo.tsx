@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown';
 import { useStore } from '../state/store';
 import { findingById } from '../content/loadContent';
 import styles from './FindingInfo.module.css';
@@ -33,6 +34,11 @@ export function FindingInfo() {
           <span>{finding.ruleId}</span>
         )}
       </div>
+      {finding.description && (
+        <div className={styles.desc}>
+          <ReactMarkdown>{finding.description}</ReactMarkdown>
+        </div>
+      )}
     </div>
   );
 }

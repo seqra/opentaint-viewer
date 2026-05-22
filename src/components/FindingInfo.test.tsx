@@ -27,4 +27,10 @@ describe('FindingInfo', () => {
     expect(useStore.getState().activeRuleId).toBe(finding.ruleFile);
     expect(useStore.getState().activeTab).toBe('rules');
   });
+
+  it('renders the full markdown description from the report', () => {
+    render(<FindingInfo />);
+    const firstWord = finding.description!.trim().split(/\s+/)[0];
+    expect(screen.getByTestId('finding-info').textContent).toContain(firstWord);
+  });
 });
