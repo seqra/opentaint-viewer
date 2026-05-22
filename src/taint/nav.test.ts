@@ -34,9 +34,16 @@ describe('navigate', () => {
     expect(navigate(steps, 0, 'nextOver')).toBe(1); // no call ahead -> like next
   });
 
+  it('nextOver on a trailing call (no return in-path) acts like step in', () => {
+    // step 5 calls into TemplateRenderingService which never returns within the path;
+    // stepping over has nowhere to land, so it steps in instead of overshooting to the end.
+    expect(navigate(steps, 5, 'nextOver')).toBe(6);
+  });
+
   it('backOver skips a deeper call backward', () => {
     expect(navigate(steps, 4, 'backOver')).toBe(1); // skip RenderRequest interior backward
     expect(navigate(steps, 1, 'backOver')).toBe(0); // no deeper call behind -> like back
+    expect(navigate(steps, 6, 'backOver')).toBe(5); // prev is shallower -> like back
   });
 
   it('out steps back out to the caller (shallower step before the current frame)', () => {

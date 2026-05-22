@@ -37,14 +37,21 @@ export function navigate(steps: TaintStep[], current: number, op: StepOp): numbe
 
   const depths = stepDepths(steps);
   if (op === 'nextOver') {
-    let j = cur + 1;
+    const next = cur + 1;
+    if (next >= n) return cur;
+    if (depths[next] <= depths[cur]) return next; // not a call -> step next
+    let j = next;
     while (j < n && depths[j] > depths[cur]) j++;
-    return Math.min(n - 1, j);
+    // If the call never returns to this frame in-path, step in rather than overshoot.
+    return j < n ? j : next;
   }
   if (op === 'backOver') {
-    let j = cur - 1;
+    const prev = cur - 1;
+    if (prev < 0) return cur;
+    if (depths[prev] <= depths[cur]) return prev; // not a call -> step back
+    let j = prev;
     while (j >= 0 && depths[j] > depths[cur]) j--;
-    return Math.max(0, j);
+    return j >= 0 ? j : prev;
   }
   // out: walk backward to the most recent shallower step (the call site).
   const d = depths[cur];
