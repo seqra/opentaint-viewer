@@ -5,13 +5,11 @@ import type { StepOp } from '../taint/nav';
 function opForKey(e: KeyboardEvent): StepOp | null {
   switch (e.key) {
     case 'ArrowLeft':
-      return e.shiftKey ? 'out' : 'back';
+      return e.shiftKey ? 'backOver' : 'back';
     case 'ArrowRight':
-      return e.shiftKey ? 'over' : 'in';
-    case 'Home':
-      return 'start';
-    case 'End':
-      return 'end';
+      return e.shiftKey ? 'nextOver' : 'next';
+    case 'ArrowUp':
+      return 'out';
     default:
       return null;
   }
@@ -19,7 +17,7 @@ function opForKey(e: KeyboardEvent): StepOp | null {
 
 /**
  * Global keyboard control of taint-path stepping:
- *   ←/→ back/in · Shift+←/→ out/over · Home/End start/end.
+ *   ←/→ back/next · Shift+←/→ back-over/next-over · ↑ out (back to caller).
  * Ignored while a form control (rule filter, etc.) is focused.
  */
 export function useStepKeys(): void {

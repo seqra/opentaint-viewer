@@ -54,12 +54,12 @@ describe('playground store', () => {
     useStore.getState().loadContent(content);
     useStore.getState().selectStep(multiStep.id, 0);
 
-    useStore.getState().step('in');
-    expect(useStore.getState().activeStepIndex).toBe(navigate(multiStep.steps, 0, 'in'));
+    useStore.getState().step('next');
+    expect(useStore.getState().activeStepIndex).toBe(navigate(multiStep.steps, 0, 'next'));
 
     const overFrom = useStore.getState().activeStepIndex!;
-    useStore.getState().step('over');
-    const expected = navigate(multiStep.steps, overFrom, 'over');
+    useStore.getState().step('nextOver');
+    const expected = navigate(multiStep.steps, overFrom, 'nextOver');
     expect(useStore.getState().activeStepIndex).toBe(expected);
     expect(useStore.getState().activeFile).toBe(multiStep.steps[expected].file);
   });

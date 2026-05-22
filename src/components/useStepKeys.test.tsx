@@ -20,18 +20,21 @@ describe('useStepKeys', () => {
     useStore.getState().selectStep(active.id, 0);
   });
 
-  it('steps in on ArrowRight', () => {
+  it('steps next on ArrowRight, over on Shift+ArrowRight', () => {
     render(<Harness />);
     fireEvent.keyDown(document.body, { key: 'ArrowRight' });
-    expect(useStore.getState().activeStepIndex).toBe(navigate(active.steps, 0, 'in'));
+    expect(useStore.getState().activeStepIndex).toBe(navigate(active.steps, 0, 'next'));
+
+    useStore.getState().selectStep(active.id, 0);
+    fireEvent.keyDown(document.body, { key: 'ArrowRight', shiftKey: true });
+    expect(useStore.getState().activeStepIndex).toBe(navigate(active.steps, 0, 'nextOver'));
   });
 
-  it('jumps to end on End and back to start on Home', () => {
+  it('steps back out to the caller on ArrowUp', () => {
     render(<Harness />);
-    fireEvent.keyDown(document.body, { key: 'End' });
-    expect(useStore.getState().activeStepIndex).toBe(active.steps.length - 1);
-    fireEvent.keyDown(document.body, { key: 'Home' });
-    expect(useStore.getState().activeStepIndex).toBe(0);
+    useStore.getState().selectStep(active.id, 2);
+    fireEvent.keyDown(document.body, { key: 'ArrowUp' });
+    expect(useStore.getState().activeStepIndex).toBe(navigate(active.steps, 2, 'out'));
   });
 
   it('ignores keys while a select is focused', () => {

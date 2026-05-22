@@ -1,12 +1,12 @@
 import type { TaintStep } from '../types/content';
 
-export type StepOp = 'back' | 'in' | 'over' | 'out' | 'start' | 'end';
+export type StepOp = 'back' | 'next' | 'backOver' | 'nextOver' | 'out';
 
 /**
  * Call depth per step, inferred from file transitions: entering a not-yet-open
  * file is a call (push a frame); returning to a file already on the stack pops
- * back to it. Used to give step-over / step-out debugger semantics even though
- * opentaint SARIF carries no explicit nestingLevel.
+ * back to it. Used to give step-over / step-out semantics even though opentaint
+ * SARIF carries no explicit nestingLevel.
  */
 export function stepDepths(steps: TaintStep[]): number[] {
   const stack: string[] = [];
@@ -24,26 +24,29 @@ export function stepDepths(steps: TaintStep[]): number[] {
   });
 }
 
-/** Index of the step reached by a debugger-style navigation op. */
+/** Index of the step reached by a navigation op. `out` always steps back out to the caller. */
 export function navigate(steps: TaintStep[], current: number, op: StepOp): number {
   const n = steps.length;
   if (n === 0) return current;
   const cur = Math.max(0, Math.min(n - 1, current));
 
-  if (op === 'start') return 0;
-  if (op === 'end') return n - 1;
   if (op === 'back') return Math.max(0, cur - 1);
-  if (op === 'in') return Math.min(n - 1, cur + 1);
+  if (op === 'next') return Math.min(n - 1, cur + 1);
 
   const depths = stepDepths(steps);
-  if (op === 'over') {
+  if (op === 'nextOver') {
     let j = cur + 1;
     while (j < n && depths[j] > depths[cur]) j++;
     return Math.min(n - 1, j);
   }
-  // out: advance until we drop below the current frame's depth
+  if (op === 'backOver') {
+    let j = cur - 1;
+    while (j >= 0 && depths[j] > depths[cur]) j--;
+    return Math.max(0, j);
+  }
+  // out: walk backward to the most recent shallower step (the call site).
   const d = depths[cur];
-  let j = cur + 1;
-  while (j < n && depths[j] >= d) j++;
-  return j < n ? j : n - 1;
+  let j = cur - 1;
+  while (j >= 0 && depths[j] >= d) j--;
+  return Math.max(0, j);
 }
