@@ -7,32 +7,49 @@ const log = JSON.parse(readFileSync('fixtures/sample.sarif', 'utf8'));
 describe('transformSarif', () => {
   const findings = transformSarif(log);
 
-  it('produces one finding with id, rule, class, endpoint', () => {
+  it('produces one finding with id, rule, class, severity', () => {
     expect(findings).toHaveLength(1);
     expect(findings[0]).toMatchObject({
-      id: 'sqli-0',
-      ruleId: 'sqli',
-      vulnClass: 'SQL Injection',
+      id: 'java.security.xss-in-spring-app-0',
+      ruleId: 'java.security.xss-in-spring-app',
+      vulnClass: 'XSS',
       severity: 'error',
-      endpoint: 'GET /users/search',
     });
   });
 
-  it('builds ordered steps with inferred kinds', () => {
+  it('has no endpoint (opentaint SARIF omits it) and a primary location', () => {
+    expect(findings[0].endpoint).toBeNull();
+    expect(findings[0].location).toBe('UserProfileController.java:58');
+    expect(findings[0].ruleFile).toBeNull();
+  });
+
+  it('builds ordered steps with positionally-inferred kinds (real kinds are ["taint"])', () => {
     const steps = findings[0].steps;
     expect(steps.map((s) => s.kind)).toEqual(['source', 'propagation', 'sink']);
-    expect(steps[0]).toMatchObject({ index: 0, file: 'UserController.java', line: 8, crossesFile: false });
+    expect(steps[0]).toMatchObject({
+      index: 0,
+      file: 'src/main/java/org/seqra/complexity/UserProfileController.java',
+      line: 54,
+      crossesFile: false,
+    });
   });
 
   it('marks the hop that changes file as crossesFile', () => {
     const steps = findings[0].steps;
-    expect(steps[2]).toMatchObject({ file: 'UserRepository.java', line: 31, crossesFile: true });
+    expect(steps[1]).toMatchObject({ file: 'src/main/java/org/seqra/complexity/HtmlPageBuilder.java', crossesFile: true });
+    expect(steps[2].crossesFile).toBe(true);
   });
 });
 
 describe('vulnClassForRule', () => {
-  it('maps known ids and falls back to the id', () => {
-    expect(vulnClassForRule('sqli')).toBe('SQL Injection');
-    expect(vulnClassForRule('mystery')).toBe('mystery');
+  it('maps namespaced opentaint rule ids to short labels', () => {
+    expect(vulnClassForRule('java.security.xss-in-spring-app')).toBe('XSS');
+    expect(vulnClassForRule('java.security.ssti')).toBe('Template Injection');
+    expect(vulnClassForRule('java.security.ssrf')).toBe('SSRF');
+  });
+
+  it('prettifies the last segment for unknown rules', () => {
+    expect(vulnClassForRule('java.security.open-redirect')).toBe('Open Redirect');
+    expect(vulnClassForRule('mystery.thing')).toBe('Thing');
   });
 });

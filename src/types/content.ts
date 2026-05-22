@@ -19,6 +19,10 @@ export interface Finding {
   vulnClass: string;
   severity: Severity;
   endpoint: string | null;
+  /** Primary location as `basename:line` — shown when there is no endpoint. */
+  location: string | null;
+  /** Path of the rule file that defines `ruleId`, if known (filled during regen). */
+  ruleFile: string | null;
   message: string;
   steps: TaintStep[];
 }

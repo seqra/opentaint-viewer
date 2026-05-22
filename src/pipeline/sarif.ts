@@ -1,17 +1,30 @@
 import type { Finding, Severity, TaintStep } from '../types/content';
 
-const VULN_CLASS_BY_RULE: Record<string, string> = {
-  sqli: 'SQL Injection',
-  'sql-injection': 'SQL Injection',
-  ssrf: 'SSRF',
-  'path-traversal': 'Path Traversal',
-  xss: 'XSS',
-  'command-injection': 'Command Injection',
-  'open-redirect': 'Open Redirect',
-};
+/** Substring patterns → short vuln-class label, checked in order. */
+const VULN_CLASS_PATTERNS: Array<[RegExp, string]> = [
+  [/xss/, 'XSS'],
+  [/ssti|template[-_]?injection/, 'Template Injection'],
+  [/ssrf/, 'SSRF'],
+  [/sqli|sql[-_]?injection/, 'SQL Injection'],
+  [/os[-_]?command|command[-_]?injection/, 'Command Injection'],
+  [/path[-_]?traversal/, 'Path Traversal'],
+  [/open[-_]?redirect|unvalidated[-_]?redirect/, 'Open Redirect'],
+  [/xxe/, 'XXE'],
+  [/ldap/, 'LDAP Injection'],
+  [/deserializ/, 'Unsafe Deserialization'],
+  [/code[-_]?injection/, 'Code Injection'],
+  [/log[-_]?injection/, 'Log Injection'],
+];
+
+function titleCase(s: string): string {
+  return s.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export function vulnClassForRule(ruleId: string): string {
-  return VULN_CLASS_BY_RULE[ruleId] ?? ruleId;
+  const id = ruleId.toLowerCase();
+  for (const [re, label] of VULN_CLASS_PATTERNS) if (re.test(id)) return label;
+  const last = ruleId.split('.').pop() ?? ruleId;
+  return titleCase(last);
 }
 
 function severityFromLevel(level: unknown): Severity {
@@ -24,24 +37,35 @@ function kindForPosition(i: number, total: number): TaintStep['kind'] {
   return 'propagation';
 }
 
+interface SarifPhysical {
+  artifactLocation?: { uri?: string };
+  region?: { startLine?: number };
+}
 interface SarifTfl {
-  location?: {
-    physicalLocation?: { artifactLocation?: { uri?: string }; region?: { startLine?: number } };
-    message?: { text?: string };
-  };
+  location?: { physicalLocation?: SarifPhysical; message?: { text?: string } };
   kinds?: string[];
 }
 interface SarifResult {
   ruleId?: string;
   level?: string;
   message?: { text?: string };
-  properties?: { endpoint?: string };
+  locations?: Array<{ physicalLocation?: SarifPhysical }>;
   codeFlows?: Array<{ threadFlows?: Array<{ locations?: SarifTfl[] }> }>;
 }
-interface SarifLog { runs?: Array<{ results?: SarifResult[] }> }
+interface SarifLog {
+  runs?: Array<{ results?: SarifResult[] }>;
+}
 
-function fileOf(tfl: SarifTfl | undefined): string {
-  return tfl?.location?.physicalLocation?.artifactLocation?.uri ?? '';
+const basename = (uri: string): string => uri.split('/').pop() ?? uri;
+const fileOf = (tfl: SarifTfl | undefined): string =>
+  tfl?.location?.physicalLocation?.artifactLocation?.uri ?? '';
+
+function primaryLocation(res: SarifResult): string | null {
+  const phys = res.locations?.[0]?.physicalLocation;
+  const uri = phys?.artifactLocation?.uri;
+  if (!uri) return null;
+  const line = phys?.region?.startLine;
+  return line ? `${basename(uri)}:${line}` : basename(uri);
 }
 
 function buildFinding(res: SarifResult, idx: number): Finding {
@@ -50,8 +74,8 @@ function buildFinding(res: SarifResult, idx: number): Finding {
   const steps: TaintStep[] = locs.map((tfl, i) => {
     const file = fileOf(tfl);
     const prevFile = i > 0 ? fileOf(locs[i - 1]) : file;
-    const explicit = tfl.kinds?.find((k): k is TaintStep['kind'] =>
-      k === 'source' || k === 'sink' || k === 'sanitizer',
+    const explicit = tfl.kinds?.find(
+      (k): k is TaintStep['kind'] => k === 'source' || k === 'sink' || k === 'sanitizer',
     );
     return {
       index: i,
@@ -67,7 +91,9 @@ function buildFinding(res: SarifResult, idx: number): Finding {
     ruleId,
     vulnClass: vulnClassForRule(ruleId),
     severity: severityFromLevel(res.level),
-    endpoint: res.properties?.endpoint ?? null,
+    endpoint: null,
+    location: primaryLocation(res),
+    ruleFile: null,
     message: res.message?.text ?? '',
     steps,
   };

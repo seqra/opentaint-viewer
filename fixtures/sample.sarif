@@ -1,20 +1,35 @@
 {
   "runs": [
     {
+      "tool": {
+        "driver": {
+          "name": "OpenTaint",
+          "rules": [
+            {
+              "id": "java.security.xss-in-spring-app",
+              "name": "java.security.xss-in-spring-app",
+              "shortDescription": { "text": "Cross-site scripting (XSS) in HTML response" },
+              "properties": { "tags": ["CWE-79"] }
+            }
+          ]
+        }
+      },
       "results": [
         {
-          "ruleId": "sqli",
+          "ruleId": "java.security.xss-in-spring-app",
           "level": "error",
-          "message": { "text": "User input reaches a SQL sink." },
-          "properties": { "endpoint": "GET /users/search" },
+          "message": { "text": "Cross-site scripting (XSS): untrusted input is written to an HTML response." },
+          "locations": [
+            { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/UserProfileController.java" }, "region": { "startLine": 58 } } }
+          ],
           "codeFlows": [
             {
               "threadFlows": [
                 {
                   "locations": [
-                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "UserController.java" }, "region": { "startLine": 8 } }, "message": { "text": "req.getParameter(\"name\")" } } },
-                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "UserController.java" }, "region": { "startLine": 9 } }, "message": { "text": "concatenated into sql" } } },
-                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "UserRepository.java" }, "region": { "startLine": 31 } }, "message": { "text": "stmt.execute(sql)" } } }
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/UserProfileController.java" }, "region": { "startLine": 54 } }, "message": { "text": "Method entry marks \"name\" as $UNTRUSTED" } }, "kinds": ["taint"] },
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java" }, "region": { "startLine": 12 } }, "message": { "text": "tainted value passed to builder" } }, "kinds": ["taint"] },
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/UserProfileController.java" }, "region": { "startLine": 58 } }, "message": { "text": "written to HTML response" } }, "kinds": ["taint"] }
                   ]
                 }
               ]
