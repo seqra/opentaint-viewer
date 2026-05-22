@@ -20,6 +20,7 @@ describe('transformSarif', () => {
   it('has no endpoint (opentaint SARIF omits it) and a primary location', () => {
     expect(findings[0].endpoint).toBeNull();
     expect(findings[0].location).toBe('UserProfileController.java:58');
+    expect(findings[0].file).toBe('src/main/java/org/seqra/complexity/UserProfileController.java');
     expect(findings[0].ruleFile).toBeNull();
   });
 

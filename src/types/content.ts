@@ -20,6 +20,8 @@ export interface Finding {
   endpoint: string | null;
   /** Primary location as `basename:line` — shown when there is no endpoint. */
   location: string | null;
+  /** Full path of the primary-location file — used to group findings by directory. */
+  file: string | null;
   /** Path of the rule file that defines `ruleId`, if known (filled during regen). */
   ruleFile: string | null;
   message: string;

@@ -60,6 +60,10 @@ const basename = (uri: string): string => uri.split('/').pop() ?? uri;
 const fileOf = (tfl: SarifTfl | undefined): string =>
   tfl?.location?.physicalLocation?.artifactLocation?.uri ?? '';
 
+function primaryFile(res: SarifResult): string | null {
+  return res.locations?.[0]?.physicalLocation?.artifactLocation?.uri ?? null;
+}
+
 function primaryLocation(res: SarifResult): string | null {
   const phys = res.locations?.[0]?.physicalLocation;
   const uri = phys?.artifactLocation?.uri;
@@ -93,6 +97,7 @@ function buildFinding(res: SarifResult, idx: number): Finding {
     severity: severityFromLevel(res.level),
     endpoint: null,
     location: primaryLocation(res),
+    file: primaryFile(res),
     ruleFile: null,
     message: res.message?.text ?? '',
     steps,

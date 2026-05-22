@@ -148,6 +148,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "TemplateRenderingService.java:30",
+      "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
       "ruleFile": "java/security/code-injection.yaml",
       "message": "Potential template injection: unvalidated user data flows into template engine",
       "steps": [
@@ -224,6 +225,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "MarketingTemplateService.java:36",
+      "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
       "ruleFile": "java/security/code-injection.yaml",
       "message": "Potential template injection: unvalidated user data flows into template engine",
       "steps": [
@@ -300,6 +302,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "MessageController.java:57",
+      "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -552,6 +555,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "MessageController.java:131",
+      "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -716,6 +720,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "MessageController.java:96",
+      "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -808,6 +813,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "UrlFetchService.kt:33",
+      "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
       "ruleFile": "java/security/ssrf.yaml",
       "message": "Potential SSRF: the web server receives a URL or similar request from an upstream component and retrieves the contents of this URL, it does not sufficiently ensure that the request is being sent to the expected destination.",
       "steps": [
@@ -924,6 +930,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "UserProfileController.java:18",
+      "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -952,6 +959,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "UserProfileController.java:111",
+      "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -1204,6 +1212,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "UserProfileController.java:134",
+      "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -1320,6 +1329,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "UserProfileController.java:39",
+      "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -1364,6 +1374,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "UserProfileController.java:157",
+      "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -1552,6 +1563,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "UserProfileController.java:59",
+      "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
@@ -1620,6 +1632,7 @@
       "severity": "error",
       "endpoint": null,
       "location": "UserProfileController.java:89",
+      "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
       "ruleFile": "java/security/xss.yaml",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
       "steps": [
