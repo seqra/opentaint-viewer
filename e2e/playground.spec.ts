@@ -55,3 +55,22 @@ test('the rule link opens the rule file and focuses the specific rule', async ({
   await expect(page.getByTestId('rules-view')).toBeVisible();
   await expect(page.locator('.rule-focus').first()).toBeVisible();
 });
+
+test('`rule:` cross-references render as Cmd/Ctrl+click links in the rules editor', async ({ page }) => {
+  await page.goto('/');
+
+  // Open the default finding's rule file in the rules editor.
+  await page.getByTestId('finding-info').getByRole('button', { name: active.ruleId }).click();
+  await expect(page.getByTestId('rules-view')).toBeVisible();
+
+  // Monaco renders detected links only for visible lines; scroll until a `rule:`
+  // cross-reference link appears (its text is a `<path>.yaml#<rule>` token, which
+  // distinguishes it from the plain http links the editor also detects).
+  const refLink = page.locator('[data-testid="rules-view"] .detected-link').filter({ hasText: /\.yaml#/ });
+  await page.locator('[data-testid="rules-view"] .monaco-scrollable-element').hover();
+  for (let i = 0; i < 30 && (await refLink.count()) === 0; i++) {
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(150);
+  }
+  await expect(refLink.first()).toBeVisible();
+});
