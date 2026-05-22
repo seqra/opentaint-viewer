@@ -21,10 +21,11 @@ describe('FindingInfo', () => {
     if (finding.location) expect(screen.getByText(finding.location)).toBeInTheDocument();
   });
 
-  it('links the rule id and opens the rule when clicked', async () => {
+  it('links the rule id and opens the rule, anchored to it, when clicked', async () => {
     render(<FindingInfo />);
     await userEvent.click(screen.getByRole('button', { name: finding.ruleId }));
     expect(useStore.getState().activeRuleId).toBe(finding.ruleFile);
+    expect(useStore.getState().activeRuleAnchor).toBe(finding.ruleId);
     expect(useStore.getState().activeTab).toBe('rules');
   });
 

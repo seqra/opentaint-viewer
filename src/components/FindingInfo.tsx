@@ -27,7 +27,7 @@ export function FindingInfo() {
       <div className={styles.rule}>
         rule:{' '}
         {finding.ruleFile ? (
-          <button type="button" className={styles.ruleLink} onClick={() => selectRule(finding.ruleFile!)}>
+          <button type="button" className={styles.ruleLink} onClick={() => selectRule(finding.ruleFile!, finding.ruleId)}>
             {finding.ruleId}
           </button>
         ) : (

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 // Derive expectations from the real committed content so the test survives regen.
 interface Step { file: string; label: string }
-interface Finding { id: string; vulnClass: string; location: string; steps: Step[] }
+interface Finding { id: string; ruleId: string; vulnClass: string; location: string; steps: Step[] }
 interface Content { scenarios: { defaultFindingId: string; startFile: string }[]; findings: Finding[] }
 
 const content: Content = JSON.parse(readFileSync('src/content/java-spring-demo.json', 'utf8'));
@@ -43,4 +43,15 @@ test('explore a finding, jump cross-file, split, and share', async ({ page }) =>
   // Reopen the shared URL -> split mode restored.
   await page.goto(url);
   await expect(page.getByTestId('rules-view')).toBeVisible();
+});
+
+test('the rule link opens the rule file and focuses the specific rule', async ({ page }) => {
+  await page.goto('/');
+
+  // Click the rule id in the finding info panel.
+  await page.getByTestId('finding-info').getByRole('button', { name: active.ruleId }).click();
+
+  // The rule file opens and the specific rule line is highlighted (a file holds many rules).
+  await expect(page.getByTestId('rules-view')).toBeVisible();
+  await expect(page.locator('.rule-focus').first()).toBeVisible();
 });

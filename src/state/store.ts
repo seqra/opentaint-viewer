@@ -13,6 +13,8 @@ interface State {
   activeStepIndex: number | null;
   activeFile: string | null;
   activeRuleId: string | null;
+  /** Rule id to scroll to within the active rule file (a file holds many rules). */
+  activeRuleAnchor: string | null;
   viewMode: ViewMode;
   activeTab: EditorTab;
 }
@@ -24,7 +26,7 @@ interface Actions {
   selectStep: (findingId: string, index: number) => void;
   step: (op: StepOp) => void;
   selectFile: (path: string) => void;
-  selectRule: (id: string) => void;
+  selectRule: (id: string, anchor?: string | null) => void;
   setViewMode: (m: ViewMode) => void;
   setActiveTab: (t: EditorTab) => void;
   reset: () => void;
@@ -32,7 +34,7 @@ interface Actions {
 
 const initial: State = {
   content: null, scenarioId: null, activeFindingId: null, activeStepIndex: null,
-  activeFile: null, activeRuleId: null, viewMode: 'tabs', activeTab: 'code',
+  activeFile: null, activeRuleId: null, activeRuleAnchor: null, viewMode: 'tabs', activeTab: 'code',
 };
 
 export const useStore = create<State & Actions>((set, get) => ({
@@ -80,7 +82,7 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   selectFile: (path) => set({ activeFile: path }),
-  selectRule: (id) => set({ activeRuleId: id, activeTab: 'rules' }),
+  selectRule: (id, anchor = null) => set({ activeRuleId: id, activeRuleAnchor: anchor, activeTab: 'rules' }),
   setViewMode: (viewMode) => set({ viewMode }),
   setActiveTab: (activeTab) => set({ activeTab }),
   reset: () => set({ ...initial }),
