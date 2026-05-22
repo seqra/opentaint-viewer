@@ -1,17 +1,76 @@
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
 import { rulesByOrigin } from '../content/loadContent';
-import type { RuleKind, RuleOrigin, RuleSpec } from '../types/content';
+import type { RuleOrigin, RuleSpec } from '../types/content';
 import styles from './RulesTree.module.css';
 
-const KIND_LABELS: Record<RuleKind, string> = {
-  rule: 'Rules',
-  passthrough: 'Passthrough approximations',
-  dataflow: 'Dataflow approximations',
-};
-const KIND_ORDER: RuleKind[] = ['rule', 'passthrough', 'dataflow'];
 const ORIGIN_ORDER: RuleOrigin[] = ['builtin', 'custom'];
 const ORIGIN_LABELS: Record<RuleOrigin, string> = { builtin: '📁 Builtin', custom: '📁 Custom' };
+
+interface TreeNode {
+  dirs: Map<string, TreeNode>;
+  files: RuleSpec[];
+}
+
+function buildTree(rules: RuleSpec[]): TreeNode {
+  const root: TreeNode = { dirs: new Map(), files: [] };
+  for (const rule of rules) {
+    const segs = rule.path.split('/');
+    segs.pop(); // drop the file name; the leaf shows the basename
+    let node = root;
+    for (const seg of segs) {
+      let next = node.dirs.get(seg);
+      if (!next) {
+        next = { dirs: new Map(), files: [] };
+        node.dirs.set(seg, next);
+      }
+      node = next;
+    }
+    node.files.push(rule);
+  }
+  return root;
+}
+
+function TreeNodeView({
+  node,
+  depth,
+  activeRuleId,
+  onSelect,
+}: {
+  node: TreeNode;
+  depth: number;
+  activeRuleId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const indent = (d: number) => ({ paddingLeft: 8 + d * 12 });
+  const dirNames = [...node.dirs.keys()].sort();
+  const files = [...node.files].sort((a, b) => a.path.localeCompare(b.path));
+  return (
+    <>
+      {dirNames.map((name) => (
+        <div key={name}>
+          <div className={styles.dir} style={indent(depth)}>
+            {name}/
+          </div>
+          <TreeNodeView node={node.dirs.get(name)!} depth={depth + 1} activeRuleId={activeRuleId} onSelect={onSelect} />
+        </div>
+      ))}
+      {files.map((rule) => (
+        <div
+          key={rule.id}
+          className={`${styles.leaf} ${activeRuleId === rule.id ? styles.active : ''}`}
+          style={indent(depth)}
+          role="button"
+          tabIndex={0}
+          onClick={() => onSelect(rule.id)}
+          onKeyDown={keyActivate(() => onSelect(rule.id))}
+        >
+          ⚖ {rule.path.split('/').pop()}
+        </div>
+      ))}
+    </>
+  );
+}
 
 export function RulesTree() {
   const content = useStore((s) => s.content);
@@ -22,34 +81,17 @@ export function RulesTree() {
 
   return (
     <div className={styles.tree} data-testid="rules-tree">
-      {ORIGIN_ORDER.map((origin) => (
-        <div key={origin}>
-          <div className={styles.origin}>{ORIGIN_LABELS[origin]}</div>
-          {KIND_ORDER.map((kind) => {
-            const specs = grouped[origin].filter((r: RuleSpec) => r.kind === kind);
-            return (
-              <div key={kind}>
-                <div className={styles.kind}>
-                  {KIND_LABELS[kind]}{' '}
-                  {specs.length === 0 && <span className={styles.empty}>empty</span>}
-                </div>
-                {specs.map((r) => (
-                  <div
-                    key={r.id}
-                    className={`${styles.leaf} ${activeRuleId === r.id ? styles.active : ''}`}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => selectRule(r.id)}
-                    onKeyDown={keyActivate(() => selectRule(r.id))}
-                  >
-                    ⚖ {r.path.split('/').pop()}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      ))}
+      {ORIGIN_ORDER.map((origin) => {
+        const rules = grouped[origin];
+        return (
+          <div key={origin}>
+            <div className={styles.origin}>
+              {ORIGIN_LABELS[origin]} <span className={styles.empty}>{rules.length === 0 ? 'empty' : `(${rules.length})`}</span>
+            </div>
+            <TreeNodeView node={buildTree(rules)} depth={1} activeRuleId={activeRuleId} onSelect={selectRule} />
+          </div>
+        );
+      })}
     </div>
   );
 }

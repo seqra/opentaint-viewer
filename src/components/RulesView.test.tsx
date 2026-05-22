@@ -7,18 +7,25 @@ vi.mock('@monaco-editor/react', () => ({
 
 import { RulesView } from './RulesView';
 import { useStore } from '../state/store';
-import { loadContent } from '../content/loadContent';
+import { loadContent, rulesByOrigin } from '../content/loadContent';
+
+const content = loadContent();
+const rule = rulesByOrigin(content).builtin[0];
 
 describe('RulesView', () => {
   beforeEach(() => {
     useStore.getState().reset();
-    useStore.getState().loadContent(loadContent());
-    useStore.getState().selectRule('sqli');
+    useStore.getState().loadContent(content);
+    useStore.getState().selectRule(rule.id);
   });
 
-  it('renders the active rule YAML and a breadcrumb', () => {
+  it('renders the active rule content', () => {
     render(<RulesView />);
-    expect(screen.getByTestId('monaco').textContent).toContain('mode: taint');
-    expect(screen.getByText(/Builtin/)).toBeInTheDocument();
+    expect(screen.getByTestId('monaco').textContent).toContain(rule.content.slice(0, 16));
+  });
+
+  it('shows the rule path as a breadcrumb', () => {
+    render(<RulesView />);
+    expect(screen.getByText(rule.path.split('/').join(' › '))).toBeInTheDocument();
   });
 });

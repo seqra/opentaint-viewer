@@ -1,7 +1,6 @@
 export type StepKind = 'source' | 'propagation' | 'sanitizer' | 'sink';
 export type Severity = 'error' | 'warning' | 'note';
 export type RuleOrigin = 'builtin' | 'custom';
-export type RuleKind = 'rule' | 'passthrough' | 'dataflow';
 export type Language = 'java' | 'kotlin' | 'yaml' | 'xml' | 'properties' | 'plaintext';
 
 export interface TaintStep {
@@ -34,9 +33,10 @@ export interface ProjectFile {
 }
 
 export interface RuleSpec {
+  /** Stable id; equals `path` so findings can link to a rule file by path. */
   id: string;
   origin: RuleOrigin;
-  kind: RuleKind;
+  /** Real ruleset-relative path, e.g. `java/security/xss.yaml`. Drives the tree. */
   path: string;
   content: string;
 }
