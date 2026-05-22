@@ -63,4 +63,9 @@ describe('FindingsTree', () => {
     fireEvent.click(fileRow);
     expect(screen.queryByText(active.location!)).not.toBeInTheDocument();
   });
+
+  it('shows debugger step controls under the active finding', () => {
+    render(<FindingsTree />);
+    expect(screen.getByTestId('step-nav')).toBeInTheDocument();
+  });
 });

@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useStore } from '../state/store';
 import { fileByPath, findingById } from '../content/loadContent';
-import { decorationsForFile } from '../taint/decorations';
+import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from './fileTabLabel';
+import { StepNav } from './StepNav';
 
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
@@ -18,6 +19,7 @@ export function CodeView() {
   const content = useStore((s) => s.content);
   const activeFile = useStore((s) => s.activeFile);
   const activeFindingId = useStore((s) => s.activeFindingId);
+  const activeStepIndex = useStore((s) => s.activeStepIndex);
   const selectFile = useStore((s) => s.selectFile);
 
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
@@ -39,13 +41,20 @@ export function CodeView() {
     if (!editor || !monaco) return;
     decoRef.current?.clear();
     if (!finding || !activeFile) return;
-    const decos = decorationsForFile(finding.steps, activeFile);
+    const decos = pathDecorations(finding.steps, activeFile, activeStepIndex ?? 0);
     decoRef.current = editor.createDecorationsCollection(
       decos.map((d) => ({
         range: new monaco.Range(d.line, 1, d.line, 1),
-        options: { isWholeLine: true, className: d.className, glyphMarginClassName: d.className, linesDecorationsClassName: d.className },
+        options: {
+          isWholeLine: true,
+          className: d.className,
+          linesDecorationsClassName: d.className,
+          glyphMarginClassName: d.glyphClassName,
+        },
       })),
     ) as DecorationCollection;
+    const current = decos.find((d) => d.isCurrent);
+    if (current) editor.revealLineInCenter?.(current.line);
   };
 
   const onMount: OnMount = (editor, monaco) => {
@@ -57,11 +66,12 @@ export function CodeView() {
   useEffect(() => {
     applyDecorations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFindingId, activeFile]);
+  }, [activeFindingId, activeFile, activeStepIndex]);
 
   if (!file) return null;
   return (
     <div data-testid="code-view" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <StepNav />
       <div role="tablist" style={{ display: 'flex', background: 'var(--bg-2)', fontSize: 11 }}>
         {tabFiles.map((path) => (
           <button
