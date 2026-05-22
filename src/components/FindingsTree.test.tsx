@@ -54,4 +54,13 @@ describe('FindingsTree', () => {
     fireEvent.click(dirRow);
     expect(screen.queryByText(active.vulnClass)).not.toBeInTheDocument();
   });
+
+  it('groups findings under a file node that can be collapsed', () => {
+    const { container } = render(<FindingsTree />);
+    expect(screen.getByText(active.location!)).toBeInTheDocument();
+    const fileRow = container.querySelector(`[data-file="${active.file}"]`) as HTMLElement;
+    expect(fileRow).not.toBeNull();
+    fireEvent.click(fileRow);
+    expect(screen.queryByText(active.location!)).not.toBeInTheDocument();
+  });
 });

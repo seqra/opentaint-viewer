@@ -50,6 +50,17 @@ export function FindingsTree() {
     });
   };
 
+  const filesOf = (items: Finding[]): [string, Finding[]][] => {
+    const map = new Map<string, Finding[]>();
+    for (const f of items) {
+      const key = f.file ?? '';
+      const arr = map.get(key) ?? [];
+      arr.push(f);
+      map.set(key, arr);
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  };
+
   const renderFinding = (f: Finding, depth: number) => {
     const isOpen = open.has(f.id);
     return (
@@ -85,6 +96,27 @@ export function FindingsTree() {
     );
   };
 
+  const renderFile = (filePath: string, items: Finding[], depth: number) => {
+    const base = filePath.split('/').pop() || filePath;
+    const isCollapsed = collapsed.has(filePath);
+    return (
+      <div key={filePath}>
+        <div
+          className={styles.file}
+          data-file={filePath}
+          role="button"
+          tabIndex={0}
+          style={indent(depth)}
+          onClick={() => toggleDir(filePath)}
+          onKeyDown={keyActivate(() => toggleDir(filePath))}
+        >
+          {isCollapsed ? '▸' : '▾'} 📄 {base} <span className={styles.count}>{items.length}</span>
+        </div>
+        {!isCollapsed && items.map((f) => renderFinding(f, depth + 1))}
+      </div>
+    );
+  };
+
   const renderNode = (node: PathTree<Finding>, depth: number) => (
     <>
       {node.dirs.map((d) => (
@@ -103,7 +135,7 @@ export function FindingsTree() {
           {!collapsed.has(d.path) && renderNode(d, depth + 1)}
         </div>
       ))}
-      {node.items.map((f) => renderFinding(f, depth))}
+      {filesOf(node.items).map(([filePath, items]) => renderFile(filePath, items, depth))}
     </>
   );
 
