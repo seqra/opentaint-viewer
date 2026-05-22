@@ -7,13 +7,16 @@ vi.mock('@monaco-editor/react', () => ({
 }));
 
 import App from './App';
+import { loadContent } from './content/loadContent';
+
+const firstVulnClass = loadContent().findings[0].vulnClass;
 
 describe('App', () => {
   it('renders the shell with a finding visible on first paint', () => {
     render(<App />);
     expect(screen.getByTestId('top-bar')).toBeInTheDocument();
     expect(screen.getByTestId('findings-tree')).toBeInTheDocument();
-    expect(screen.getByText('SQL Injection')).toBeInTheDocument();
+    expect(screen.getAllByText(firstVulnClass).length).toBeGreaterThan(0);
     expect(screen.getByTestId('editor-area')).toBeInTheDocument();
   });
 

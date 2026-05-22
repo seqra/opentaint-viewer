@@ -19,32 +19,38 @@ import { CodeView } from './CodeView';
 import { useStore } from '../state/store';
 import { loadContent } from '../content/loadContent';
 
+const content = loadContent();
+const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
+const activeFile = content.scenarios[0].startFile;
+const decoCount = active.steps.filter((s) => s.file === activeFile).length;
+const tabBasenames = [...new Set(active.steps.map((s) => s.file))].map((f) => f.split('/').pop()!);
+const fileHead = content.files.find((f) => f.path === activeFile)!.content.slice(0, 20);
+
 describe('CodeView', () => {
   beforeEach(() => {
     createDecorationsCollection.mockClear();
     useStore.getState().reset();
-    useStore.getState().loadContent(loadContent());
+    useStore.getState().loadContent(content);
   });
 
   it('renders the active file content into the editor', () => {
     render(<CodeView />);
     const editor = screen.getByTestId('monaco');
-    expect(editor.getAttribute('data-path')).toBe('UserController.java');
-    expect(editor.textContent).toContain('@RequestParam');
+    expect(editor.getAttribute('data-path')).toBe(activeFile);
+    expect(editor.textContent).toContain(fileHead);
   });
 
-  it('shows file tabs for files touched by the active finding', () => {
+  it('shows file tabs for every file touched by the active finding', () => {
     render(<CodeView />);
-    expect(screen.getByRole('tab', { name: /UserController.java/ })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /UserRepository.java/ })).toBeInTheDocument();
+    for (const name of tabBasenames) {
+      expect(screen.getByRole('tab', { name: (n) => n.includes(name) })).toBeInTheDocument();
+    }
   });
 
   it('applies taint decorations for the active file on mount', () => {
     render(<CodeView />);
     expect(createDecorationsCollection).toHaveBeenCalled();
-    // UserController.java has 3 steps (lines 4,5,6); the sink (UserRepository.java) is excluded
     const calls = createDecorationsCollection.mock.calls as unknown[][];
-    const decos = calls.at(-1)?.[0];
-    expect(decos).toHaveLength(3);
+    expect(calls.at(-1)?.[0]).toHaveLength(decoCount);
   });
 });

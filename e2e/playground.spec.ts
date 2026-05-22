@@ -1,31 +1,46 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+// Derive expectations from the real committed content so the test survives regen.
+interface Step { file: string; label: string }
+interface Finding { id: string; vulnClass: string; steps: Step[] }
+interface Content { scenarios: { defaultFindingId: string; startFile: string }[]; findings: Finding[] }
+
+const content: Content = JSON.parse(readFileSync('src/content/java-spring-demo.json', 'utf8'));
+const scenario = content.scenarios[0];
+const active = content.findings.find((f) => f.id === scenario.defaultFindingId)!;
+const vulnClass = active.vulnClass;
+const startBase = scenario.startFile.split('/').pop()!;
+const lastStep = active.steps[active.steps.length - 1];
+const sinkBase = lastStep.file.split('/').pop()!;
+const stepText = lastStep.label.slice(0, 30);
 
 test('explore a finding, jump cross-file, split, and share', async ({ page }) => {
   await page.goto('/');
 
-  // Finding visible on first paint
-  // Scoped to findings-tree because "SQL Injection" also appears in the scenario <option>
-  await expect(page.getByTestId('findings-tree').getByText('SQL Injection')).toBeVisible();
-  await expect(page.getByText('GET /users/search')).toBeVisible();
+  // The first scenario's finding is visible on first paint (scoped to the tree;
+  // the vuln class also appears in the scenario <select>).
+  await expect(page.getByTestId('findings-tree').getByText(vulnClass).first()).toBeVisible();
 
-  // Code view shows the start file
-  await expect(page.getByRole('tab', { name: /UserController.java/ })).toBeVisible();
+  // Code view shows the scenario's start file as a tab.
+  await expect(page.getByRole('tab', { name: startBase })).toBeVisible();
 
-  // Click the sink step -> active file switches to UserRepository.java
-  await page.getByText(/stmt.execute/).click();
-  await expect(page.getByRole('tab', { name: /UserRepository.java/ })).toHaveAttribute('aria-selected', 'true');
+  // Click the sink step -> active file switches to the sink's file (cross-file jump).
+  await page.getByTestId('findings-tree').getByText(stepText).first().click();
+  await expect(page.getByRole('tab', { name: sinkBase })).toHaveAttribute('aria-selected', 'true');
 
-  // Toggle split -> both Code and Rules render
-  await page.getByRole('button', { name: /split/i }).click();
+  // Toggle split -> both Code and Rules render. Scoped to the editor area because
+  // rule leaves in the sidebar (e.g. http-response-splitting-sinks.yaml) also match /split/i.
+  await page.getByTestId('editor-area').getByRole('button', { name: /split/i }).click();
   await expect(page.getByTestId('code-view')).toBeVisible();
   await expect(page.getByTestId('rules-view')).toBeVisible();
 
-  // Share -> URL has a hash
-  await page.getByRole('button', { name: /share/i }).click();
+  // Share -> URL has a hash.
+  await page.getByTestId('top-bar').getByRole('button', { name: /share/i }).click();
   const url = await page.getByTestId('share-url').inputValue();
   expect(url).toContain('#');
 
-  // Reopen the shared URL -> split mode restored
+  // Reopen the shared URL -> split mode restored.
   await page.goto(url);
   await expect(page.getByTestId('rules-view')).toBeVisible();
 });

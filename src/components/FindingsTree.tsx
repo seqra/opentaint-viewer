@@ -25,7 +25,11 @@ export function FindingsTree() {
             >
               {isActive ? '▾' : '▸'} 🔴 <span>{f.vulnClass}</span>
             </div>
-            {f.endpoint && <div className={styles.endpoint}><span>{f.endpoint}</span></div>}
+            {(f.endpoint ?? f.location) && (
+              <div className={styles.endpoint}>
+                <span>{f.endpoint ?? f.location}</span>
+              </div>
+            )}
             {isActive &&
               f.steps.map((s) => (
                 <div

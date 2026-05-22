@@ -7,15 +7,19 @@ describe('content selectors', () => {
   it('loads the committed content', () => {
     expect(c.projectId).toBe('java-spring-demo');
     expect(c.findings.length).toBeGreaterThan(0);
+    expect(c.files.length).toBeGreaterThan(0);
   });
 
   it('findingById returns the matching finding or undefined', () => {
-    expect(findingById(c, 'sqli-0')?.vulnClass).toBe('SQL Injection');
-    expect(findingById(c, 'nope')).toBeUndefined();
+    const f0 = c.findings[0];
+    expect(findingById(c, f0.id)?.vulnClass).toBe(f0.vulnClass);
+    expect(findingById(c, 'nope-does-not-exist')).toBeUndefined();
   });
 
   it('fileByPath returns the matching file', () => {
-    expect(fileByPath(c, 'UserController.java')?.language).toBe('java');
+    const file0 = c.files[0];
+    expect(fileByPath(c, file0.path)?.language).toBe(file0.language);
+    expect(fileByPath(c, 'no/such/file')).toBeUndefined();
   });
 
   it('rulesByOrigin groups builtin vs custom', () => {

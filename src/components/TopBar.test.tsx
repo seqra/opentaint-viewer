@@ -5,6 +5,8 @@ import { TopBar } from './TopBar';
 import { useStore } from '../state/store';
 import { loadContent } from '../content/loadContent';
 
+const firstScenarioId = loadContent().scenarios[0].id;
+
 describe('TopBar', () => {
   beforeEach(() => {
     useStore.getState().reset();
@@ -19,7 +21,7 @@ describe('TopBar', () => {
 
   it('selecting a scenario updates the store', async () => {
     render(<TopBar onShare={() => {}} />);
-    expect(screen.getByRole('combobox')).toHaveValue('sqli');
+    expect(screen.getByRole('combobox')).toHaveValue(firstScenarioId);
   });
 
   it('clicking Share invokes the onShare handler', async () => {

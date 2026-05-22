@@ -5,6 +5,8 @@ import { useStore } from '../state/store';
 import { loadContent } from '../content/loadContent';
 import { decodeViewState } from '../state/permalink';
 
+const firstScenarioId = loadContent().scenarios[0].id;
+
 describe('ShareDialog', () => {
   beforeEach(() => {
     useStore.getState().reset();
@@ -17,7 +19,7 @@ describe('ShareDialog', () => {
     const input = screen.getByTestId('share-url') as HTMLInputElement;
     const hash = input.value.split('#')[1];
     const decoded = decodeViewState(hash);
-    expect(decoded?.scenarioId).toBe('sqli');
+    expect(decoded?.scenarioId).toBe(firstScenarioId);
     expect(decoded?.viewMode).toBe('split');
   });
 });
