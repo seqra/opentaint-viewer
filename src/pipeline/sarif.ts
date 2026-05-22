@@ -39,7 +39,7 @@ function kindForPosition(i: number, total: number): TaintStep['kind'] {
 
 interface SarifPhysical {
   artifactLocation?: { uri?: string };
-  region?: { startLine?: number };
+  region?: { startLine?: number; startColumn?: number; endLine?: number; endColumn?: number };
 }
 interface SarifTfl {
   location?: { physicalLocation?: SarifPhysical; message?: { text?: string } };
@@ -81,11 +81,15 @@ function buildFinding(res: SarifResult, idx: number): Finding {
     const explicit = tfl.kinds?.find(
       (k): k is TaintStep['kind'] => k === 'source' || k === 'sink' || k === 'sanitizer',
     );
+    const region = tfl.location?.physicalLocation?.region;
     return {
       index: i,
       kind: explicit ?? kindForPosition(i, locs.length),
       file,
-      line: tfl.location?.physicalLocation?.region?.startLine ?? 1,
+      line: region?.startLine ?? 1,
+      startColumn: region?.startColumn,
+      endLine: region?.endLine,
+      endColumn: region?.endColumn,
       label: tfl.location?.message?.text ?? '',
       crossesFile: i > 0 && file !== prevFile,
     };

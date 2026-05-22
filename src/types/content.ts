@@ -7,7 +7,12 @@ export interface TaintStep {
   index: number;
   kind: StepKind;
   file: string;
+  /** 1-based start line. */
   line: number;
+  /** Optional precise span (1-based) for column-accurate highlighting. */
+  startColumn?: number;
+  endLine?: number;
+  endColumn?: number;
   label: string;
   crossesFile: boolean;
 }

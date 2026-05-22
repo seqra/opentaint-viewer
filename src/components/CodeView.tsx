@@ -49,17 +49,14 @@ export function CodeView() {
     const decos = pathDecorations(finding.steps, activeFile, cur);
     decoRef.current = editor.createDecorationsCollection(
       decos.map((d) => ({
-        range: new monaco.Range(d.line, 1, d.line, 1),
-        options: {
-          isWholeLine: true,
-          className: d.className,
-          linesDecorationsClassName: d.className,
-          glyphMarginClassName: d.glyphClassName,
-        },
+        range: new monaco.Range(d.startLine, d.startColumn, d.endLine, d.endColumn),
+        options: d.wholeLine
+          ? { isWholeLine: true, className: d.className, glyphMarginClassName: d.glyphClassName }
+          : { inlineClassName: d.className, glyphMarginClassName: d.glyphClassName },
       })),
     ) as DecorationCollection;
     const current = decos.find((d) => d.isCurrent);
-    if (current) editor.revealLineInCenter?.(current.line);
+    if (current) editor.revealLineInCenter?.(current.startLine);
   };
 
   const onMount: OnMount = (editor, monaco) => {

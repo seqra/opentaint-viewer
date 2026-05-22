@@ -35,6 +35,11 @@ describe('transformSarif', () => {
     });
   });
 
+  it('captures the precise column span for each step', () => {
+    expect(findings[0].steps[0]).toMatchObject({ startColumn: 9, endLine: 54, endColumn: 41 });
+    expect(findings[0].steps[1]).toMatchObject({ startColumn: 5, endLine: 12, endColumn: 30 });
+  });
+
   it('marks the hop that changes file as crossesFile', () => {
     const steps = findings[0].steps;
     expect(steps[1]).toMatchObject({ file: 'src/main/java/org/seqra/complexity/HtmlPageBuilder.java', crossesFile: true });

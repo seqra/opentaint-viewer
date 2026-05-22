@@ -27,9 +27,9 @@
               "threadFlows": [
                 {
                   "locations": [
-                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/UserProfileController.java" }, "region": { "startLine": 54 } }, "message": { "text": "Method entry marks \"name\" as $UNTRUSTED" } }, "kinds": ["taint"] },
-                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java" }, "region": { "startLine": 12 } }, "message": { "text": "tainted value passed to builder" } }, "kinds": ["taint"] },
-                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/UserProfileController.java" }, "region": { "startLine": 58 } }, "message": { "text": "written to HTML response" } }, "kinds": ["taint"] }
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/UserProfileController.java" }, "region": { "startLine": 54, "startColumn": 9, "endLine": 54, "endColumn": 41 } }, "message": { "text": "Method entry marks \"name\" as $UNTRUSTED" } }, "kinds": ["taint"] },
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java" }, "region": { "startLine": 12, "startColumn": 5, "endLine": 12, "endColumn": 30 } }, "message": { "text": "tainted value passed to builder" } }, "kinds": ["taint"] },
+                    { "location": { "physicalLocation": { "artifactLocation": { "uri": "src/main/java/org/seqra/complexity/UserProfileController.java" }, "region": { "startLine": 58, "startColumn": 7, "endLine": 58, "endColumn": 45 } }, "message": { "text": "written to HTML response" } }, "kinds": ["taint"] }
                   ]
                 }
               ]
