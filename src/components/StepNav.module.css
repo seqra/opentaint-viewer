@@ -1,5 +1,0 @@
-.nav { display: flex; align-items: center; gap: 4px; padding: 4px 6px; font-family: var(--mono); font-size: 11px; }
-.btn { background: var(--bg-2); color: var(--fg); border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; cursor: pointer; }
-.btn:hover:not(:disabled) { border-color: var(--accent); }
-.btn:disabled { opacity: 0.4; cursor: default; }
-.count { color: var(--fg-dim); margin-left: auto; }

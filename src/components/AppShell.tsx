@@ -6,10 +6,12 @@ import { RulesTree } from './RulesTree';
 import { EditorArea } from './EditorArea';
 import { CompareToGrep } from './CompareToGrep';
 import { ShareDialog } from './ShareDialog';
+import { useStepKeys } from './useStepKeys';
 import styles from './AppShell.module.css';
 
 export function AppShell() {
   const [sharing, setSharing] = useState(false);
+  useStepKeys();
   return (
     <div className={styles.shell}>
       <TopBar onShare={() => setSharing(true)} />

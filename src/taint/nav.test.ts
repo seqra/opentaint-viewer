@@ -39,4 +39,9 @@ describe('navigate', () => {
     expect(navigate(steps, 6, 'out')).toBe(7); // nothing shallower after -> last
     expect(navigate(steps, 0, 'out')).toBe(7); // top frame -> end
   });
+
+  it('start/end jump to the first/last step', () => {
+    expect(navigate(steps, 4, 'start')).toBe(0);
+    expect(navigate(steps, 4, 'end')).toBe(7);
+  });
 });
