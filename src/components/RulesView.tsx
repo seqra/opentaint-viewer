@@ -1,9 +1,11 @@
 import Editor from '@monaco-editor/react';
 import { useStore } from '../state/store';
+import { useTheme } from '../state/theme';
 
 export function RulesView() {
   const content = useStore((s) => s.content);
   const activeRuleId = useStore((s) => s.activeRuleId);
+  const monacoTheme = useTheme((s) => (s.theme === 'light' ? 'vs' : 'vs-dark'));
   const rule = content?.rules.find((r) => r.id === activeRuleId);
   if (!rule) return null;
 
@@ -17,7 +19,7 @@ export function RulesView() {
           path={rule.path}
           language="yaml"
           value={rule.content}
-          theme="vs-dark"
+          theme={monacoTheme}
           options={{ readOnly: true, minimap: { enabled: false }, fontSize: 13, automaticLayout: true }}
         />
       </div>

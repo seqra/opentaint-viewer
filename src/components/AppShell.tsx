@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { TopBar } from './TopBar';
 import { FindingsTree } from './FindingsTree';
@@ -7,11 +7,16 @@ import { EditorArea } from './EditorArea';
 import { CompareToGrep } from './CompareToGrep';
 import { ShareDialog } from './ShareDialog';
 import { useStepKeys } from './useStepKeys';
+import { useTheme } from '../state/theme';
 import styles from './AppShell.module.css';
 
 export function AppShell() {
   const [sharing, setSharing] = useState(false);
+  const theme = useTheme((s) => s.theme);
   useStepKeys();
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
   return (
     <div className={styles.shell}>
       <TopBar onShare={() => setSharing(true)} />

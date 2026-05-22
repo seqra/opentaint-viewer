@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useStore } from '../state/store';
+import { useTheme } from '../state/theme';
 import { fileByPath, findingById } from '../content/loadContent';
 import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from './fileTabLabel';
@@ -20,6 +21,7 @@ export function CodeView() {
   const activeStepIndex = useStore((s) => s.activeStepIndex);
   const selectFile = useStore((s) => s.selectFile);
   const step = useStore((s) => s.step);
+  const monacoTheme = useTheme((s) => (s.theme === 'light' ? 'vs' : 'vs-dark'));
 
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
   const file = content && activeFile ? fileByPath(content, activeFile) : undefined;
@@ -107,7 +109,7 @@ export function CodeView() {
           path={file.path}
           language={MONACO_LANG[file.language] ?? 'plaintext'}
           value={file.content}
-          theme="vs-dark"
+          theme={monacoTheme}
           options={{ readOnly: true, minimap: { enabled: false }, glyphMargin: true, fontSize: 13, automaticLayout: true }}
           onMount={onMount}
         />

@@ -13,6 +13,16 @@
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --sans: ui-sans-serif, system-ui, sans-serif;
 }
+:root[data-theme='light'] {
+  --bg: #ffffff;
+  --bg-2: #f1f2f6;
+  --bg-3: #e3e5ee;
+  --fg: #1b1d29;
+  --fg-dim: #5b6275;
+  --border: #d3d6e0;
+  --accent: #2563eb;
+  --success: #15803d;
+}
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 body { background: var(--bg); color: var(--fg); font-family: var(--sans); }
