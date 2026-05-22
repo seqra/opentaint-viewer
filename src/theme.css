@@ -16,7 +16,7 @@
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 body { background: var(--bg); color: var(--fg); font-family: var(--sans); }
-.taint-source { background: rgba(34, 197, 94, 0.22); border-left: 3px solid var(--src); }
-.taint-propagation { background: rgba(245, 158, 11, 0.18); border-left: 3px solid var(--mid); }
-.taint-sanitizer { background: rgba(96, 165, 250, 0.18); border-left: 3px solid var(--accent); }
-.taint-sink { background: rgba(239, 68, 68, 0.22); border-left: 3px solid var(--snk); }
+/* Taint path: the whole path is faint; only the current step is strong. */
+.taint-faint { background: rgba(154, 160, 180, 0.10); border-left: 3px solid var(--border); }
+.taint-current { background: rgba(59, 130, 246, 0.30); border-left: 3px solid var(--accent); }
+.taint-arrow::before { content: '▶'; color: var(--accent); padding-left: 2px; font-size: 10px; }

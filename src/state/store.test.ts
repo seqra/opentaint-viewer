@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useStore } from './store';
 import { loadContent } from '../content/loadContent';
+import { navigate } from '../taint/nav';
 
 const content = loadContent();
 const scenario = content.scenarios[0];
@@ -47,5 +48,19 @@ describe('playground store', () => {
     const s = useStore.getState();
     expect(s.activeRuleId).toBe(rule.id);
     expect(s.activeTab).toBe('rules');
+  });
+
+  it('step(op) navigates the active finding and follows the step file', () => {
+    useStore.getState().loadContent(content);
+    useStore.getState().selectStep(multiStep.id, 0);
+
+    useStore.getState().step('in');
+    expect(useStore.getState().activeStepIndex).toBe(navigate(multiStep.steps, 0, 'in'));
+
+    const overFrom = useStore.getState().activeStepIndex!;
+    useStore.getState().step('over');
+    const expected = navigate(multiStep.steps, overFrom, 'over');
+    expect(useStore.getState().activeStepIndex).toBe(expected);
+    expect(useStore.getState().activeFile).toBe(multiStep.steps[expected].file);
   });
 });

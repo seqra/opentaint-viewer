@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { PlaygroundContent } from '../types/content';
 import { findingById } from '../content/loadContent';
+import { navigate, type StepOp } from '../taint/nav';
 
 export type ViewMode = 'tabs' | 'split';
 export type EditorTab = 'code' | 'rules';
@@ -21,6 +22,7 @@ interface Actions {
   selectScenario: (id: string) => void;
   selectFinding: (id: string) => void;
   selectStep: (findingId: string, index: number) => void;
+  step: (op: StepOp) => void;
   selectFile: (path: string) => void;
   selectRule: (id: string) => void;
   setViewMode: (m: ViewMode) => void;
@@ -66,6 +68,15 @@ export const useStore = create<State & Actions>((set, get) => ({
     const f = c ? findingById(c, findingId) : undefined;
     const step = f?.steps[index];
     set({ activeFindingId: findingId, activeStepIndex: index, activeFile: step?.file ?? get().activeFile, activeTab: 'code' });
+  },
+
+  step: (op) => {
+    const c = get().content;
+    const id = get().activeFindingId;
+    const f = c && id ? findingById(c, id) : undefined;
+    if (!f) return;
+    const next = navigate(f.steps, get().activeStepIndex ?? 0, op);
+    get().selectStep(f.id, next);
   },
 
   selectFile: (path) => set({ activeFile: path }),

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { decorationsForFile, classForKind } from './decorations';
+import { pathDecorations } from './decorations';
 import type { TaintStep } from '../types/content';
 
 const steps: TaintStep[] = [
@@ -8,17 +8,17 @@ const steps: TaintStep[] = [
   { index: 2, kind: 'sink', file: 'B.java', line: 4, label: 'sink', crossesFile: true },
 ];
 
-describe('decorationsForFile', () => {
-  it('returns only steps on the given file, with line + class + marker', () => {
-    const decos = decorationsForFile(steps, 'A.java');
-    expect(decos).toEqual([
-      { line: 4, className: 'taint-source', marker: 1 },
-      { line: 5, className: 'taint-propagation', marker: 2 },
+describe('pathDecorations', () => {
+  it('marks the current step strong and other same-file steps faint', () => {
+    expect(pathDecorations(steps, 'A.java', 1)).toEqual([
+      { line: 4, className: 'taint-faint', glyphClassName: undefined, marker: 1, isCurrent: false },
+      { line: 5, className: 'taint-current', glyphClassName: 'taint-arrow', marker: 2, isCurrent: true },
     ]);
   });
 
-  it('classForKind maps kinds to css class names', () => {
-    expect(classForKind('source')).toBe('taint-source');
-    expect(classForKind('sink')).toBe('taint-sink');
+  it('returns only steps on the given file and flags the current one', () => {
+    const decos = pathDecorations(steps, 'B.java', 2);
+    expect(decos.map((d) => d.line)).toEqual([4]);
+    expect(decos[0].isCurrent).toBe(true);
   });
 });
