@@ -26,10 +26,11 @@ describe('App', () => {
     expect(screen.getByTestId('share-url')).toBeInTheDocument();
   });
 
-  it('shows both the findings and rules trees with a resize handle between them', () => {
+  it('has resize handles for the sidebar split and the sidebar/editor boundary', () => {
     render(<App />);
     expect(screen.getByTestId('findings-tree')).toBeInTheDocument();
     expect(screen.getByTestId('rules-tree')).toBeInTheDocument();
-    expect(screen.getAllByRole('separator').length).toBeGreaterThan(0);
+    // findings/rules handle + sidebar/editor handle
+    expect(screen.getAllByRole('separator').length).toBeGreaterThanOrEqual(2);
   });
 });
