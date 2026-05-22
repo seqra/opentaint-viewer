@@ -44,4 +44,9 @@ describe('navigate', () => {
     expect(navigate(steps, 6, 'out')).toBe(5); // exit TRS frame -> its call site
     expect(navigate(steps, 0, 'out')).toBe(0); // already at top -> stay
   });
+
+  it('start/end jump to the first/last step', () => {
+    expect(navigate(steps, 4, 'start')).toBe(0);
+    expect(navigate(steps, 4, 'end')).toBe(7);
+  });
 });

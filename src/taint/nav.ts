@@ -1,6 +1,6 @@
 import type { TaintStep } from '../types/content';
 
-export type StepOp = 'back' | 'next' | 'backOver' | 'nextOver' | 'out';
+export type StepOp = 'back' | 'next' | 'backOver' | 'nextOver' | 'out' | 'start' | 'end';
 
 /**
  * Call depth per step, inferred from file transitions: entering a not-yet-open
@@ -30,6 +30,8 @@ export function navigate(steps: TaintStep[], current: number, op: StepOp): numbe
   if (n === 0) return current;
   const cur = Math.max(0, Math.min(n - 1, current));
 
+  if (op === 'start') return 0;
+  if (op === 'end') return n - 1;
   if (op === 'back') return Math.max(0, cur - 1);
   if (op === 'next') return Math.min(n - 1, cur + 1);
 

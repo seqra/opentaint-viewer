@@ -10,6 +10,10 @@ function opForKey(e: KeyboardEvent): StepOp | null {
       return e.shiftKey ? 'nextOver' : 'next';
     case 'ArrowUp':
       return 'out';
+    case 'Home':
+      return 'start';
+    case 'End':
+      return 'end';
     default:
       return null;
   }
@@ -17,7 +21,7 @@ function opForKey(e: KeyboardEvent): StepOp | null {
 
 /**
  * Global keyboard control of taint-path stepping:
- *   ←/→ back/next · Shift+←/→ back-over/next-over · ↑ out (back to caller).
+ *   ←/→ back/next · Shift+←/→ back-over/next-over · ↑ out (back to caller) · Home/End start/end.
  * Ignored while a form control (rule filter, etc.) is focused.
  */
 export function useStepKeys(): void {

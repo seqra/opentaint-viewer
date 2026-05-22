@@ -91,11 +91,13 @@ export function CodeView() {
         <span style={{ flex: 1 }} />
         {finding && (
           <div data-testid="step-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px' }}>
+            <button type="button" title="First step (Home)" disabled={atStart} onClick={() => step('start')} style={navBtn}>⏮</button>
             <button type="button" title="Back over a call (Shift+←)" disabled={atStart} onClick={() => step('backOver')} style={navBtn}>⏪</button>
             <button type="button" title="Back (←)" disabled={atStart} onClick={() => step('back')} style={navBtn}>◀</button>
             <button type="button" title="Out, back to the caller (↑)" disabled={atStart} onClick={() => step('out')} style={navBtn}>⤴</button>
             <button type="button" title="Next (→)" disabled={atEnd} onClick={() => step('next')} style={navBtn}>▶</button>
             <button type="button" title="Next over a call (Shift+→)" disabled={atEnd} onClick={() => step('nextOver')} style={navBtn}>⏩</button>
+            <button type="button" title="Last step (End)" disabled={atEnd} onClick={() => step('end')} style={navBtn}>⏭</button>
             <span style={{ color: 'var(--fg-dim)', marginLeft: 4 }}>{cur + 1}/{stepCount}</span>
           </div>
         )}

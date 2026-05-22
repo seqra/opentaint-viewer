@@ -37,6 +37,14 @@ describe('useStepKeys', () => {
     expect(useStore.getState().activeStepIndex).toBe(navigate(active.steps, 2, 'out'));
   });
 
+  it('jumps to end/start on End/Home', () => {
+    render(<Harness />);
+    fireEvent.keyDown(document.body, { key: 'End' });
+    expect(useStore.getState().activeStepIndex).toBe(active.steps.length - 1);
+    fireEvent.keyDown(document.body, { key: 'Home' });
+    expect(useStore.getState().activeStepIndex).toBe(0);
+  });
+
   it('ignores keys while a select is focused', () => {
     const { getByTestId } = render(<Harness />);
     fireEvent.keyDown(getByTestId('sel'), { key: 'ArrowRight' });
