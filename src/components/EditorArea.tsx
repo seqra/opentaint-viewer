@@ -1,4 +1,5 @@
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { Code, Scale, Square, Columns2 } from 'lucide-react';
 import { useStore } from '../state/store';
 import { CodeView } from './CodeView';
 import { RulesView } from './RulesView';
@@ -7,8 +8,8 @@ import type { EditorTab } from '../state/store';
 import styles from './EditorArea.module.css';
 
 const TABS: ReadonlyArray<TabItem> = [
-  { id: 'code', label: '⟨⟩ Code' },
-  { id: 'rules', label: '⚖ Rules' },
+  { id: 'code', label: 'Code', icon: <Code size={14} /> },
+  { id: 'rules', label: 'Rules', icon: <Scale size={14} /> },
 ];
 
 export function EditorArea() {
@@ -24,9 +25,23 @@ export function EditorArea() {
         {!split && (
           <Tabs items={TABS} active={activeTab} onSelect={(id) => setActiveTab(id as EditorTab)} ariaLabel="Editor view" />
         )}
-        <span className={styles.toggle}>
-          <button className={`${styles.toggleBtn} ${!split ? styles.active : ''}`} onClick={() => setViewMode('tabs')}>⊟ tabs</button>
-          <button className={`${styles.toggleBtn} ${split ? styles.active : ''}`} onClick={() => setViewMode('split')}>⊞ split</button>
+        <span className={styles.toggle} role="group" aria-label="Editor layout">
+          <button
+            type="button"
+            className={`${styles.segBtn} ${!split ? styles.segActive : ''}`}
+            aria-pressed={!split}
+            onClick={() => setViewMode('tabs')}
+          >
+            <Square size={13} /> Tabs
+          </button>
+          <button
+            type="button"
+            className={`${styles.segBtn} ${split ? styles.segActive : ''}`}
+            aria-pressed={split}
+            onClick={() => setViewMode('split')}
+          >
+            <Columns2 size={13} /> Split
+          </button>
         </span>
       </div>
       <div className={styles.panes}>
