@@ -30,11 +30,6 @@
   --sel: hsl(var(--brand-hsl) / 0.16);
   --sel-weak: hsl(var(--brand-hsl) / 0.10);
 
-  /* legacy taint role colors — still referenced by SeverityBadge until a later task */
-  --src: #22c55e;
-  --mid: #f59e0b;
-  --snk: #ef4444;
-
   --radius: 0.5rem;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --sans: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
