@@ -1,14 +1,13 @@
 import { useStore } from '../state/store';
 import { findingById } from '../content/loadContent';
 import { keyActivate } from './keyActivate';
-import type { StepKind } from '../types/content';
+import type { Severity } from '../types/content';
 import styles from './StepsList.module.css';
 
-const KIND_CLASS: Record<StepKind, string> = {
-  source: styles.source,
-  propagation: styles.prop,
-  sanitizer: styles.sanitizer,
-  sink: styles.sink,
+const SEV_CLASS: Record<Severity, string> = {
+  error: styles.error,
+  warning: styles.warning,
+  note: styles.note,
 };
 const base = (path: string): string => path.split('/').pop() || path;
 
@@ -37,7 +36,11 @@ export function StepsList() {
           >
             <div className={styles.row}>
               <span className={styles.marker}>{s.index + 1}</span>
-              <span className={`${styles.kind} ${KIND_CLASS[s.kind]}`}>{s.kind}</span>
+              {s.kind === 'sink' && (
+                <span className={`${styles.sev} ${SEV_CLASS[finding.severity]}`}>
+                  {finding.severity.toUpperCase()}
+                </span>
+              )}
               <span className={styles.loc}>
                 {base(s.file)}:{s.line}
                 {s.crossesFile ? ' ↗' : ''}
