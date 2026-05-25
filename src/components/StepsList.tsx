@@ -1,15 +1,9 @@
 import { useStore } from '../state/store';
 import { findingById } from '../content/loadContent';
 import { keyActivate } from './keyActivate';
-import type { Severity } from '../types/content';
+import { SeverityBadge } from './SeverityBadge';
 import { basename } from '../util/path';
 import styles from './StepsList.module.css';
-
-const SEV_CLASS: Record<Severity, string> = {
-  error: styles.error,
-  warning: styles.warning,
-  note: styles.note,
-};
 
 /** The active finding's taint path as a clickable, debugger-style step list. */
 export function StepsList() {
@@ -36,11 +30,7 @@ export function StepsList() {
           >
             <div className={styles.row}>
               <span className={styles.marker}>{s.index + 1}</span>
-              {s.kind === 'sink' && (
-                <span className={`${styles.sev} ${SEV_CLASS[finding.severity]}`}>
-                  {finding.severity.toUpperCase()}
-                </span>
-              )}
+              {s.kind === 'sink' && <SeverityBadge severity={finding.severity} />}
               <span className={styles.loc}>
                 {basename(s.file)}:{s.line}
                 {s.crossesFile ? ' ↗' : ''}

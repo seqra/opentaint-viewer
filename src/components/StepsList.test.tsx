@@ -34,9 +34,9 @@ describe('StepsList', () => {
     expect(stepEl(lastStep.label).closest('[role="button"]')).toHaveAttribute('tabindex', '0');
   });
 
-  it('shows the finding severity on the sink step instead of kind words', () => {
+  it('shows a severity badge on the sink step instead of kind words', () => {
     render(<StepsList />);
-    expect(screen.getByText(active.severity.toUpperCase())).toBeInTheDocument();
+    expect(screen.getByTestId('severity-badge')).toBeInTheDocument();
     expect(screen.queryByText(/^(source|propagation|sanitizer|sink)$/i)).toBeNull();
   });
 });

@@ -1,9 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import { useStore } from '../state/store';
 import { findingById } from '../content/loadContent';
+import { SeverityBadge } from './SeverityBadge';
 import styles from './FindingInfo.module.css';
-
-const SEVERITY_LABEL: Record<string, string> = { error: 'Error', warning: 'Warning', note: 'Note' };
 
 /** Details for the active finding, sourced from the report, with a link to its rule. */
 export function FindingInfo() {
@@ -17,7 +16,7 @@ export function FindingInfo() {
     <div className={styles.info} data-testid="finding-info">
       <div className={styles.head}>
         <span className={styles.vuln}>{finding.vulnClass}</span>
-        <span className={`${styles.sev} ${styles[finding.severity]}`}>{SEVERITY_LABEL[finding.severity] ?? finding.severity}</span>
+        <SeverityBadge severity={finding.severity} />
         {(finding.cwe ?? []).map((c) => (
           <span key={c} className={styles.tag}>{c}</span>
         ))}
