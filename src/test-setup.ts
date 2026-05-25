@@ -12,3 +12,7 @@ class ResizeObserverStub {
   disconnect() {}
 }
 globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObserver;
+
+// jsdom does not implement scrollIntoView; stub it so components that reveal the
+// active element (e.g. StepsList) can run under tests.
+Element.prototype.scrollIntoView ??= function scrollIntoView() {};

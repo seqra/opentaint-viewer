@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useStore } from '../state/store';
 import { findingById } from '../content/loadContent';
 import { keyActivate } from './keyActivate';
@@ -11,7 +12,14 @@ export function StepsList() {
   const activeFindingId = useStore((s) => s.activeFindingId);
   const activeStepIndex = useStore((s) => s.activeStepIndex);
   const selectStep = useStore((s) => s.selectStep);
+  const activeRef = useRef<HTMLLIElement>(null);
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
+
+  // Keep the current step visible as it changes (e.g. via next/prev or a finding click).
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [activeFindingId, activeStepIndex]);
+
   if (!finding) return null;
 
   return (
@@ -21,6 +29,7 @@ export function StepsList() {
         return (
           <li
             key={s.index}
+            ref={isActive ? activeRef : undefined}
             className={`${styles.step} ${isActive ? styles.active : ''}`}
             role="button"
             tabIndex={0}

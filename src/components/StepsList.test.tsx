@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StepsList } from './StepsList';
 import { useStore } from '../state/store';
@@ -32,6 +32,15 @@ describe('StepsList', () => {
   it('exposes each step message inside a focusable button row', () => {
     render(<StepsList />);
     expect(stepEl(lastStep.label).closest('[role="button"]')).toHaveAttribute('tabindex', '0');
+  });
+
+  it('scrolls the active step into view when the active step changes', () => {
+    const spy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView');
+    render(<StepsList />);
+    spy.mockClear();
+    act(() => useStore.getState().selectStep(active.id, active.steps.length - 1));
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
   });
 
   it('shows a severity badge on the sink step instead of kind words', () => {
