@@ -6,6 +6,7 @@ import { useTheme } from '../state/theme';
 import { findRuleLine } from '../rules/ruleLine';
 import { ruleRefs, ruleRefTarget, RULE_REF_SCHEME } from '../rules/ruleRefs';
 import { breadcrumb } from '../util/path';
+import { otDark, otLight, monacoThemeName } from './monacoThemes';
 
 type EditorInstance = Parameters<OnMount>[0];
 type Monaco = Parameters<OnMount>[1];
@@ -46,7 +47,7 @@ export function RulesView() {
   const activeRuleId = useStore((s) => s.activeRuleId);
   const activeRuleAnchor = useStore((s) => s.activeRuleAnchor);
   const ruleFocusTick = useStore((s) => s.ruleFocusTick);
-  const monacoTheme = useTheme((s) => (s.theme === 'light' ? 'vs' : 'vs-dark'));
+  const monacoTheme = useTheme((s) => monacoThemeName(s.theme));
   const rule = content?.rules.find((r) => r.id === activeRuleId);
 
   const editorRef = useRef<EditorInstance | null>(null);
@@ -93,8 +94,19 @@ export function RulesView() {
           language="yaml"
           value={rule.content}
           theme={monacoTheme}
+          beforeMount={(monaco) => {
+            monaco.editor.defineTheme('ot-dark', otDark);
+            monaco.editor.defineTheme('ot-light', otLight);
+          }}
           onMount={onMount}
-          options={{ readOnly: true, minimap: { enabled: false }, fontSize: 13, automaticLayout: true }}
+          options={{
+            readOnly: true,
+            minimap: { enabled: false },
+            fontSize: 13,
+            // matches --mono in theme.css (Monaco can't read CSS vars)
+            fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+            automaticLayout: true,
+          }}
         />
       </div>
     </div>
