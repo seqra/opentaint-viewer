@@ -29,4 +29,15 @@ describe('pathDecorations', () => {
     expect(decos.map((d) => d.startLine)).toEqual([4]);
     expect(decos[0]).toMatchObject({ startColumn: 3, endColumn: 9, wholeLine: false, isCurrent: true });
   });
+
+  it('always highlights the last step (sink) with the red sink class', () => {
+    // The sink is the current step -> red, still flagged current (keeps the gutter arrow).
+    expect(pathDecorations(steps, 'B.java', 2)[0]).toMatchObject({
+      className: 'taint-sink',
+      glyphClassName: 'taint-arrow',
+      isCurrent: true,
+    });
+    // The current step is elsewhere -> the sink stays red, just not current.
+    expect(pathDecorations(steps, 'B.java', 0)[0]).toMatchObject({ className: 'taint-sink', isCurrent: false });
+  });
 });

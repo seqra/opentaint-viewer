@@ -35,5 +35,6 @@ body { background: var(--bg); color: var(--fg); font-family: var(--sans); }
 /* Taint path: spans are highlighted; the whole path is faint, the current step strong. */
 .taint-faint { background: rgba(154, 160, 180, 0.18); border-radius: 2px; }
 .taint-current { background: rgba(59, 130, 246, 0.40); border-radius: 2px; }
+.taint-sink { background: rgba(239, 68, 68, 0.40); border-radius: 2px; }
 .taint-arrow::before { content: '▶'; color: var(--accent); padding-left: 2px; font-size: 10px; }
 .rule-focus { background: var(--sel-weak); border-left: 2px solid var(--accent); }
