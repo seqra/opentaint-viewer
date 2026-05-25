@@ -2,7 +2,14 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { useStore } from '../state/store';
 import { CodeView } from './CodeView';
 import { RulesView } from './RulesView';
+import { Tabs, type TabItem } from './Tabs';
+import type { EditorTab } from '../state/store';
 import styles from './EditorArea.module.css';
+
+const TABS: ReadonlyArray<TabItem> = [
+  { id: 'code', label: '⟨⟩ Code' },
+  { id: 'rules', label: '⚖ Rules' },
+];
 
 export function EditorArea() {
   const viewMode = useStore((s) => s.viewMode);
@@ -15,10 +22,7 @@ export function EditorArea() {
     <div className={styles.area} data-testid="editor-area">
       <div className={styles.head}>
         {!split && (
-          <>
-            <button role="tab" aria-selected={activeTab === 'code'} className={`${styles.tab} ${activeTab === 'code' ? styles.active : ''}`} onClick={() => setActiveTab('code')}>⟨⟩ Code</button>
-            <button role="tab" aria-selected={activeTab === 'rules'} className={`${styles.tab} ${activeTab === 'rules' ? styles.active : ''}`} onClick={() => setActiveTab('rules')}>⚖ Rules</button>
-          </>
+          <Tabs items={TABS} active={activeTab} onSelect={(id) => setActiveTab(id as EditorTab)} ariaLabel="Editor view" />
         )}
         <span className={styles.toggle}>
           <button className={`${styles.toggleBtn} ${!split ? styles.active : ''}`} onClick={() => setViewMode('tabs')}>⊟ tabs</button>
