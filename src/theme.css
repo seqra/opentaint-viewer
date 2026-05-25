@@ -25,12 +25,10 @@
   --fg-dim: hsl(var(--muted-fg-hsl));
   --border: hsl(var(--border-hsl));
   --accent: hsl(var(--brand-hsl));
-  --success: #16a34a;
   --header-bg: hsl(var(--band-hsl));
   --sel: hsl(var(--brand-hsl) / 0.16);
   --sel-weak: hsl(var(--brand-hsl) / 0.10);
 
-  --radius: 0.5rem;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --sans: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }

@@ -1,3 +1,6 @@
+/* Brand-red mono severity scale. Distinction is by emphasis, not hue: error is the only
+   filled pill; warning is the same red as text-only; note is neutral. Warning intentionally
+   does NOT use a translucent red (e.g. / .72) — that failed WCAG AA contrast on both themes. */
 .badge { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; padding: 1px 6px; border-radius: 10px; border: 1px solid currentColor; }
 .error { color: hsl(var(--brand-hsl)); background: hsl(var(--brand-hsl) / 0.14); }
 .warning { color: hsl(var(--brand-hsl)); }
