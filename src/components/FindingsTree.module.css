@@ -6,5 +6,6 @@
 .file { padding: 2px 4px; cursor: pointer; color: var(--fg); }
 .count { color: var(--fg-dim); font-size: 9px; }
 .finding { padding: 2px 4px; cursor: pointer; border-radius: 4px; }
-.finding.activeFinding { background: var(--sel-weak); }
+/* inset shadow (not border-left) gives the brand accent without a 2px layout shift */
+.finding.activeFinding { background: var(--sel-weak); box-shadow: inset 2px 0 0 var(--accent); }
 .rule { color: var(--fg-dim); font-size: 10px; margin-left: 6px; }
