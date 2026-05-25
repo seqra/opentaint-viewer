@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
 import { buildPathTree, type PathTree } from './tree';
@@ -11,16 +11,10 @@ const indent = (depth: number) => ({ paddingLeft: 8 + depth * 12 });
 export function FindingsTree() {
   const content = useStore((s) => s.content);
   const activeFindingId = useStore((s) => s.activeFindingId);
-  const activeStepIndex = useStore((s) => s.activeStepIndex);
-  const selectStep = useStore((s) => s.selectStep);
   const selectFinding = useStore((s) => s.selectFinding);
 
   const [ruleFilter, setRuleFilter] = useState('');
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [open, setOpen] = useState<Set<string>>(() => new Set(activeFindingId ? [activeFindingId] : []));
-  useEffect(() => {
-    if (activeFindingId) setOpen((p) => new Set(p).add(activeFindingId));
-  }, [activeFindingId]);
 
   if (!content) return null;
   const findings = content.findings;
@@ -41,15 +35,6 @@ export function FindingsTree() {
       n.has(path) ? n.delete(path) : n.add(path);
       return n;
     });
-  const onFinding = (id: string) => {
-    selectFinding(id);
-    setOpen((s) => {
-      const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-  };
-
   const filesOf = (items: Finding[]): [string, Finding[]][] => {
     const map = new Map<string, Finding[]>();
     for (const f of items) {
@@ -61,40 +46,20 @@ export function FindingsTree() {
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   };
 
-  const renderFinding = (f: Finding, depth: number) => {
-    const isOpen = open.has(f.id);
-    return (
-      <div key={f.id}>
-        <div
-          className={`${styles.finding} ${f.id === activeFindingId ? styles.activeFinding : ''}`}
-          role="button"
-          tabIndex={0}
-          style={indent(depth)}
-          onClick={() => onFinding(f.id)}
-          onKeyDown={keyActivate(() => onFinding(f.id))}
-        >
-          {isOpen ? '▾' : '▸'} 🔴 <span>{f.vulnClass}</span>
-          {(f.endpoint ?? f.location) && <span className={styles.loc}>{f.endpoint ?? f.location}</span>}
-        </div>
-        {isOpen &&
-          f.steps.map((s) => (
-            <div
-              key={s.index}
-              className={`${styles.step} ${activeStepIndex === s.index && f.id === activeFindingId ? styles.active : ''}`}
-              role="button"
-              tabIndex={0}
-              style={indent(depth + 1)}
-              onClick={() => selectStep(f.id, s.index)}
-              onKeyDown={keyActivate(() => selectStep(f.id, s.index))}
-            >
-              <span className={styles.marker}>{s.index + 1}</span>
-              {s.label}
-              {s.crossesFile && <span className={styles.cross}>↗ file</span>}
-            </div>
-          ))}
-      </div>
-    );
-  };
+  const renderFinding = (f: Finding, depth: number) => (
+    <div
+      key={f.id}
+      className={`${styles.finding} ${f.id === activeFindingId ? styles.activeFinding : ''}`}
+      role="button"
+      tabIndex={0}
+      style={indent(depth)}
+      onClick={() => selectFinding(f.id)}
+      onKeyDown={keyActivate(() => selectFinding(f.id))}
+    >
+      🔴 <span>{f.vulnClass}</span>
+      {(f.endpoint ?? f.location) && <span className={styles.loc}>{f.endpoint ?? f.location}</span>}
+    </div>
+  );
 
   const renderFile = (filePath: string, items: Finding[], depth: number) => {
     const base = filePath.split('/').pop() || filePath;

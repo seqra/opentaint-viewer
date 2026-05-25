@@ -1,0 +1,5 @@
+.panel { display: flex; flex-direction: column; height: 100%; }
+.tabs { display: flex; background: var(--bg-2); border-bottom: 1px solid var(--border); }
+.tab { padding: 5px 14px; color: var(--fg-dim); background: transparent; border: none; border-right: 1px solid var(--border); cursor: pointer; font-size: 12px; }
+.tab.active { background: var(--bg); color: var(--fg); }
+.body { flex: 1; min-height: 0; }

@@ -1,0 +1,18 @@
+.steps { list-style: none; margin: 0; padding: 6px 0; font-size: 12px; height: 100%; overflow: auto; }
+.step { padding: 5px 10px; cursor: pointer; border-left: 2px solid transparent; }
+.step:hover { background: var(--sel-weak); }
+.step.active { background: var(--sel); border-left-color: var(--accent); }
+.row { display: flex; align-items: center; gap: 8px; }
+.marker {
+  background: var(--accent); color: #fff; border-radius: 50%;
+  min-width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 9px; font-family: var(--mono);
+}
+.kind { font-size: 9px; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.source { color: var(--src); }
+.prop { color: var(--fg-dim); }
+.sanitizer { color: var(--mid); }
+.sink { color: var(--snk); }
+.loc { margin-left: auto; color: var(--fg-dim); font-family: var(--mono); font-size: 10px; }
+.label { color: var(--fg-dim); line-height: 1.4; margin-top: 2px; padding-left: 24px; }
+.step.active .label { color: var(--fg); }

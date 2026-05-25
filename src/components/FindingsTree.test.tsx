@@ -7,10 +7,8 @@ import { loadContent } from '../content/loadContent';
 
 const content = loadContent();
 const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
-const lastStep = active.steps[active.steps.length - 1];
 const otherRule = content.findings.find((f) => f.ruleId !== active.ruleId)!;
 const dirPath = (active.file ?? '').split('/').slice(0, -1).join('/');
-const stepEl = (label: string) => screen.getByText((c) => c.includes(label));
 const filter = () => screen.getByRole('combobox', { name: /filter findings by rule/i });
 
 describe('FindingsTree', () => {
@@ -25,17 +23,10 @@ describe('FindingsTree', () => {
     expect(filter().querySelectorAll('option')).toHaveLength(ruleCount + 1);
   });
 
-  it('shows the active finding steps by default and selects a step on click', async () => {
+  it('selects a finding on click (steps now live in the info panel, not the tree)', async () => {
     render(<FindingsTree />);
-    await userEvent.click(stepEl(lastStep.label));
-    expect(useStore.getState().activeStepIndex).toBe(active.steps.length - 1);
-    expect(useStore.getState().activeFile).toBe(lastStep.file);
-  });
-
-  it('exposes step rows as focusable buttons', () => {
-    render(<FindingsTree />);
-    expect(stepEl(lastStep.label)).toHaveAttribute('role', 'button');
-    expect(stepEl(lastStep.label)).toHaveAttribute('tabindex', '0');
+    await userEvent.click(screen.getByText(otherRule.location!));
+    expect(useStore.getState().activeFindingId).toBe(otherRule.id);
   });
 
   it('filtering to one rule hides findings from other rules', () => {

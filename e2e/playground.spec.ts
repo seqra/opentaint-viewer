@@ -25,8 +25,9 @@ test('explore a finding, jump cross-file, split, and share', async ({ page }) =>
   // Code view shows the scenario's start file as a tab.
   await expect(page.getByRole('tab', { name: startBase })).toBeVisible();
 
-  // Click the sink step -> active file switches to the sink's file (cross-file jump).
-  await page.getByTestId('findings-tree').getByText(stepText).first().click();
+  // Open the Steps tab and click the sink step -> active file switches to the sink's file.
+  await page.getByTestId('info-tab-steps').click();
+  await page.getByTestId('steps-list').getByText(stepText).first().click();
   await expect(page.getByRole('tab', { name: sinkBase })).toHaveAttribute('aria-selected', 'true');
 
   // Toggle split -> both Code and Rules render. Scoped to the editor area because

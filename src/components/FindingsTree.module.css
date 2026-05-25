@@ -7,7 +7,3 @@
 .finding { padding: 2px 4px; cursor: pointer; border-radius: 4px; }
 .finding.activeFinding { background: var(--sel-weak); }
 .loc { color: var(--fg-dim); font-size: 10px; margin-left: 6px; }
-.step { padding: 2px 4px; color: var(--fg-dim); cursor: pointer; }
-.step.active { background: var(--sel); color: var(--fg); border-radius: 4px; }
-.marker { background: var(--accent); color: #fff; border-radius: 50%; padding: 0 5px; font-size: 9px; margin-right: 4px; }
-.cross { color: var(--mid); font-size: 9px; margin-left: 4px; }

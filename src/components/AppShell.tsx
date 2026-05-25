@@ -4,7 +4,7 @@ import { TopBar } from './TopBar';
 import { FindingsTree } from './FindingsTree';
 import { RulesTree } from './RulesTree';
 import { EditorArea } from './EditorArea';
-import { FindingInfo } from './FindingInfo';
+import { InfoPanel } from './InfoPanel';
 import { ShareDialog } from './ShareDialog';
 import { ActivityBar, toggleSidebarView, type SidebarView } from './ActivityBar';
 import { useStepKeys } from './useStepKeys';
@@ -60,7 +60,7 @@ export function AppShell() {
               </Panel>
               <PanelResizeHandle className={styles.vHandle} />
               <Panel defaultSize={32} minSize={10} className={styles.mainPane}>
-                <FindingInfo />
+                <InfoPanel />
               </Panel>
             </PanelGroup>
           </Panel>
