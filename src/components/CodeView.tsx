@@ -5,6 +5,7 @@ import { useTheme } from '../state/theme';
 import { fileByPath, findingById } from '../content/loadContent';
 import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from '../util/fileTabLabel';
+import { otDark, otLight, monacoThemeName } from './monacoThemes';
 
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
@@ -21,7 +22,7 @@ export function CodeView() {
   const activeStepIndex = useStore((s) => s.activeStepIndex);
   const selectFile = useStore((s) => s.selectFile);
   const step = useStore((s) => s.step);
-  const monacoTheme = useTheme((s) => (s.theme === 'light' ? 'vs' : 'vs-dark'));
+  const monacoTheme = useTheme((s) => monacoThemeName(s.theme));
 
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
   const file = content && activeFile ? fileByPath(content, activeFile) : undefined;
@@ -107,7 +108,19 @@ export function CodeView() {
           language={MONACO_LANG[file.language] ?? 'plaintext'}
           value={file.content}
           theme={monacoTheme}
-          options={{ readOnly: true, minimap: { enabled: false }, glyphMargin: true, fontSize: 13, automaticLayout: true }}
+          beforeMount={(monaco) => {
+            monaco.editor.defineTheme('ot-dark', otDark);
+            monaco.editor.defineTheme('ot-light', otLight);
+          }}
+          options={{
+            readOnly: true,
+            minimap: { enabled: false },
+            glyphMargin: true,
+            fontSize: 13,
+            // matches --mono in theme.css (Monaco can't read CSS vars)
+            fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+            automaticLayout: true,
+          }}
           onMount={onMount}
         />
       </div>

@@ -1,12 +1,19 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-const { createDecorationsCollection } = vi.hoisted(() => ({
+const { createDecorationsCollection, defineTheme } = vi.hoisted(() => ({
   createDecorationsCollection: vi.fn(() => ({ clear: vi.fn() })),
+  defineTheme: vi.fn(),
 }));
 
 vi.mock('@monaco-editor/react', () => ({
-  default: (props: { value?: string; path?: string; onMount?: (e: unknown, m: unknown) => void }) => {
+  default: (props: {
+    value?: string;
+    path?: string;
+    beforeMount?: (m: { editor: { defineTheme: (name: string, data: unknown) => void } }) => void;
+    onMount?: (e: unknown, m: unknown) => void;
+  }) => {
+    props.beforeMount?.({ editor: { defineTheme } });
     props.onMount?.(
       { createDecorationsCollection },
       { Range: class { constructor(public sl: number, public sc: number, public el: number, public ec: number) {} } },
@@ -29,6 +36,7 @@ const fileHead = content.files.find((f) => f.path === activeFile)!.content.slice
 describe('CodeView', () => {
   beforeEach(() => {
     createDecorationsCollection.mockClear();
+    defineTheme.mockClear();
     useStore.getState().reset();
     useStore.getState().loadContent(content);
   });
@@ -38,6 +46,13 @@ describe('CodeView', () => {
     const editor = screen.getByTestId('monaco');
     expect(editor.getAttribute('data-path')).toBe(activeFile);
     expect(editor.textContent).toContain(fileHead);
+  });
+
+  it('registers the ot-dark and ot-light Monaco themes before mount', () => {
+    render(<CodeView />);
+    const names = defineTheme.mock.calls.map((c) => c[0]);
+    expect(names).toContain('ot-dark');
+    expect(names).toContain('ot-light');
   });
 
   it('shows file tabs for every file touched by the active finding', () => {
