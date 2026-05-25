@@ -21,6 +21,17 @@ describe('playground store', () => {
     expect(s.activeTab).toBe('code');
   });
 
+  it('selectFinding focuses the last step (the sink) and switches the active file to it', () => {
+    useStore.getState().loadContent(content);
+    const lastIdx = multiStep.steps.length - 1;
+    useStore.getState().selectFinding(multiStep.id);
+    const s = useStore.getState();
+    expect(s.activeFindingId).toBe(multiStep.id);
+    expect(s.activeStepIndex).toBe(lastIdx);
+    expect(s.activeFile).toBe(multiStep.steps[lastIdx].file);
+    expect(s.activeTab).toBe('code');
+  });
+
   it('selectStep updates step and switches the active file to the step file', () => {
     useStore.getState().loadContent(content);
     const lastIdx = multiStep.steps.length - 1;

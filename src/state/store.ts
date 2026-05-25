@@ -77,7 +77,9 @@ export const useStore = create<State & Actions>((set, get) => ({
   selectFinding: (id) => {
     const c = get().content;
     const f = c ? findingById(c, id) : undefined;
-    set({ activeFindingId: id, activeStepIndex: 0, activeFile: f?.steps[0]?.file ?? get().activeFile, activeTab: 'code' });
+    // Focus the last step (the sink) — the line the finding actually flags.
+    const lastIdx = Math.max(0, (f?.steps.length ?? 1) - 1);
+    set({ activeFindingId: id, activeStepIndex: lastIdx, activeFile: f?.steps[lastIdx]?.file ?? get().activeFile, activeTab: 'code' });
   },
 
   selectStep: (findingId, index) => {
