@@ -1,4 +1,5 @@
 import type { Finding, Severity, TaintStep } from '../types/content';
+import { basename } from '../util/path';
 
 /** Substring patterns → short vuln-class label, checked in order. */
 const VULN_CLASS_PATTERNS: Array<[RegExp, string]> = [
@@ -81,7 +82,6 @@ function ruleMetaByRule(log: SarifLog): Map<string, RuleMeta> {
   return map;
 }
 
-const basename = (uri: string): string => uri.split('/').pop() ?? uri;
 const fileOf = (tfl: SarifTfl | undefined): string =>
   tfl?.location?.physicalLocation?.artifactLocation?.uri ?? '';
 

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
-import { buildPathTree, type PathTree } from './tree';
+import { buildPathTree, type PathTree } from '../util/tree';
+import { basename, dirname } from '../util/path';
 import type { Finding } from '../types/content';
 import styles from './FindingsTree.module.css';
 
-const dirOf = (f: Finding): string => (f.file ?? '').split('/').slice(0, -1).join('/');
+const dirOf = (f: Finding): string => dirname(f.file ?? '');
 const indent = (depth: number) => ({ paddingLeft: 8 + depth * 12 });
 
 export function FindingsTree() {
@@ -66,7 +67,7 @@ export function FindingsTree() {
   };
 
   const renderFile = (filePath: string, items: Finding[], depth: number) => {
-    const base = filePath.split('/').pop() || filePath;
+    const base = basename(filePath);
     const isCollapsed = collapsed.has(filePath);
     return (
       <div key={filePath}>

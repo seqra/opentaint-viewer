@@ -2,6 +2,7 @@ import { useStore } from '../state/store';
 import { findingById } from '../content/loadContent';
 import { keyActivate } from './keyActivate';
 import type { Severity } from '../types/content';
+import { basename } from '../util/path';
 import styles from './StepsList.module.css';
 
 const SEV_CLASS: Record<Severity, string> = {
@@ -9,7 +10,6 @@ const SEV_CLASS: Record<Severity, string> = {
   warning: styles.warning,
   note: styles.note,
 };
-const base = (path: string): string => path.split('/').pop() || path;
 
 /** The active finding's taint path as a clickable, debugger-style step list. */
 export function StepsList() {
@@ -42,7 +42,7 @@ export function StepsList() {
                 </span>
               )}
               <span className={styles.loc}>
-                {base(s.file)}:{s.line}
+                {basename(s.file)}:{s.line}
                 {s.crossesFile ? ' ↗' : ''}
               </span>
             </div>

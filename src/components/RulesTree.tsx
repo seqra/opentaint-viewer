@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
 import { rulesByOrigin } from '../content/loadContent';
-import { buildPathTree, type PathTree } from './tree';
+import { buildPathTree, type PathTree } from '../util/tree';
+import { basename, dirname } from '../util/path';
 import type { RuleOrigin, RuleSpec } from '../types/content';
 import styles from './RulesTree.module.css';
 
 const ORIGIN_ORDER: RuleOrigin[] = ['builtin', 'custom'];
 const ORIGIN_LABELS: Record<RuleOrigin, string> = { builtin: '📁 Builtin', custom: '📁 Custom' };
 const indent = (depth: number) => ({ paddingLeft: 8 + depth * 12 });
-const dirOf = (path: string) => path.split('/').slice(0, -1).join('/');
 
 export function RulesTree() {
   const content = useStore((s) => s.content);
@@ -54,7 +54,7 @@ export function RulesTree() {
           onClick={() => selectRule(rule.id)}
           onKeyDown={keyActivate(() => selectRule(rule.id))}
         >
-          ⚖ {rule.path.split('/').pop()}
+          ⚖ {basename(rule.path)}
         </div>
       ))}
     </>
@@ -64,7 +64,7 @@ export function RulesTree() {
     <div className={styles.tree} data-testid="rules-tree">
       {ORIGIN_ORDER.map((origin) => {
         const rules = grouped[origin];
-        const tree = buildPathTree(rules.map((r) => ({ dir: dirOf(r.path), item: r })));
+        const tree = buildPathTree(rules.map((r) => ({ dir: dirname(r.path), item: r })));
         return (
           <div key={origin}>
             <div className={styles.origin}>

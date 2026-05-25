@@ -4,7 +4,7 @@ import { useStore } from '../state/store';
 import { useTheme } from '../state/theme';
 import { fileByPath, findingById } from '../content/loadContent';
 import { pathDecorations } from '../taint/decorations';
-import { fileTabLabel } from './fileTabLabel';
+import { fileTabLabel } from '../util/fileTabLabel';
 
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',

@@ -5,6 +5,7 @@ import { useStore } from '../state/store';
 import { useTheme } from '../state/theme';
 import { findRuleLine } from '../rules/ruleLine';
 import { ruleRefs, ruleRefTarget, RULE_REF_SCHEME } from '../rules/ruleRefs';
+import { breadcrumb } from '../util/path';
 
 type EditorInstance = Parameters<OnMount>[0];
 type Monaco = Parameters<OnMount>[1];
@@ -84,7 +85,7 @@ export function RulesView() {
   return (
     <div data-testid="rules-view" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div data-testid="rule-path" style={{ fontSize: 11, color: 'var(--fg-dim)', padding: '3px 8px', background: 'var(--bg-2)' }}>
-        {rule.path.split('/').join(' › ')}
+        {breadcrumb(rule.path)}
       </div>
       <div style={{ flex: 1 }}>
         <Editor
