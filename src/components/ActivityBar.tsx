@@ -1,9 +1,10 @@
+import { ShieldAlert, Scale } from 'lucide-react';
 import { Tabs, type TabItem } from './Tabs';
 import type { SidebarView } from '../state/store';
 
 const ITEMS: ReadonlyArray<TabItem> = [
-  { id: 'findings', label: 'Findings', icon: '⚠', testId: 'activity-findings' },
-  { id: 'rules', label: 'Rules', icon: '⚖', testId: 'activity-rules' },
+  { id: 'findings', label: 'Findings', icon: <ShieldAlert size={18} />, testId: 'activity-findings' },
+  { id: 'rules', label: 'Rules', icon: <Scale size={18} />, testId: 'activity-rules' },
 ];
 
 interface Props {
