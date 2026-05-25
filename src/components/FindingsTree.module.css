@@ -1,9 +1,11 @@
 .tree { font-family: var(--mono); font-size: 12px; color: var(--fg); padding: 8px; }
 .filterRow { padding: 0 4px 8px; }
 .filter { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; font-size: 11px; font-family: var(--mono); }
+/* Rows truncate with an ellipsis instead of wrapping when the panel is narrowed. */
+.dir, .file, .finding { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dir { padding: 2px 4px; cursor: pointer; color: var(--fg-dim); }
 .file { padding: 2px 4px; cursor: pointer; color: var(--fg); }
 .count { color: var(--fg-dim); font-size: 9px; }
 .finding { padding: 2px 4px; cursor: pointer; border-radius: 4px; }
 .finding.activeFinding { background: var(--sel-weak); }
-.loc { color: var(--fg-dim); font-size: 10px; margin-left: 6px; }
+.rule { color: var(--fg-dim); font-size: 10px; margin-left: 6px; }

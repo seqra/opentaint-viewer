@@ -29,21 +29,30 @@ describe('FindingsTree', () => {
     expect(useStore.getState().activeFindingId).toBe(otherRule.id);
   });
 
+  it('labels each finding by location and rule id, not the short vuln class', () => {
+    render(<FindingsTree />);
+    expect(screen.getByText(active.location!)).toBeInTheDocument();
+    // The rule id appears on the row (exact match; the filter option carries a count suffix).
+    expect(screen.getAllByText(active.ruleId).length).toBeGreaterThan(0);
+    // The short vuln-class label is no longer rendered in the tree.
+    expect(screen.queryByText(active.vulnClass)).toBeNull();
+  });
+
   it('filtering to one rule hides findings from other rules', () => {
     render(<FindingsTree />);
-    expect(screen.getAllByText(active.vulnClass).length).toBeGreaterThan(0);
+    expect(screen.getByText(active.location!)).toBeInTheDocument();
     fireEvent.change(filter(), { target: { value: otherRule.ruleId } });
-    expect(screen.queryByText(active.vulnClass)).not.toBeInTheDocument();
-    expect(screen.getAllByText(otherRule.vulnClass).length).toBeGreaterThan(0);
+    expect(screen.queryByText(active.location!)).not.toBeInTheDocument();
+    expect(screen.getByText(otherRule.location!)).toBeInTheDocument();
   });
 
   it('collapsing a directory hides the findings inside it', () => {
     const { container } = render(<FindingsTree />);
-    expect(screen.getAllByText(active.vulnClass).length).toBeGreaterThan(0);
+    expect(screen.getByText(active.location!)).toBeInTheDocument();
     const dirRow = container.querySelector(`[data-dir="${dirPath}"]`) as HTMLElement;
     expect(dirRow).not.toBeNull();
     fireEvent.click(dirRow);
-    expect(screen.queryByText(active.vulnClass)).not.toBeInTheDocument();
+    expect(screen.queryByText(active.location!)).not.toBeInTheDocument();
   });
 
   it('groups findings under a file node that can be collapsed', () => {

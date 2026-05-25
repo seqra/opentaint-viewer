@@ -46,20 +46,24 @@ export function FindingsTree() {
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   };
 
-  const renderFinding = (f: Finding, depth: number) => (
-    <div
-      key={f.id}
-      className={`${styles.finding} ${f.id === activeFindingId ? styles.activeFinding : ''}`}
-      role="button"
-      tabIndex={0}
-      style={indent(depth)}
-      onClick={() => selectFinding(f.id)}
-      onKeyDown={keyActivate(() => selectFinding(f.id))}
-    >
-      🔴 <span>{f.vulnClass}</span>
-      {(f.endpoint ?? f.location) && <span className={styles.loc}>{f.endpoint ?? f.location}</span>}
-    </div>
-  );
+  const renderFinding = (f: Finding, depth: number) => {
+    const loc = f.endpoint ?? f.location;
+    return (
+      <div
+        key={f.id}
+        className={`${styles.finding} ${f.id === activeFindingId ? styles.activeFinding : ''}`}
+        role="button"
+        tabIndex={0}
+        style={indent(depth)}
+        title={loc ? `${loc} — ${f.ruleId}` : f.ruleId}
+        onClick={() => selectFinding(f.id)}
+        onKeyDown={keyActivate(() => selectFinding(f.id))}
+      >
+        🔴 <span>{loc ?? f.ruleId}</span>
+        {loc && <span className={styles.rule}>{f.ruleId}</span>}
+      </div>
+    );
+  };
 
   const renderFile = (filePath: string, items: Finding[], depth: number) => {
     const base = filePath.split('/').pop() || filePath;
