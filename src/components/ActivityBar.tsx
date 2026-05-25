@@ -1,11 +1,5 @@
 import { Tabs, type TabItem } from './Tabs';
-
-export type SidebarView = 'findings' | 'rules';
-
-/** Clicking the open view collapses the sidebar; clicking any other switches to it. */
-export function toggleSidebarView(current: SidebarView | null, clicked: SidebarView): SidebarView | null {
-  return current === clicked ? null : clicked;
-}
+import type { SidebarView } from '../state/store';
 
 const ITEMS: ReadonlyArray<TabItem> = [
   { id: 'findings', label: 'Findings', icon: '⚠', testId: 'activity-findings' },

@@ -41,6 +41,17 @@ describe('playground store', () => {
     expect(before.viewMode).toBe('tabs'); // snapshot unchanged
   });
 
+  it('toggleSidebar opens a view, switches between views, and collapses on re-click', () => {
+    useStore.getState().loadContent(content);
+    expect(useStore.getState().sidebarView).toBe('findings'); // default
+    useStore.getState().toggleSidebar('rules');
+    expect(useStore.getState().sidebarView).toBe('rules');
+    useStore.getState().toggleSidebar('rules'); // same view -> collapse
+    expect(useStore.getState().sidebarView).toBeNull();
+    useStore.getState().toggleSidebar('findings');
+    expect(useStore.getState().sidebarView).toBe('findings');
+  });
+
   it('selectRule sets the active rule, its anchor, and switches tab to rules', () => {
     useStore.getState().loadContent(content);
     const rule = content.rules[0];

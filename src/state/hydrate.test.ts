@@ -14,6 +14,7 @@ describe('hydrateFromHash', () => {
     const v: ViewState = {
       scenarioId: 'sqli', findingId: 'sqli-0', stepIndex: 3,
       file: 'UserRepository.java', ruleId: 'sqli', viewMode: 'split', activeTab: 'rules',
+      sidebarView: 'rules', infoTab: 'steps',
     };
     hydrateFromHash('#' + encodeViewState(v));
     const s = useStore.getState();
@@ -22,6 +23,8 @@ describe('hydrateFromHash', () => {
     expect(s.activeStepIndex).toBe(3);
     expect(s.activeFile).toBe('UserRepository.java');
     expect(s.activeRuleId).toBe('sqli');
+    expect(s.sidebarView).toBe('rules');
+    expect(s.infoTab).toBe('steps');
   });
 
   it('is a no-op for a garbage hash (does not throw or change state)', () => {

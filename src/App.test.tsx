@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode, Ref } from 'react';
@@ -26,12 +26,16 @@ vi.mock('react-resizable-panels', async () => {
 });
 
 import App from './App';
+import { useStore } from './state/store';
 import { loadContent } from './content/loadContent';
 
 const content = loadContent();
 const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
 
 describe('App', () => {
+  // Sidebar/info-tab state now lives in the store (a singleton), so reset between tests.
+  beforeEach(() => useStore.getState().reset());
+
   it('renders the shell with a finding visible on first paint', () => {
     render(<App />);
     expect(screen.getByTestId('top-bar')).toBeInTheDocument();

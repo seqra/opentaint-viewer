@@ -11,4 +11,6 @@ export function hydrateFromHash(hash: string): void {
   if (v.ruleId) store.selectRule(v.ruleId);
   store.setViewMode(v.viewMode);
   store.setActiveTab(v.activeTab);
+  store.setSidebarView(v.sidebarView);
+  store.setInfoTab(v.infoTab);
 }

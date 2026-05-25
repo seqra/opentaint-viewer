@@ -5,6 +5,10 @@ import { navigate, type StepOp } from '../taint/nav';
 
 export type ViewMode = 'tabs' | 'split';
 export type EditorTab = 'code' | 'rules';
+/** Which tree the left sidebar shows; null when collapsed. */
+export type SidebarView = 'findings' | 'rules';
+/** Which tab the lower info panel shows. */
+export type InfoTab = 'info' | 'steps';
 
 interface State {
   content: PlaygroundContent | null;
@@ -19,6 +23,10 @@ interface State {
   ruleFocusTick: number;
   viewMode: ViewMode;
   activeTab: EditorTab;
+  /** Active left-sidebar tree, or null when collapsed. */
+  sidebarView: SidebarView | null;
+  /** Active lower-panel tab. */
+  infoTab: InfoTab;
 }
 
 interface Actions {
@@ -31,12 +39,17 @@ interface Actions {
   selectRule: (id: string, anchor?: string | null) => void;
   setViewMode: (m: ViewMode) => void;
   setActiveTab: (t: EditorTab) => void;
+  /** Open `view`, or collapse the sidebar when `view` is already active. */
+  toggleSidebar: (view: SidebarView) => void;
+  setSidebarView: (view: SidebarView | null) => void;
+  setInfoTab: (tab: InfoTab) => void;
   reset: () => void;
 }
 
 const initial: State = {
   content: null, scenarioId: null, activeFindingId: null, activeStepIndex: null,
   activeFile: null, activeRuleId: null, activeRuleAnchor: null, ruleFocusTick: 0, viewMode: 'tabs', activeTab: 'code',
+  sidebarView: 'findings', infoTab: 'info',
 };
 
 export const useStore = create<State & Actions>((set, get) => ({
@@ -88,5 +101,8 @@ export const useStore = create<State & Actions>((set, get) => ({
     set((s) => ({ activeRuleId: id, activeRuleAnchor: anchor, activeTab: 'rules', ruleFocusTick: s.ruleFocusTick + 1 })),
   setViewMode: (viewMode) => set({ viewMode }),
   setActiveTab: (activeTab) => set({ activeTab }),
+  toggleSidebar: (view) => set((s) => ({ sidebarView: s.sidebarView === view ? null : view })),
+  setSidebarView: (sidebarView) => set({ sidebarView }),
+  setInfoTab: (infoTab) => set({ infoTab }),
   reset: () => set({ ...initial }),
 }));

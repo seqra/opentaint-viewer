@@ -1,4 +1,4 @@
-import type { EditorTab, ViewMode } from './store';
+import type { EditorTab, InfoTab, SidebarView, ViewMode } from './store';
 
 export interface ViewState {
   scenarioId: string | null;
@@ -8,6 +8,8 @@ export interface ViewState {
   ruleId: string | null;
   viewMode: ViewMode;
   activeTab: EditorTab;
+  sidebarView: SidebarView | null;
+  infoTab: InfoTab;
 }
 
 export function encodeViewState(v: ViewState): string {
@@ -33,7 +35,12 @@ export function decodeViewState(s: string): ViewState | null {
     if (!isNumberOrNull(v.stepIndex)) return null;
     if (!isStringOrNull(v.file)) return null;
     if (!isStringOrNull(v.ruleId)) return null;
-    return v;
+    // Newer fields default for links made before they existed; reject only bad values.
+    const sidebarView = v.sidebarView === undefined ? 'findings' : v.sidebarView;
+    if (sidebarView !== null && sidebarView !== 'findings' && sidebarView !== 'rules') return null;
+    const infoTab = v.infoTab === undefined ? 'info' : v.infoTab;
+    if (infoTab !== 'info' && infoTab !== 'steps') return null;
+    return { ...v, sidebarView, infoTab };
   } catch {
     return null;
   }

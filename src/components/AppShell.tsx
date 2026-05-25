@@ -6,14 +6,17 @@ import { RulesTree } from './RulesTree';
 import { EditorArea } from './EditorArea';
 import { InfoPanel } from './InfoPanel';
 import { ShareDialog } from './ShareDialog';
-import { ActivityBar, toggleSidebarView, type SidebarView } from './ActivityBar';
+import { ActivityBar } from './ActivityBar';
 import { useStepKeys } from './useStepKeys';
+import { useStore } from '../state/store';
 import { useTheme } from '../state/theme';
 import styles from './AppShell.module.css';
 
 export function AppShell() {
   const [sharing, setSharing] = useState(false);
-  const [view, setView] = useState<SidebarView | null>('findings');
+  const view = useStore((s) => s.sidebarView);
+  const toggleSidebar = useStore((s) => s.toggleSidebar);
+  const setSidebarView = useStore((s) => s.setSidebarView);
   const sidebarRef = useRef<ImperativePanelHandle>(null);
   const theme = useTheme((s) => s.theme);
   useStepKeys();
@@ -33,7 +36,7 @@ export function AppShell() {
     <div className={styles.shell}>
       <TopBar onShare={() => setSharing(true)} />
       <div className={styles.body}>
-        <ActivityBar active={view} onSelect={(v) => setView((cur) => toggleSidebarView(cur, v))} />
+        <ActivityBar active={view} onSelect={toggleSidebar} />
         <PanelGroup direction="horizontal" autoSaveId="ot-body" className={styles.panels}>
           <Panel
             ref={sidebarRef}
@@ -43,7 +46,7 @@ export function AppShell() {
             minSize={12}
             maxSize={45}
             className={styles.sidebar}
-            onCollapse={() => setView(null)}
+            onCollapse={() => setSidebarView(null)}
           >
             {view && (
               <div className={styles.sidePanel}>
