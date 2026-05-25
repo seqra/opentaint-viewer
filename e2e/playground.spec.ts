@@ -98,3 +98,16 @@ test('the activity bar toggles the Findings and Rules sidebars (mutually exclusi
   await page.getByTestId('activity-findings').click();
   await expect(page.getByTestId('findings-tree')).toBeVisible();
 });
+
+test('the theme toggle flips data-theme and keeps the editor mounted', async ({ page }) => {
+  await page.goto('/');
+  const html = page.locator('html');
+  await expect(html).toHaveAttribute('data-theme', /^(light|dark)$/);
+  const before = await html.getAttribute('data-theme');
+
+  await page.getByTestId('top-bar').getByRole('button', { name: /toggle theme/i }).click();
+
+  // data-theme flips and the Monaco code editor survives the theme switch.
+  await expect(html).not.toHaveAttribute('data-theme', before!);
+  await expect(page.getByTestId('code-view')).toBeVisible();
+});
