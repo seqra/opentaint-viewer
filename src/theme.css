@@ -8,6 +8,7 @@
   --muted-fg-hsl: 215 8% 38%;
   --border-hsl: 215 8% 15%;
   --brand-hsl: 0 72% 52%;
+  --taint-hsl: 213 94% 68%;
 
   /* code/syntax tokens — dark (hex; shared with Monaco theme data) */
   --code-bg: #15181e;
@@ -42,6 +43,7 @@
   --muted-fg-hsl: 215 6% 58%;
   --border-hsl: 215 10% 88%;
   --brand-hsl: 0 72% 46%;
+  --taint-hsl: 217 91% 53%;
 
   /* code/syntax tokens — light */
   --code-bg: #f9fafb;
@@ -54,9 +56,8 @@
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 body { background: var(--bg); color: var(--fg); font-family: var(--sans); }
-/* Taint path: monochrome red, intensity shows direction — faint path, stronger current, strongest sink. */
-.taint-faint { background: hsl(var(--brand-hsl) / 0.12); border-radius: 2px; }
-.taint-current { background: hsl(var(--brand-hsl) / 0.30); border-radius: 2px; }
+.taint-faint { background: hsl(var(--taint-hsl) / 0.16); border-radius: 2px; }
+.taint-current { background: hsl(var(--taint-hsl) / 0.38); border-radius: 2px; }
 .taint-sink { background: hsl(var(--brand-hsl) / 0.45); border-radius: 2px; }
-.taint-arrow::before { content: '▶'; color: hsl(var(--brand-hsl)); padding-left: 2px; font-size: 10px; }
+.taint-arrow::before { content: '▶'; color: hsl(var(--taint-hsl)); padding-left: 2px; font-size: 10px; }
 .rule-focus { background: var(--sel-weak); border-left: 2px solid var(--accent); }
