@@ -52,8 +52,9 @@ test('the rule link opens the rule file and focuses the specific rule', async ({
   await page.getByTestId('finding-info').getByRole('button', { name: active.ruleId }).click();
 
   // The rule file opens and the specific rule line is highlighted (a file holds many rules).
-  await expect(page.getByTestId('rules-view')).toBeVisible();
-  await expect(page.locator('.rule-focus').first()).toBeVisible();
+  // Generous timeouts: Monaco can be slow to mount + paint decorations on a cold load.
+  await expect(page.getByTestId('rules-view')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.rule-focus').first()).toBeVisible({ timeout: 15000 });
 });
 
 test('`rule:` cross-references render as Cmd/Ctrl+click links in the rules editor', async ({ page }) => {
@@ -61,7 +62,7 @@ test('`rule:` cross-references render as Cmd/Ctrl+click links in the rules edito
 
   // Open the default finding's rule file in the rules editor.
   await page.getByTestId('finding-info').getByRole('button', { name: active.ruleId }).click();
-  await expect(page.getByTestId('rules-view')).toBeVisible();
+  await expect(page.getByTestId('rules-view')).toBeVisible({ timeout: 15000 });
 
   // Monaco renders detected links only for visible lines; scroll until a `rule:`
   // cross-reference link appears (its text is a `<path>.yaml#<rule>` token, which
@@ -73,4 +74,26 @@ test('`rule:` cross-references render as Cmd/Ctrl+click links in the rules edito
     await page.waitForTimeout(150);
   }
   await expect(refLink.first()).toBeVisible();
+});
+
+test('the activity bar toggles the Findings and Rules sidebars (mutually exclusive)', async ({ page }) => {
+  await page.goto('/');
+
+  // Findings is shown by default; the rules tree is not mounted.
+  await expect(page.getByTestId('findings-tree')).toBeVisible();
+  await expect(page.getByTestId('rules-tree')).toHaveCount(0);
+
+  // Switch to Rules -> rules tree shows, findings tree is replaced (mutually exclusive).
+  await page.getByTestId('activity-rules').click();
+  await expect(page.getByTestId('rules-tree')).toBeVisible();
+  await expect(page.getByTestId('findings-tree')).toHaveCount(0);
+
+  // Click the active Rules button again -> the sidebar collapses (no tree shown).
+  await page.getByTestId('activity-rules').click();
+  await expect(page.getByTestId('rules-tree')).toHaveCount(0);
+  await expect(page.getByTestId('findings-tree')).toHaveCount(0);
+
+  // Click Findings -> the findings tree comes back.
+  await page.getByTestId('activity-findings').click();
+  await expect(page.getByTestId('findings-tree')).toBeVisible();
 });

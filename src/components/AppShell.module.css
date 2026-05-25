@@ -1,9 +1,10 @@
 .shell { display: flex; flex-direction: column; height: 100%; }
 .body { display: flex; flex: 1; min-height: 0; }
+.panels { flex: 1; min-width: 0; }
 .sidebar { background: var(--bg-2); min-width: 0; }
 .bodyHandle { width: 6px; background: var(--bg-3); border-left: 1px solid var(--border); border-right: 1px solid var(--border); cursor: col-resize; }
 .bodyHandle:hover, .bodyHandle[data-resize-handle-active] { background: var(--accent); }
-.sidePanel { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.sidePanel { height: 100%; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 .shead { background: var(--header-bg); color: var(--fg-dim); font-size: 9px; letter-spacing: .08em; padding: 5px 8px; border-bottom: 1px solid var(--border); border-top: 1px solid var(--border); }
 .scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .vHandle { height: 6px; background: var(--bg-3); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); cursor: row-resize; }
