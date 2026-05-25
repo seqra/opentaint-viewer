@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
-import { buildPathTree, type PathTree } from '../util/tree';
+import { buildPathTree } from '../util/tree';
 import { basename, dirname } from '../util/path';
+import { DirTree, FoldRow, indent, useCollapsibleSet } from './treeView';
 import type { Finding } from '../types/content';
 import styles from './FindingsTree.module.css';
 
 const dirOf = (f: Finding): string => dirname(f.file ?? '');
-const indent = (depth: number) => ({ paddingLeft: 8 + depth * 12 });
 
 export function FindingsTree() {
   const content = useStore((s) => s.content);
@@ -15,7 +15,7 @@ export function FindingsTree() {
   const selectFinding = useStore((s) => s.selectFinding);
 
   const [ruleFilter, setRuleFilter] = useState('');
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const { collapsed, toggle } = useCollapsibleSet();
 
   if (!content) return null;
   const findings = content.findings;
@@ -30,12 +30,6 @@ export function FindingsTree() {
   const shown = ruleFilter ? findings.filter((f) => f.ruleId === ruleFilter) : findings;
   const tree = buildPathTree(shown.map((f) => ({ dir: dirOf(f), item: f })));
 
-  const toggleDir = (path: string) =>
-    setCollapsed((s) => {
-      const n = new Set(s);
-      n.has(path) ? n.delete(path) : n.add(path);
-      return n;
-    });
   const filesOf = (items: Finding[]): [string, Finding[]][] => {
     const map = new Map<string, Finding[]>();
     for (const f of items) {
@@ -66,48 +60,23 @@ export function FindingsTree() {
     );
   };
 
-  const renderFile = (filePath: string, items: Finding[], depth: number) => {
-    const base = basename(filePath);
-    const isCollapsed = collapsed.has(filePath);
-    return (
-      <div key={filePath}>
-        <div
-          className={styles.file}
-          data-file={filePath}
-          role="button"
-          tabIndex={0}
-          style={indent(depth)}
-          onClick={() => toggleDir(filePath)}
-          onKeyDown={keyActivate(() => toggleDir(filePath))}
-        >
-          {isCollapsed ? '▸' : '▾'} 📄 {base} <span className={styles.count}>{items.length}</span>
-        </div>
-        {!isCollapsed && items.map((f) => renderFinding(f, depth + 1))}
-      </div>
-    );
-  };
-
-  const renderNode = (node: PathTree<Finding>, depth: number) => (
-    <>
-      {node.dirs.map((d) => (
-        <div key={d.path}>
-          <div
-            className={styles.dir}
-            data-dir={d.path}
-            role="button"
-            tabIndex={0}
-            style={indent(depth)}
-            onClick={() => toggleDir(d.path)}
-            onKeyDown={keyActivate(() => toggleDir(d.path))}
-          >
-            {collapsed.has(d.path) ? '▸' : '▾'} {d.name}/
-          </div>
-          {!collapsed.has(d.path) && renderNode(d, depth + 1)}
-        </div>
-      ))}
-      {filesOf(node.items).map(([filePath, items]) => renderFile(filePath, items, depth))}
-    </>
+  const renderFile = (filePath: string, items: Finding[], depth: number) => (
+    <FoldRow
+      key={filePath}
+      path={filePath}
+      attr="file"
+      className={styles.file}
+      depth={depth}
+      collapsed={collapsed}
+      toggle={toggle}
+      label={<>📄 {basename(filePath)} <span className={styles.count}>{items.length}</span></>}
+    >
+      {items.map((f) => renderFinding(f, depth + 1))}
+    </FoldRow>
   );
+
+  const renderFiles = (items: Finding[], depth: number) =>
+    filesOf(items).map(([filePath, group]) => renderFile(filePath, group, depth));
 
   return (
     <div className={styles.tree} data-testid="findings-tree">
@@ -126,7 +95,7 @@ export function FindingsTree() {
           ))}
         </select>
       </div>
-      {renderNode(tree, 0)}
+      <DirTree node={tree} depth={0} collapsed={collapsed} toggle={toggle} renderItems={renderFiles} />
     </div>
   );
 }
