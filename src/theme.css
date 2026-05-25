@@ -1,40 +1,69 @@
 :root {
-  --bg: #1b1b24;
-  --bg-2: #23232e;
-  --bg-3: #2d2d3a;
-  --fg: #e6e6f0;
-  --fg-dim: #9aa0b4;
-  --border: #3a3a4a;
-  --accent: #3b82f6;
+  /* opentaint.org primitives — dark (HSL component triples) */
+  --bg-hsl: 215 14% 4%;
+  --card-hsl: 215 10% 7%;
+  --band-hsl: 215 12% 7.5%;
+  --muted-hsl: 215 8% 11%;
+  --fg-hsl: 215 6% 92%;
+  --muted-fg-hsl: 215 8% 38%;
+  --border-hsl: 215 8% 15%;
+  --brand-hsl: 0 72% 52%;
+
+  /* code/syntax tokens — dark (hex; shared with Monaco theme data) */
+  --code-bg: #15181e;
+  --code-text: #d4d4d8;
+  --code-keyword: #c4b5fd;
+  --code-fn: #7dd3fc;
+  --code-string: #f87171;
+  --code-line-num: #a1a1aa;
+
+  /* semantic aliases consumed by component CSS (full colors) */
+  --bg: hsl(var(--bg-hsl));
+  --bg-2: hsl(var(--card-hsl));
+  --bg-3: hsl(var(--muted-hsl));
+  --fg: hsl(var(--fg-hsl));
+  --fg-dim: hsl(var(--muted-fg-hsl));
+  --border: hsl(var(--border-hsl));
+  --accent: hsl(var(--brand-hsl));
   --success: #16a34a;
-  --header-bg: #20202b;
-  --sel: #2d3340;
-  --sel-weak: #232a3a;
+  --header-bg: hsl(var(--band-hsl));
+  --sel: hsl(var(--brand-hsl) / 0.16);
+  --sel-weak: hsl(var(--brand-hsl) / 0.10);
+
+  /* legacy taint role colors — still referenced by SeverityBadge until a later task */
   --src: #22c55e;
   --mid: #f59e0b;
   --snk: #ef4444;
-  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --sans: ui-sans-serif, system-ui, sans-serif;
+
+  --radius: 0.5rem;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 :root[data-theme='light'] {
-  --bg: #ffffff;
-  --bg-2: #f1f2f6;
-  --bg-3: #e3e5ee;
-  --fg: #1b1d29;
-  --fg-dim: #5b6275;
-  --border: #d3d6e0;
-  --accent: #2563eb;
-  --success: #15803d;
-  --header-bg: #e7e9f1;
-  --sel: #d7e3ff;
-  --sel-weak: #eef2fd;
+  /* primitives — light (aliases recompute automatically) */
+  --bg-hsl: 0 0% 100%;
+  --card-hsl: 0 0% 100%; /* same as bg: flat, border-driven cards on white */
+  --band-hsl: 215 16% 96.5%;
+  --muted-hsl: 215 10% 94%;
+  --fg-hsl: 215 14% 8%;
+  --muted-fg-hsl: 215 6% 58%;
+  --border-hsl: 215 10% 88%;
+  --brand-hsl: 0 72% 46%;
+
+  /* code/syntax tokens — light */
+  --code-bg: #f9fafb;
+  --code-text: #3f3f46;
+  --code-keyword: #7c3aed;
+  --code-fn: #0284c7;
+  --code-string: #dc2626;
+  --code-line-num: #52525b;
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 body { background: var(--bg); color: var(--fg); font-family: var(--sans); }
-/* Taint path: spans are highlighted; the whole path is faint, the current step strong. */
-.taint-faint { background: rgba(154, 160, 180, 0.18); border-radius: 2px; }
-.taint-current { background: rgba(59, 130, 246, 0.40); border-radius: 2px; }
-.taint-sink { background: rgba(239, 68, 68, 0.40); border-radius: 2px; }
-.taint-arrow::before { content: '▶'; color: var(--accent); padding-left: 2px; font-size: 10px; }
+/* Taint path: monochrome red, intensity shows direction — faint path, stronger current, strongest sink. */
+.taint-faint { background: hsl(var(--brand-hsl) / 0.12); border-radius: 2px; }
+.taint-current { background: hsl(var(--brand-hsl) / 0.30); border-radius: 2px; }
+.taint-sink { background: hsl(var(--brand-hsl) / 0.45); border-radius: 2px; }
+.taint-arrow::before { content: '▶'; color: hsl(var(--brand-hsl)); padding-left: 2px; font-size: 10px; }
 .rule-focus { background: var(--sel-weak); border-left: 2px solid var(--accent); }
