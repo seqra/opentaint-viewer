@@ -9,6 +9,7 @@
   --border-hsl: 215 8% 15%;
   --brand-hsl: 0 72% 52%;
   --taint-hsl: 213 94% 68%;
+  --amber: #f59e0b;
 
   /* code/syntax tokens — dark (hex; shared with Monaco theme data) */
   --code-bg: #15181e;
@@ -44,6 +45,7 @@
   --border-hsl: 215 10% 88%;
   --brand-hsl: 0 72% 46%;
   --taint-hsl: 217 91% 53%;
+  --amber: #d97706;
 
   /* code/syntax tokens — light */
   --code-bg: #f9fafb;

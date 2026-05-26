@@ -19,8 +19,8 @@ describe('RulesTree', () => {
 
   it('shows Builtin and Custom sections', () => {
     render(<RulesTree />);
-    expect(screen.getByText(/📁 Builtin/)).toBeInTheDocument();
-    expect(screen.getByText(/📁 Custom/)).toBeInTheDocument();
+    expect(screen.getByText(/Builtin/)).toBeInTheDocument();
+    expect(screen.getByText(/Custom/)).toBeInTheDocument();
   });
 
   it('renders builtin rule files as leaves and selects on click', async () => {

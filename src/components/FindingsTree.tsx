@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { FileText } from 'lucide-react';
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
 import { buildPathTree } from '../util/tree';
 import { basename, dirname } from '../util/path';
 import { DirTree, FoldRow, indent, useCollapsibleSet } from './treeView';
 import type { Finding } from '../types/content';
+import { SeverityDot } from './SeverityDot';
 import styles from './FindingsTree.module.css';
 
 const dirOf = (f: Finding): string => dirname(f.file ?? '');
@@ -54,7 +56,7 @@ export function FindingsTree() {
         onClick={() => selectFinding(f.id)}
         onKeyDown={keyActivate(() => selectFinding(f.id))}
       >
-        🔴 <span>{loc ?? f.ruleId}</span>
+        <SeverityDot severity={f.severity} /> <span>{loc ?? f.ruleId}</span>
         {loc && <span className={styles.rule}>{f.ruleId}</span>}
       </div>
     );
@@ -69,7 +71,7 @@ export function FindingsTree() {
       depth={depth}
       collapsed={collapsed}
       toggle={toggle}
-      label={<>📄 {basename(filePath)} <span className={styles.count}>{items.length}</span></>}
+      label={<><FileText size={13} style={{ verticalAlign: -2 }} /> {basename(filePath)} <span className={styles.count}>{items.length}</span></>}
     >
       {items.map((f) => renderFinding(f, depth + 1))}
     </FoldRow>

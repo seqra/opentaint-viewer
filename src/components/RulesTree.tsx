@@ -1,3 +1,4 @@
+import { Folder, FileText } from 'lucide-react';
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
 import { rulesByOrigin } from '../content/loadContent';
@@ -8,7 +9,7 @@ import type { RuleOrigin, RuleSpec } from '../types/content';
 import styles from './RulesTree.module.css';
 
 const ORIGIN_ORDER: RuleOrigin[] = ['builtin', 'custom'];
-const ORIGIN_LABELS: Record<RuleOrigin, string> = { builtin: '📁 Builtin', custom: '📁 Custom' };
+const ORIGIN_LABELS: Record<RuleOrigin, string> = { builtin: 'Builtin', custom: 'Custom' };
 
 export function RulesTree() {
   const content = useStore((s) => s.content);
@@ -29,7 +30,7 @@ export function RulesTree() {
         onClick={() => selectRule(rule.id)}
         onKeyDown={keyActivate(() => selectRule(rule.id))}
       >
-        ⚖ {basename(rule.path)}
+        <FileText size={13} style={{ verticalAlign: -2 }} /> {basename(rule.path)}
       </div>
     ));
 
@@ -41,7 +42,7 @@ export function RulesTree() {
         return (
           <div key={origin}>
             <div className={styles.origin}>
-              {ORIGIN_LABELS[origin]} <span className={styles.empty}>{rules.length === 0 ? 'empty' : `(${rules.length})`}</span>
+              <Folder size={13} style={{ verticalAlign: -2 }} /> {ORIGIN_LABELS[origin]} <span className={styles.empty}>{rules.length === 0 ? 'empty' : `(${rules.length})`}</span>
             </div>
             <DirTree node={tree} depth={1} collapsed={collapsed} toggle={toggle} renderItems={renderRules} />
           </div>
