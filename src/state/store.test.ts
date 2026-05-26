@@ -52,6 +52,15 @@ describe('playground store', () => {
     expect(before.viewMode).toBe('tabs'); // snapshot unchanged
   });
 
+  it('setInfoViewMode toggles the lower panel between tabbed and split', () => {
+    useStore.getState().loadContent(content);
+    expect(useStore.getState().infoViewMode).toBe('tabs'); // default
+    useStore.getState().setInfoViewMode('split');
+    expect(useStore.getState().infoViewMode).toBe('split');
+    useStore.getState().setInfoViewMode('tabs');
+    expect(useStore.getState().infoViewMode).toBe('tabs');
+  });
+
   it('toggleSidebar opens a view, switches between views, and collapses on re-click', () => {
     useStore.getState().loadContent(content);
     expect(useStore.getState().sidebarView).toBe('findings'); // default

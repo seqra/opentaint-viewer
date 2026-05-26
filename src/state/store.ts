@@ -27,6 +27,8 @@ interface State {
   sidebarView: SidebarView | null;
   /** Active lower-panel tab. */
   infoTab: InfoTab;
+  /** Lower-panel layout: one tabbed pane, or Info + Steps split side by side. */
+  infoViewMode: ViewMode;
 }
 
 interface Actions {
@@ -43,13 +45,14 @@ interface Actions {
   toggleSidebar: (view: SidebarView) => void;
   setSidebarView: (view: SidebarView | null) => void;
   setInfoTab: (tab: InfoTab) => void;
+  setInfoViewMode: (m: ViewMode) => void;
   reset: () => void;
 }
 
 const initial: State = {
   content: null, scenarioId: null, activeFindingId: null, activeStepIndex: null,
   activeFile: null, activeRuleId: null, activeRuleAnchor: null, ruleFocusTick: 0, viewMode: 'tabs', activeTab: 'code',
-  sidebarView: 'findings', infoTab: 'info',
+  sidebarView: 'findings', infoTab: 'info', infoViewMode: 'tabs',
 };
 
 export const useStore = create<State & Actions>((set, get) => ({
@@ -106,5 +109,6 @@ export const useStore = create<State & Actions>((set, get) => ({
   toggleSidebar: (view) => set((s) => ({ sidebarView: s.sidebarView === view ? null : view })),
   setSidebarView: (sidebarView) => set({ sidebarView }),
   setInfoTab: (infoTab) => set({ infoTab }),
+  setInfoViewMode: (infoViewMode) => set({ infoViewMode }),
   reset: () => set({ ...initial }),
 }));

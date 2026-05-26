@@ -4,7 +4,7 @@ import { encodeViewState, decodeViewState, type ViewState } from './permalink';
 const v: ViewState = {
   scenarioId: 'sqli', findingId: 'sqli-0', stepIndex: 3,
   file: 'UserRepository.java', ruleId: 'sqli', viewMode: 'split', activeTab: 'rules',
-  sidebarView: 'rules', infoTab: 'steps',
+  sidebarView: 'rules', infoTab: 'steps', infoViewMode: 'split',
 };
 
 describe('permalink codec', () => {
@@ -25,7 +25,7 @@ describe('permalink codec', () => {
       scenarioId: null, findingId: null, stepIndex: null, file: null,
       ruleId: null, viewMode: 'tabs', activeTab: 'code',
     }));
-    expect(decoded).toMatchObject({ sidebarView: 'findings', infoTab: 'info' });
+    expect(decoded).toMatchObject({ sidebarView: 'findings', infoTab: 'info', infoViewMode: 'tabs' });
   });
 
   it('rejects a payload whose fields have the wrong types', () => {

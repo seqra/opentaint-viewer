@@ -10,6 +10,7 @@ export interface ViewState {
   activeTab: EditorTab;
   sidebarView: SidebarView | null;
   infoTab: InfoTab;
+  infoViewMode: ViewMode;
 }
 
 export function encodeViewState(v: ViewState): string {
@@ -40,7 +41,9 @@ export function decodeViewState(s: string): ViewState | null {
     if (sidebarView !== null && sidebarView !== 'findings' && sidebarView !== 'rules') return null;
     const infoTab = v.infoTab === undefined ? 'info' : v.infoTab;
     if (infoTab !== 'info' && infoTab !== 'steps') return null;
-    return { ...v, sidebarView, infoTab };
+    const infoViewMode = v.infoViewMode === undefined ? 'tabs' : v.infoViewMode;
+    if (infoViewMode !== 'tabs' && infoViewMode !== 'split') return null;
+    return { ...v, sidebarView, infoTab, infoViewMode };
   } catch {
     return null;
   }

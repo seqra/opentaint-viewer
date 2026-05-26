@@ -30,9 +30,9 @@ test('explore a finding, jump cross-file, split, and share', async ({ page }) =>
   await page.getByTestId('steps-list').getByText(stepText).first().click();
   await expect(page.getByRole('tab', { name: sinkBase })).toHaveAttribute('aria-selected', 'true');
 
-  // Toggle split -> both Code and Rules render. Scoped to the editor area because
-  // rule leaves in the sidebar (e.g. http-response-splitting-sinks.yaml) also match /split/i.
-  await page.getByTestId('editor-area').getByRole('button', { name: /split/i }).click();
+  // Toggle the editor layout -> both Code and Rules render. The info panel has its own
+  // identical toggle, so scope to the editor area's layout-toggle.
+  await page.getByTestId('editor-area').getByTestId('layout-toggle').click();
   await expect(page.getByTestId('code-view')).toBeVisible();
   await expect(page.getByTestId('rules-view')).toBeVisible();
 

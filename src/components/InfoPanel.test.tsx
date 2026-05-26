@@ -26,4 +26,14 @@ describe('InfoPanel', () => {
     expect(screen.getByTestId('finding-info')).toBeInTheDocument();
     expect(screen.queryByTestId('steps-list')).toBeNull();
   });
+
+  it('the layout toggle splits Info and Steps side by side', async () => {
+    render(<InfoPanel />);
+    expect(screen.getByTestId('finding-info')).toBeInTheDocument();
+    expect(screen.queryByTestId('steps-list')).toBeNull();
+
+    await userEvent.click(screen.getByTestId('layout-toggle'));
+    expect(screen.getByTestId('finding-info')).toBeInTheDocument();
+    expect(screen.getByTestId('steps-list')).toBeInTheDocument();
+  });
 });

@@ -13,4 +13,5 @@ export function hydrateFromHash(hash: string): void {
   store.setActiveTab(v.activeTab);
   store.setSidebarView(v.sidebarView);
   store.setInfoTab(v.infoTab);
+  store.setInfoViewMode(v.infoViewMode);
 }

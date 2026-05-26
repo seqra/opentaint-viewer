@@ -8,7 +8,7 @@ function currentViewState(): ViewState {
   return {
     scenarioId: s.scenarioId, findingId: s.activeFindingId, stepIndex: s.activeStepIndex,
     file: s.activeFile, ruleId: s.activeRuleId, viewMode: s.viewMode, activeTab: s.activeTab,
-    sidebarView: s.sidebarView, infoTab: s.infoTab,
+    sidebarView: s.sidebarView, infoTab: s.infoTab, infoViewMode: s.infoViewMode,
   };
 }
 
