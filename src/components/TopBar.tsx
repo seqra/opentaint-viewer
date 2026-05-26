@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import { useTheme } from '../state/theme';
+import logoLight from '../assets/opentaint-header-light.svg';
+import logoDark from '../assets/opentaint-header-dark.svg';
 import styles from './TopBar.module.css';
 
 const INSTALL_CMD = 'curl -fsSL https://opentaint.org/install.sh | bash';
@@ -50,7 +52,13 @@ export function TopBar({ onShare }: { onShare: () => void }) {
   return (
     <div className={styles.bar} data-testid="top-bar">
       <a className={styles.brand} href={SITE_URL} target="_blank" rel="noreferrer">
-        <span className={styles.dot} aria-hidden="true">●</span> opentaint
+        <img
+          className={styles.logo}
+          src={theme === 'dark' ? logoDark : logoLight}
+          alt="OpenTaint"
+          width={108}
+          height={20}
+        />
       </a>
       <span className={styles.grow} />
       <button
