@@ -24,10 +24,19 @@ describe('EditorArea', () => {
 
   it('toggling split shows both views', async () => {
     render(<EditorArea />);
-    await userEvent.click(screen.getByRole('button', { name: /split/i }));
+    await userEvent.click(screen.getByTestId('layout-toggle'));
     expect(screen.getByTestId('code-view')).toBeInTheDocument();
     expect(screen.getByTestId('rules-view')).toBeInTheDocument();
     expect(useStore.getState().viewMode).toBe('split');
+  });
+
+  it('the single layout toggle flips between tabs and split', async () => {
+    render(<EditorArea />);
+    expect(useStore.getState().viewMode).toBe('tabs');
+    await userEvent.click(screen.getByTestId('layout-toggle'));
+    expect(useStore.getState().viewMode).toBe('split');
+    await userEvent.click(screen.getByTestId('layout-toggle'));
+    expect(useStore.getState().viewMode).toBe('tabs');
   });
 
   it('clicking the Rules tab switches the active view in tabs mode', async () => {
@@ -39,17 +48,17 @@ describe('EditorArea', () => {
 
   it('split mode places a draggable resize handle between Code and Rules', async () => {
     render(<EditorArea />);
-    await userEvent.click(screen.getByRole('button', { name: /split/i }));
+    await userEvent.click(screen.getByTestId('layout-toggle'));
     expect(screen.getByRole('separator')).toBeInTheDocument();
   });
 
   it('hides the Code/Rules tabs in split mode (both panes are shown)', async () => {
     render(<EditorArea />);
     expect(screen.getByRole('tab', { name: /Code/ })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /split/i }));
+    await userEvent.click(screen.getByTestId('layout-toggle'));
     expect(screen.queryByRole('tab', { name: /Code/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /Rules/ })).not.toBeInTheDocument();
-    // the tabs/split toggle remains
-    expect(screen.getByRole('button', { name: /tabs/i })).toBeInTheDocument();
+    // the single layout toggle remains
+    expect(screen.getByTestId('layout-toggle')).toBeInTheDocument();
   });
 });

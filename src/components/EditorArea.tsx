@@ -25,24 +25,16 @@ export function EditorArea() {
         {!split && (
           <Tabs items={TABS} active={activeTab} onSelect={(id) => setActiveTab(id as EditorTab)} ariaLabel="Editor view" />
         )}
-        <span className={styles.toggle} role="group" aria-label="Editor layout">
-          <button
-            type="button"
-            className={`${styles.segBtn} ${!split ? styles.segActive : ''}`}
-            aria-pressed={!split}
-            onClick={() => setViewMode('tabs')}
-          >
-            <Square size={13} /> Tabs
-          </button>
-          <button
-            type="button"
-            className={`${styles.segBtn} ${split ? styles.segActive : ''}`}
-            aria-pressed={split}
-            onClick={() => setViewMode('split')}
-          >
-            <Columns2 size={13} /> Split
-          </button>
-        </span>
+        <button
+          type="button"
+          className={styles.layoutToggle}
+          data-testid="layout-toggle"
+          title={split ? 'Switch to tabs view' : 'Switch to split view'}
+          onClick={() => setViewMode(split ? 'tabs' : 'split')}
+        >
+          {split ? <Columns2 size={13} /> : <Square size={13} />}
+          {split ? 'Split' : 'Tabs'}
+        </button>
       </div>
       <div className={styles.panes}>
         {split ? (
