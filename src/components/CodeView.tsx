@@ -99,7 +99,10 @@ export function CodeView() {
             <button type="button" title="Next (→)" aria-label="Next" disabled={atEnd} onClick={() => step('next')} style={navBtn}><ChevronRight size={13} /></button>
             <button type="button" title="Next over a call (Shift+→)" aria-label="Next over a call" disabled={atEnd} onClick={() => step('nextOver')} style={navBtn}><ChevronsRight size={13} /></button>
             <button type="button" title="Last step (End)" aria-label="Last step" disabled={atEnd} onClick={() => step('end')} style={navBtn}><SkipForward size={13} /></button>
-            <span style={{ color: 'var(--fg-dim)', marginLeft: 4 }}>{cur + 1}/{stepCount}</span>
+            <span style={{ color: 'var(--fg-dim)', marginLeft: 4 }}>
+              {/* Reserve width for the current-step number so the nav doesn't shift at the 9→10 boundary. */}
+              <span style={{ display: 'inline-block', minWidth: `${String(stepCount).length}ch`, textAlign: 'right' }}>{cur + 1}</span>/{stepCount}
+            </span>
           </div>
         )}
       </div>
