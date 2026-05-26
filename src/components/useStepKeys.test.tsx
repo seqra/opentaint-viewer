@@ -10,7 +10,14 @@ const active = content.findings.find((f) => f.steps.length > 1)!;
 
 function Harness() {
   useStepKeys();
-  return <select data-testid="sel"><option>x</option></select>;
+  return (
+    <div>
+      <select data-testid="sel"><option>x</option></select>
+      <textarea data-testid="ta" />
+      {/* Mimics Monaco's DOM: a focusable element nested inside the editor root. */}
+      <div className="monaco-editor"><span data-testid="mono-child" tabIndex={0}>code</span></div>
+    </div>
+  );
 }
 
 describe('useStepKeys', () => {
@@ -48,6 +55,16 @@ describe('useStepKeys', () => {
   it('ignores keys while a select is focused', () => {
     const { getByTestId } = render(<Harness />);
     fireEvent.keyDown(getByTestId('sel'), { key: 'ArrowRight' });
+    expect(useStore.getState().activeStepIndex).toBe(0);
+  });
+
+  it('ignores arrow keys while the code editor (Monaco) owns them', () => {
+    const { getByTestId } = render(<Harness />);
+    // A bare textarea (and anything inside .monaco-editor) should keep its caret keys.
+    fireEvent.keyDown(getByTestId('ta'), { key: 'ArrowRight' });
+    expect(useStore.getState().activeStepIndex).toBe(0);
+
+    fireEvent.keyDown(getByTestId('mono-child'), { key: 'ArrowLeft' });
     expect(useStore.getState().activeStepIndex).toBe(0);
   });
 });
