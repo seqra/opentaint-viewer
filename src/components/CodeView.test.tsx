@@ -28,7 +28,8 @@ import { loadContent } from '../content/loadContent';
 
 const content = loadContent();
 const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
-const activeFile = content.scenarios[0].startFile;
+// loadContent now focuses the sink (last step), so that's the file the editor opens on.
+const activeFile = active.steps[active.steps.length - 1].file;
 const decoCount = active.steps.filter((s) => s.file === activeFile).length;
 const tabBasenames = [...new Set(active.steps.map((s) => s.file))].map((f) => f.split('/').pop()!);
 const fileHead = content.files.find((f) => f.path === activeFile)!.content.slice(0, 20);

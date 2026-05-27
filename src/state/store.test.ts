@@ -10,13 +10,15 @@ const multiStep = content.findings.find((f) => f.steps.length > 1)!;
 describe('playground store', () => {
   beforeEach(() => useStore.getState().reset());
 
-  it('loadContent selects the first scenario, its default finding, step 0, start file', () => {
+  it('loadContent selects the first scenario, its default finding, focused on the sink (last step)', () => {
     useStore.getState().loadContent(content);
     const s = useStore.getState();
+    const defaultFinding = content.findings.find((f) => f.id === scenario.defaultFindingId)!;
+    const lastIdx = defaultFinding.steps.length - 1;
     expect(s.scenarioId).toBe(scenario.id);
     expect(s.activeFindingId).toBe(scenario.defaultFindingId);
-    expect(s.activeStepIndex).toBe(0);
-    expect(s.activeFile).toBe(scenario.startFile);
+    expect(s.activeStepIndex).toBe(lastIdx);
+    expect(s.activeFile).toBe(defaultFinding.steps[lastIdx].file);
     expect(s.viewMode).toBe('tabs');
     expect(s.activeTab).toBe('code');
   });

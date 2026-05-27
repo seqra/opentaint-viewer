@@ -38,7 +38,8 @@ describe('StepsList', () => {
     const spy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView');
     render(<StepsList />);
     spy.mockClear();
-    act(() => useStore.getState().selectStep(active.id, active.steps.length - 1));
+    // loadContent focuses the sink (last step), so step into a different step to change it.
+    act(() => useStore.getState().selectStep(active.id, 0));
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
   });

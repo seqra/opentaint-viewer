@@ -60,12 +60,16 @@ export const useStore = create<State & Actions>((set, get) => ({
 
   loadContent: (content) => {
     const scenario = content.scenarios[0] ?? null;
+    const finding = scenario ? findingById(content, scenario.defaultFindingId) : undefined;
+    // Focus the last step (the sink) — the line the finding actually flags — so a refresh
+    // lands where clicking the finding does, not on the source.
+    const lastIdx = finding ? Math.max(0, finding.steps.length - 1) : null;
     set({
       content,
       scenarioId: scenario?.id ?? null,
       activeFindingId: scenario?.defaultFindingId ?? null,
-      activeStepIndex: scenario ? 0 : null,
-      activeFile: scenario?.startFile ?? null,
+      activeStepIndex: lastIdx,
+      activeFile: finding?.steps[lastIdx ?? 0]?.file ?? scenario?.startFile ?? null,
       activeRuleId: content.rules[0]?.id ?? null,
     });
   },
