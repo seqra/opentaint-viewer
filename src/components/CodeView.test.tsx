@@ -28,11 +28,12 @@ import { loadContent } from '../content/loadContent';
 
 const content = loadContent();
 const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
-// loadContent now focuses the sink (last step), so that's the file the editor opens on.
-const activeFile = active.steps[active.steps.length - 1].file;
-const decoCount = active.steps.filter((s) => s.file === activeFile).length;
-const tabBasenames = [...new Set(active.steps.map((s) => s.file))].map((f) => f.split('/').pop()!);
+const activeSteps = active.flows[active.defaultFlowIndex].steps;
+const activeFile = activeSteps[activeSteps.length - 1].file;
+const decoCount = activeSteps.filter((s) => s.file === activeFile).length;
+const tabBasenames = [...new Set(activeSteps.map((s) => s.file))].map((f) => f.split('/').pop()!);
 const fileHead = content.files.find((f) => f.path === activeFile)!.content.slice(0, 20);
+const multiFlow = content.findings.find((f) => f.flows.length > 1)!;
 
 describe('CodeView', () => {
   beforeEach(() => {
@@ -77,6 +78,24 @@ describe('CodeView', () => {
     const withHover = decos.filter((d) => d.options.hoverMessage);
     expect(withHover).toHaveLength(1);
     // On load the current step is the sink (last step).
-    expect(withHover[0].options.hoverMessage!.value).toBe(active.steps[active.steps.length - 1].label);
+    expect(withHover[0].options.hoverMessage!.value).toBe(activeSteps[activeSteps.length - 1].label);
+  });
+
+  it('hides the flow nav for single-flow findings', () => {
+    const single = content.findings.find((f) => f.flows.length === 1)!;
+    useStore.getState().selectFinding(single.id);
+    render(<CodeView />);
+    expect(screen.queryByTestId('flow-nav')).toBeNull();
+  });
+
+  it('shows the flow nav and switches flows for multi-flow findings', async () => {
+    const userEvent = (await import('@testing-library/user-event')).default;
+    useStore.getState().selectFinding(multiFlow.id);
+    render(<CodeView />);
+    expect(screen.getByTestId('flow-nav')).toBeInTheDocument();
+    const before = useStore.getState().activeFlowIndex;
+    const prevDisabled = before <= 0;
+    await userEvent.click(screen.getByTestId(prevDisabled ? 'flow-next' : 'flow-prev'));
+    expect(useStore.getState().activeFlowIndex).not.toBe(before);
   });
 });

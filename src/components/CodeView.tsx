@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
-import { SkipBack, ChevronsLeft, ChevronLeft, CornerLeftUp, ChevronRight, ChevronsRight, SkipForward } from 'lucide-react';
+import { SkipBack, ChevronsLeft, ChevronLeft, CornerLeftUp, ChevronRight, ChevronsRight, SkipForward, GitFork } from 'lucide-react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useStore } from '../state/store';
 import { useTheme } from '../state/theme';
-import { fileByPath, findingById } from '../content/loadContent';
+import { fileByPath, findingById, flowSteps } from '../content/loadContent';
 import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from '../util/fileTabLabel';
 import { otDark, otLight, monacoThemeName } from './monacoThemes';
@@ -23,20 +23,24 @@ export function CodeView() {
   const activeStepIndex = useStore((s) => s.activeStepIndex);
   const selectFile = useStore((s) => s.selectFile);
   const step = useStore((s) => s.step);
+  const activeFlowIndex = useStore((s) => s.activeFlowIndex);
+  const stepFlow = useStore((s) => s.stepFlow);
   const monacoTheme = useTheme((s) => monacoThemeName(s.theme));
 
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
   const file = content && activeFile ? fileByPath(content, activeFile) : undefined;
-  const stepCount = finding?.steps.length ?? 0;
+  const steps = finding ? flowSteps(finding, activeFlowIndex) : [];
+  const flowCount = finding?.flows.length ?? 0;
+  const stepCount = steps.length;
   const cur = activeStepIndex ?? 0;
   const atStart = cur <= 0;
   const atEnd = cur >= stepCount - 1;
 
   const tabFiles = useMemo(() => {
-    const set = new Set(finding?.steps.map((s) => s.file) ?? []);
+    const set = new Set(steps.map((s) => s.file));
     if (activeFile) set.add(activeFile);
     return [...set];
-  }, [finding, activeFile]);
+  }, [steps, activeFile]);
 
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
   const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
@@ -45,7 +49,7 @@ export function CodeView() {
   const revealCurrentStep = () => {
     const editor = editorRef.current;
     if (!editor || !finding || !activeFile) return;
-    const current = pathDecorations(finding.steps, activeFile, cur).find((d) => d.isCurrent);
+    const current = pathDecorations(steps, activeFile, cur).find((d) => d.isCurrent);
     if (current) editor.revealLineInCenter?.(current.startLine);
   };
 
@@ -55,7 +59,7 @@ export function CodeView() {
     if (!editor || !monaco) return;
     decoRef.current?.clear();
     if (!finding || !activeFile) return;
-    const decos = pathDecorations(finding.steps, activeFile, cur);
+    const decos = pathDecorations(steps, activeFile, cur);
     decoRef.current = editor.createDecorationsCollection(
       decos.map((d) => {
         // Hover the current step to read its message (instant — see the editor's hover delay).
@@ -86,7 +90,7 @@ export function CodeView() {
   useEffect(() => {
     applyDecorations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFindingId, activeFile, activeStepIndex]);
+  }, [activeFindingId, activeFile, activeStepIndex, activeFlowIndex]);
 
   if (!file) return null;
   return (
@@ -107,19 +111,30 @@ export function CodeView() {
         </div>
         <span style={{ flex: 1 }} />
         {finding && (
-          <div data-testid="step-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px', flexShrink: 0 }}>
-            <button type="button" title="First step (Home)" aria-label="First step" disabled={atStart} onClick={() => step('start')} style={navBtn}><SkipBack size={13} /></button>
-            <button type="button" title="Back over a call (Shift+←)" aria-label="Back over a call" disabled={atStart} onClick={() => step('backOver')} style={navBtn}><ChevronsLeft size={13} /></button>
-            <button type="button" title="Back (←)" aria-label="Back" disabled={atStart} onClick={() => step('back')} style={navBtn}><ChevronLeft size={13} /></button>
-            <button type="button" title="Out, back to the caller (↑)" aria-label="Out to caller" disabled={atStart} onClick={() => step('out')} style={navBtn}><CornerLeftUp size={13} /></button>
-            <button type="button" title="Next (→)" aria-label="Next" disabled={atEnd} onClick={() => step('next')} style={navBtn}><ChevronRight size={13} /></button>
-            <button type="button" title="Next over a call (Shift+→)" aria-label="Next over a call" disabled={atEnd} onClick={() => step('nextOver')} style={navBtn}><ChevronsRight size={13} /></button>
-            <button type="button" title="Last step (End)" aria-label="Last step" disabled={atEnd} onClick={() => step('end')} style={navBtn}><SkipForward size={13} /></button>
-            <span style={{ color: 'var(--fg-dim)', marginLeft: 4, whiteSpace: 'nowrap' }}>
-              {/* Reserve width for the current-step number so the nav doesn't shift at the 9→10 boundary. */}
-              <span style={{ display: 'inline-block', minWidth: `${String(stepCount).length}ch`, textAlign: 'right' }}>{cur + 1}</span>/{stepCount}
-            </span>
-          </div>
+          <>
+            {flowCount > 1 && (
+              <div data-testid="flow-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 4px', flexShrink: 0, color: 'var(--fg-dim)' }}>
+                <GitFork size={13} aria-hidden="true" />
+                <button type="button" title="Previous flow" aria-label="Previous flow" data-testid="flow-prev" disabled={activeFlowIndex <= 0} onClick={() => stepFlow('prev')} style={navBtn}><ChevronLeft size={13} /></button>
+                <span style={{ whiteSpace: 'nowrap', minWidth: '2ch', textAlign: 'center' }}>{activeFlowIndex + 1}/{flowCount}</span>
+                <button type="button" title="Next flow" aria-label="Next flow" data-testid="flow-next" disabled={activeFlowIndex >= flowCount - 1} onClick={() => stepFlow('next')} style={navBtn}><ChevronRight size={13} /></button>
+                <span style={{ width: 1, alignSelf: 'stretch', background: 'var(--border)', margin: '2px 4px' }} />
+              </div>
+            )}
+            <div data-testid="step-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px', flexShrink: 0 }}>
+              <button type="button" title="First step (Home)" aria-label="First step" disabled={atStart} onClick={() => step('start')} style={navBtn}><SkipBack size={13} /></button>
+              <button type="button" title="Back over a call (Shift+←)" aria-label="Back over a call" disabled={atStart} onClick={() => step('backOver')} style={navBtn}><ChevronsLeft size={13} /></button>
+              <button type="button" title="Back (←)" aria-label="Back" disabled={atStart} onClick={() => step('back')} style={navBtn}><ChevronLeft size={13} /></button>
+              <button type="button" title="Out, back to the caller (↑)" aria-label="Out to caller" disabled={atStart} onClick={() => step('out')} style={navBtn}><CornerLeftUp size={13} /></button>
+              <button type="button" title="Next (→)" aria-label="Next" disabled={atEnd} onClick={() => step('next')} style={navBtn}><ChevronRight size={13} /></button>
+              <button type="button" title="Next over a call (Shift+→)" aria-label="Next over a call" disabled={atEnd} onClick={() => step('nextOver')} style={navBtn}><ChevronsRight size={13} /></button>
+              <button type="button" title="Last step (End)" aria-label="Last step" disabled={atEnd} onClick={() => step('end')} style={navBtn}><SkipForward size={13} /></button>
+              <span style={{ color: 'var(--fg-dim)', marginLeft: 4, whiteSpace: 'nowrap' }}>
+                {/* Reserve width for the current-step number so the nav doesn't shift at the 9→10 boundary. */}
+                <span style={{ display: 'inline-block', minWidth: `${String(stepCount).length}ch`, textAlign: 'right' }}>{cur + 1}</span>/{stepCount}
+              </span>
+            </div>
+          </>
         )}
       </div>
       <div style={{ flex: 1 }}>
