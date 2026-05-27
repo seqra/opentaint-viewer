@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { isPlaygroundContent } from './content';
+import { isViewerContent } from './content';
 
-describe('isPlaygroundContent', () => {
+describe('isViewerContent', () => {
   it('accepts a minimal valid content object', () => {
     const c = {
       projectId: 'java-spring-demo',
@@ -10,11 +10,11 @@ describe('isPlaygroundContent', () => {
       findings: [{ id: 'f1', ruleId: 'sqli', vulnClass: 'SQL Injection', severity: 'error', endpoint: null, message: 'm', steps: [] }],
       rules: [{ id: 'sqli', origin: 'builtin', kind: 'rule', path: 'Builtin/rule/sqli.yaml', content: 'id: sqli' }],
     };
-    expect(isPlaygroundContent(c)).toBe(true);
+    expect(isViewerContent(c)).toBe(true);
   });
 
   it('rejects a non-object', () => {
-    expect(isPlaygroundContent(null)).toBe(false);
-    expect(isPlaygroundContent({ projectId: 1 })).toBe(false);
+    expect(isViewerContent(null)).toBe(false);
+    expect(isViewerContent({ projectId: 1 })).toBe(false);
   });
 });

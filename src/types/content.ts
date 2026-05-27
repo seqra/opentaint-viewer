@@ -60,7 +60,7 @@ export interface Scenario {
   defaultFindingId: string;
 }
 
-export interface PlaygroundContent {
+export interface ViewerContent {
   projectId: string;
   scenarios: Scenario[];
   files: ProjectFile[];
@@ -68,7 +68,7 @@ export interface PlaygroundContent {
   rules: RuleSpec[];
 }
 
-export function isPlaygroundContent(value: unknown): value is PlaygroundContent {
+export function isViewerContent(value: unknown): value is ViewerContent {
   if (typeof value !== 'object' || value === null) return false;
   const c = value as Record<string, unknown>;
   return (

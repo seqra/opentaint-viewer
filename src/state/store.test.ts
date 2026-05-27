@@ -7,7 +7,7 @@ const content = loadContent();
 const scenario = content.scenarios[0];
 const multiStep = content.findings.find((f) => f.steps.length > 1)!;
 
-describe('playground store', () => {
+describe('viewer store', () => {
   beforeEach(() => useStore.getState().reset());
 
   it('loadContent selects the first scenario, its default finding, focused on the sink (last step)', () => {

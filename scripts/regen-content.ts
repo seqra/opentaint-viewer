@@ -22,7 +22,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdirSync } from 'node:fs';
 import { join, relative, extname } from 'node:path';
 import { transformSarif } from '../src/pipeline/sarif';
-import { isPlaygroundContent } from '../src/types/content';
+import { isViewerContent } from '../src/types/content';
 import type { Finding, Language, ProjectFile, RuleSpec, Scenario } from '../src/types/content';
 
 const IMAGE =
@@ -159,7 +159,7 @@ function main(): void {
   }
 
   const content = { projectId: 'java-spring-demo', scenarios, files, findings, rules };
-  if (!isPlaygroundContent(content)) throw new Error('Generated content failed contract validation');
+  if (!isViewerContent(content)) throw new Error('Generated content failed contract validation');
   writeFileSync(OUT, JSON.stringify(content, null, 2));
   console.log(
     `Wrote ${OUT}: ${findings.length} findings, ${files.length} files, ${rules.length} rules, ${scenarios.length} scenarios`,

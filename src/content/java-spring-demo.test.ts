@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import content from './java-spring-demo.json';
-import { isPlaygroundContent } from '../types/content';
+import { isViewerContent } from '../types/content';
 import { findRuleLine } from '../rules/ruleLine';
 
 describe('committed content', () => {
   it('matches the data contract', () => {
-    expect(isPlaygroundContent(content)).toBe(true);
+    expect(isViewerContent(content)).toBe(true);
   });
 
   it('every scenario references an existing finding and file', () => {

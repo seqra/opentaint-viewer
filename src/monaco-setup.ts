@@ -9,7 +9,7 @@ import { loader } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 // `?worker&inline` bundles the worker as a base64 blob, so it inlines into the single file.
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker&inline';
-// Monarch grammars for the languages the playground shows (main-thread tokenization,
+// Monarch grammars for the languages the viewer shows (main-thread tokenization,
 // so the base editor worker above is all we need).
 import 'monaco-editor/esm/vs/basic-languages/java/java.contribution';
 import 'monaco-editor/esm/vs/basic-languages/kotlin/kotlin.contribution';

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
-import type { PlaygroundContent } from '../types/content';
+import type { ViewerContent } from '../types/content';
 import { findingById } from '../content/loadContent';
 import { navigate, type StepOp } from '../taint/nav';
 
@@ -12,7 +12,7 @@ export type SidebarView = 'findings' | 'rules';
 export type InfoTab = 'info' | 'steps';
 
 interface State {
-  content: PlaygroundContent | null;
+  content: ViewerContent | null;
   scenarioId: string | null;
   activeFindingId: string | null;
   activeStepIndex: number | null;
@@ -33,7 +33,7 @@ interface State {
 }
 
 interface Actions {
-  loadContent: (c: PlaygroundContent) => void;
+  loadContent: (c: ViewerContent) => void;
   selectScenario: (id: string) => void;
   selectFinding: (id: string) => void;
   selectStep: (findingId: string, index: number) => void;
@@ -91,7 +91,7 @@ const safeStorage: StateStorage = {
 };
 
 /** Curated default focus: the default finding's last step (the sink). */
-function defaultFocus(content: PlaygroundContent) {
+function defaultFocus(content: ViewerContent) {
   const scenario = content.scenarios[0] ?? null;
   const finding = scenario ? findingById(content, scenario.defaultFindingId) : undefined;
   const lastIdx = finding ? Math.max(0, finding.steps.length - 1) : null;
