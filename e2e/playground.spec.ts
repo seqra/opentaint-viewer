@@ -3,17 +3,27 @@ import { readFileSync } from 'node:fs';
 
 // Derive expectations from the real committed content so the test survives regen.
 interface Step { file: string; label: string }
-interface Finding { id: string; ruleId: string; vulnClass: string; location: string; steps: Step[] }
+interface Flow { steps: Step[] }
+interface Finding { id: string; ruleId: string; vulnClass: string; location: string; flows: Flow[]; defaultFlowIndex: number }
 interface Content { scenarios: { defaultFindingId: string; startFile: string }[]; findings: Finding[] }
 
 const content: Content = JSON.parse(readFileSync('src/content/java-spring-demo.json', 'utf8'));
 const scenario = content.scenarios[0];
 const active = content.findings.find((f) => f.id === scenario.defaultFindingId)!;
+const activeSteps = active.flows[active.defaultFlowIndex].steps;
 const location = active.location; // unique to the finding row (vuln class also appears in the filter select)
 const startBase = scenario.startFile.split('/').pop()!;
-const lastStep = active.steps[active.steps.length - 1];
+const lastStep = activeSteps[activeSteps.length - 1];
 const sinkBase = lastStep.file.split('/').pop()!;
 const stepText = lastStep.label.slice(0, 30);
+
+// The stored-XSS finding with two flows; used to exercise the flow picker.
+const multiFlow = content.findings.find((f) => f.flows.length > 1 && f.location === 'MessageController.java:96')!;
+const otherFlowIndex = multiFlow.defaultFlowIndex === 0 ? 1 : 0;
+// A step label present in the default flow but not in the other flow (proves the switch changed the path).
+const defaultOnlyLabel = multiFlow.flows[multiFlow.defaultFlowIndex].steps
+  .map((s) => s.label)
+  .find((l) => !multiFlow.flows[otherFlowIndex].steps.some((s) => s.label === l))!;
 
 test('explore a finding, jump cross-file, and split', async ({ page }) => {
   await page.goto('/');
@@ -133,4 +143,25 @@ test('view state survives a page refresh', async ({ page }) => {
   // Restored from localStorage — the sidebar tree and the editor split are still there.
   await expect(page.getByTestId('rules-tree')).toBeVisible();
   await expect(page.getByTestId('rules-view')).toBeVisible();
+});
+
+test('switching code flow on MessageController.java:96 changes the taint path', async ({ page }) => {
+  await page.goto('/');
+
+  // Open the stored-XSS finding (two flows). Its location is unique to the finding row.
+  await page.getByTestId('findings-tree').getByText(multiFlow.location).click();
+
+  // Show the Steps list and the flow header (multi-flow only).
+  await page.getByTestId('info-tab-steps').click();
+  await expect(page.getByTestId('steps-flow-header')).toContainText('of 2');
+
+  // The default flow shows a step the other flow does not.
+  await expect(page.getByTestId('steps-list').getByText(defaultOnlyLabel.slice(0, 30)).first()).toBeVisible();
+
+  // Switch flows via the editor nav; the default-only step disappears.
+  const prev = page.getByTestId('flow-prev');
+  const next = page.getByTestId('flow-next');
+  await (multiFlow.defaultFlowIndex === 0 ? next : prev).click();
+  await expect(page.getByTestId('steps-flow-header')).toContainText(`Flow ${otherFlowIndex + 1} of 2`);
+  await expect(page.getByTestId('steps-list').getByText(defaultOnlyLabel.slice(0, 30))).toHaveCount(0);
 });
