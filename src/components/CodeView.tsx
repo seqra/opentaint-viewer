@@ -103,7 +103,7 @@ export function CodeView() {
         </div>
         <span style={{ flex: 1 }} />
         {finding && (
-          <div data-testid="step-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px' }}>
+          <div data-testid="step-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px', flexShrink: 0 }}>
             <button type="button" title="First step (Home)" aria-label="First step" disabled={atStart} onClick={() => step('start')} style={navBtn}><SkipBack size={13} /></button>
             <button type="button" title="Back over a call (Shift+←)" aria-label="Back over a call" disabled={atStart} onClick={() => step('backOver')} style={navBtn}><ChevronsLeft size={13} /></button>
             <button type="button" title="Back (←)" aria-label="Back" disabled={atStart} onClick={() => step('back')} style={navBtn}><ChevronLeft size={13} /></button>
@@ -111,7 +111,7 @@ export function CodeView() {
             <button type="button" title="Next (→)" aria-label="Next" disabled={atEnd} onClick={() => step('next')} style={navBtn}><ChevronRight size={13} /></button>
             <button type="button" title="Next over a call (Shift+→)" aria-label="Next over a call" disabled={atEnd} onClick={() => step('nextOver')} style={navBtn}><ChevronsRight size={13} /></button>
             <button type="button" title="Last step (End)" aria-label="Last step" disabled={atEnd} onClick={() => step('end')} style={navBtn}><SkipForward size={13} /></button>
-            <span style={{ color: 'var(--fg-dim)', marginLeft: 4 }}>
+            <span style={{ color: 'var(--fg-dim)', marginLeft: 4, whiteSpace: 'nowrap' }}>
               {/* Reserve width for the current-step number so the nav doesn't shift at the 9→10 boundary. */}
               <span style={{ display: 'inline-block', minWidth: `${String(stepCount).length}ch`, textAlign: 'right' }}>{cur + 1}</span>/{stepCount}
             </span>
