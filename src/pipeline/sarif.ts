@@ -134,6 +134,8 @@ function buildSteps(locs: SarifTfl[]): TaintStep[] {
 
 function buildFinding(res: SarifResult, idx: number, meta: Map<string, RuleMeta>): Finding {
   const ruleId = res.ruleId ?? 'unknown';
+  // One Flow per codeFlow. opentaint emits a single threadFlow per codeFlow, so we take the
+  // first; the SARIF schema permits more (parallel threads), which we don't model here.
   const flows: Flow[] = (res.codeFlows ?? []).map((cf) => ({
     steps: buildSteps(cf.threadFlows?.[0]?.locations ?? []),
   }));
