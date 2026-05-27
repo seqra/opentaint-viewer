@@ -7,7 +7,7 @@ import { EditorArea } from './EditorArea';
 import { InfoPanel } from './InfoPanel';
 import { ActivityBar } from './ActivityBar';
 import { useStepKeys } from './useStepKeys';
-import { useStore } from '../state/store';
+import { useStore, type SidebarView } from '../state/store';
 import { useTheme } from '../state/theme';
 import styles from './AppShell.module.css';
 
@@ -16,11 +16,17 @@ export function AppShell() {
   const toggleSidebar = useStore((s) => s.toggleSidebar);
   const setSidebarView = useStore((s) => s.setSidebarView);
   const sidebarRef = useRef<ImperativePanelHandle>(null);
+  const lastViewRef = useRef<SidebarView>('findings');
   const theme = useTheme((s) => s.theme);
   useStepKeys();
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Remember the last open tree so dragging the handle back out can restore it.
+  useEffect(() => {
+    if (view) lastViewRef.current = view;
+  }, [view]);
 
   // Keep the resizable panel's collapsed/expanded state in sync with the active view.
   useEffect(() => {
@@ -45,6 +51,11 @@ export function AppShell() {
             maxSize={45}
             className={styles.sidebar}
             onCollapse={() => setSidebarView(null)}
+            onExpand={() => {
+              // Dragging the handle back out re-expands the panel; restore the tree that was
+              // open before it collapsed, otherwise the panel shows blank space.
+              if (!useStore.getState().sidebarView) setSidebarView(lastViewRef.current);
+            }}
           >
             {view && (
               <div className={styles.sidePanel}>

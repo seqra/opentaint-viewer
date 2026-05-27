@@ -102,3 +102,20 @@ test('the theme toggle flips data-theme and keeps the editor mounted', async ({ 
   await expect(html).not.toHaveAttribute('data-theme', before!);
   await expect(page.getByTestId('code-view')).toBeVisible();
 });
+
+test('dragging the sidebar handle closed then back open restores the tree (no blank panel)', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('findings-tree')).toBeVisible();
+
+  // The sidebar resize handle is the first separator. Collapse it and reopen it within a
+  // single drag — the tree must come back, not leave a blank expanded panel.
+  const handle = (await page.locator('[role="separator"]').first().boundingBox())!;
+  const y = handle.y + handle.height / 2;
+  await page.mouse.move(handle.x + handle.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(2, y, { steps: 12 }); // far left -> collapses
+  await page.mouse.move(320, y, { steps: 12 }); // back out -> reopens
+  await page.mouse.up();
+
+  await expect(page.getByTestId('findings-tree')).toBeVisible();
+});
