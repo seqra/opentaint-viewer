@@ -57,12 +57,16 @@ export function CodeView() {
     if (!finding || !activeFile) return;
     const decos = pathDecorations(finding.steps, activeFile, cur);
     decoRef.current = editor.createDecorationsCollection(
-      decos.map((d) => ({
-        range: new monaco.Range(d.startLine, d.startColumn, d.endLine, d.endColumn),
-        options: d.wholeLine
-          ? { isWholeLine: true, className: d.className, glyphMarginClassName: d.glyphClassName }
-          : { inlineClassName: d.className, glyphMarginClassName: d.glyphClassName },
-      })),
+      decos.map((d) => {
+        // Hover the current step to read its message (instant — see the editor's hover delay).
+        const hoverMessage = d.isCurrent ? { value: d.message } : undefined;
+        return {
+          range: new monaco.Range(d.startLine, d.startColumn, d.endLine, d.endColumn),
+          options: d.wholeLine
+            ? { isWholeLine: true, className: d.className, glyphMarginClassName: d.glyphClassName, hoverMessage }
+            : { inlineClassName: d.className, glyphMarginClassName: d.glyphClassName, hoverMessage },
+        };
+      }),
     ) as DecorationCollection;
     revealCurrentStep();
   };
@@ -136,6 +140,8 @@ export function CodeView() {
             // matches --mono in theme.css (Monaco can't read CSS vars)
             fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
             automaticLayout: true,
+            // Instant tooltip when hovering the current step's highlight.
+            hover: { enabled: true, delay: 0 },
           }}
           onMount={onMount}
         />

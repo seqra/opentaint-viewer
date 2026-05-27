@@ -13,6 +13,8 @@ export interface StepDecoration {
   glyphClassName: string | undefined;
   marker: number;
   isCurrent: boolean;
+  /** The step's human message — shown on hover. */
+  message: string;
 }
 
 /**
@@ -39,6 +41,7 @@ export function pathDecorations(steps: TaintStep[], file: string, currentIndex: 
         glyphClassName: isCurrent ? 'taint-arrow' : undefined,
         marker: s.index + 1,
         isCurrent,
+        message: s.label,
       };
     });
 }

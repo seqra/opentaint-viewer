@@ -30,6 +30,11 @@ describe('pathDecorations', () => {
     expect(decos[0]).toMatchObject({ startColumn: 3, endColumn: 9, wholeLine: false, isCurrent: true });
   });
 
+  it('carries each step message for the hover tooltip', () => {
+    expect(pathDecorations(steps, 'A.java', 1).map((d) => d.message)).toEqual(['src', 'mid']);
+    expect(pathDecorations(steps, 'B.java', 2)[0].message).toBe('sink');
+  });
+
   it('always highlights the last step (sink) with the red sink class', () => {
     // The sink is the current step -> red, still flagged current (keeps the gutter arrow).
     expect(pathDecorations(steps, 'B.java', 2)[0]).toMatchObject({

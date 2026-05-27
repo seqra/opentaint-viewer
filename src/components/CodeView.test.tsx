@@ -69,4 +69,14 @@ describe('CodeView', () => {
     const calls = createDecorationsCollection.mock.calls as unknown[][];
     expect(calls.at(-1)?.[0]).toHaveLength(decoCount);
   });
+
+  it('gives only the current step a hover showing its message', () => {
+    render(<CodeView />);
+    const calls = createDecorationsCollection.mock.calls as unknown[][];
+    const decos = (calls.at(-1)?.[0] ?? []) as Array<{ options: { hoverMessage?: { value: string } } }>;
+    const withHover = decos.filter((d) => d.options.hoverMessage);
+    expect(withHover).toHaveLength(1);
+    // On load the current step is the sink (last step).
+    expect(withHover[0].options.hoverMessage!.value).toBe(active.steps[active.steps.length - 1].label);
+  });
 });
