@@ -63,4 +63,28 @@ describe('StepsList', () => {
     render(<StepsList />);
     expect(screen.getByTestId('steps-flow-header')).toHaveTextContent(/Flow \d+ of \d+/);
   });
+
+  it('switches flows from the steps panel header buttons', async () => {
+    const multi = content.findings.find((f) => f.flows.length > 1)!;
+    useStore.getState().selectFinding(multi.id);
+    render(<StepsList />);
+    const before = useStore.getState().activeFlowIndex;
+    // Click whichever direction is enabled from the default flow.
+    const target = before <= 0 ? 'steps-flow-next' : 'steps-flow-prev';
+    await userEvent.click(screen.getByTestId(target));
+    const after = useStore.getState().activeFlowIndex;
+    expect(after).not.toBe(before);
+    expect(screen.getByTestId('steps-flow-header')).toHaveTextContent(`Flow ${after + 1} of ${multi.flows.length}`);
+  });
+
+  it('renders the newly selected flow\'s steps after switching from the header', async () => {
+    const multi = content.findings.find((f) => f.flows.length > 1)!;
+    useStore.getState().selectFinding(multi.id);
+    render(<StepsList />);
+    const before = useStore.getState().activeFlowIndex;
+    const target = before <= 0 ? 'steps-flow-next' : 'steps-flow-prev';
+    await userEvent.click(screen.getByTestId(target));
+    const newFlow = multi.flows[useStore.getState().activeFlowIndex];
+    expect(screen.getByTestId('steps-list').querySelectorAll('[role="button"]')).toHaveLength(newFlow.steps.length);
+  });
 });

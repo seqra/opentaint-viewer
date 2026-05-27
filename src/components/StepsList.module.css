@@ -1,9 +1,17 @@
 .wrap { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 .steps { list-style: none; margin: 0; padding: 6px 0; font-size: 12px; flex: 1; min-height: 0; overflow: auto; }
 .flowHeader {
-  flex-shrink: 0; padding: 5px 10px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-bottom: 1px solid var(--border);
   color: var(--fg-dim); font-family: var(--mono); font-size: 10px;
 }
+.flowLabel { flex: 1; }
+.flowBtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg-3); color: var(--fg); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 4px; cursor: pointer;
+}
+.flowBtn:disabled { opacity: 0.4; cursor: default; }
 .step { padding: 7px 10px; cursor: pointer; border-left: 2px solid transparent; }
 .step:hover { background: var(--sel-weak); }
 .step.active { background: var(--sel); border-left-color: var(--accent); }

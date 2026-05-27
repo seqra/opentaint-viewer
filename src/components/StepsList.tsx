@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useStore } from '../state/store';
 import { findingById, flowSteps } from '../content/loadContent';
 import { keyActivate } from './keyActivate';
@@ -13,6 +14,7 @@ export function StepsList() {
   const activeFlowIndex = useStore((s) => s.activeFlowIndex);
   const activeStepIndex = useStore((s) => s.activeStepIndex);
   const selectStep = useStore((s) => s.selectStep);
+  const stepFlow = useStore((s) => s.stepFlow);
   const activeRef = useRef<HTMLLIElement>(null);
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
   const steps = finding ? flowSteps(finding, activeFlowIndex) : [];
@@ -29,7 +31,31 @@ export function StepsList() {
     <div className={styles.wrap}>
       {flowCount > 1 && (
         <div className={styles.flowHeader} data-testid="steps-flow-header">
-          Flow {activeFlowIndex + 1} of {flowCount} · {steps.length} steps
+          <button
+            type="button"
+            className={styles.flowBtn}
+            data-testid="steps-flow-prev"
+            aria-label="Previous flow"
+            title="Previous flow"
+            disabled={activeFlowIndex <= 0}
+            onClick={() => stepFlow('prev')}
+          >
+            <ChevronLeft size={13} />
+          </button>
+          <span className={styles.flowLabel}>
+            Flow {activeFlowIndex + 1} of {flowCount} · {steps.length} steps
+          </span>
+          <button
+            type="button"
+            className={styles.flowBtn}
+            data-testid="steps-flow-next"
+            aria-label="Next flow"
+            title="Next flow"
+            disabled={activeFlowIndex >= flowCount - 1}
+            onClick={() => stepFlow('next')}
+          >
+            <ChevronRight size={13} />
+          </button>
         </div>
       )}
       <ol className={styles.steps} data-testid="steps-list">
