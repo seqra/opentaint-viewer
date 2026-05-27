@@ -119,3 +119,18 @@ test('dragging the sidebar handle closed then back open restores the tree (no bl
 
   await expect(page.getByTestId('findings-tree')).toBeVisible();
 });
+
+test('view state survives a page refresh', async ({ page }) => {
+  await page.goto('/');
+  // Open the Rules sidebar and split the editor, then reload.
+  await page.getByTestId('activity-rules').click();
+  await expect(page.getByTestId('rules-tree')).toBeVisible();
+  await page.getByTestId('editor-area').getByTestId('layout-toggle').click();
+  await expect(page.getByTestId('rules-view')).toBeVisible();
+
+  await page.reload();
+
+  // Restored from localStorage — the sidebar tree and the editor split are still there.
+  await expect(page.getByTestId('rules-tree')).toBeVisible();
+  await expect(page.getByTestId('rules-view')).toBeVisible();
+});

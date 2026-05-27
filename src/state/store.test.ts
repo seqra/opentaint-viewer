@@ -23,6 +23,25 @@ describe('playground store', () => {
     expect(s.activeTab).toBe('code');
   });
 
+  it('loadContent restores saved navigation when it is still valid for the content', () => {
+    // Simulate state rehydrated from localStorage before content loads.
+    useStore.setState({ activeFindingId: multiStep.id, activeStepIndex: 1, activeFile: multiStep.steps[1].file, content: null });
+    useStore.getState().loadContent(content);
+    const s = useStore.getState();
+    expect(s.activeFindingId).toBe(multiStep.id);
+    expect(s.activeStepIndex).toBe(1);
+    expect(s.activeFile).toBe(multiStep.steps[1].file);
+  });
+
+  it('loadContent falls back to the default sink when the saved finding/step is invalid', () => {
+    useStore.setState({ activeFindingId: 'no-such-finding', activeStepIndex: 99, content: null });
+    useStore.getState().loadContent(content);
+    const s = useStore.getState();
+    const defaultFinding = content.findings.find((f) => f.id === scenario.defaultFindingId)!;
+    expect(s.activeFindingId).toBe(scenario.defaultFindingId);
+    expect(s.activeStepIndex).toBe(defaultFinding.steps.length - 1);
+  });
+
   it('selectFinding focuses the last step (the sink) and switches the active file to it', () => {
     useStore.getState().loadContent(content);
     const lastIdx = multiStep.steps.length - 1;
