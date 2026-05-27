@@ -19,8 +19,8 @@ export function TopBar() {
           className={styles.logo}
           src={theme === 'dark' ? logoDark : logoLight}
           alt="OpenTaint"
-          width={108}
-          height={20}
+          width={141}
+          height={26}
         />
       </a>
       <span className={styles.grow} />

@@ -1,6 +1,6 @@
 .bar { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg-3); border-bottom: 1px solid var(--border); font-family: var(--mono); }
 .brand { display: inline-flex; align-items: center; text-decoration: none; flex: none; }
-.logo { display: block; height: 20px; width: auto; }
+.logo { display: block; height: 26px; width: auto; }
 .grow { flex: 1; }
 .pill { flex: none; background: var(--bg-2); color: var(--fg); border: 1px solid var(--border); border-radius: 8px; padding: 3px 10px; font-size: 12px; font-family: var(--mono); cursor: pointer; }
 .pill:hover { border-color: var(--accent); }
