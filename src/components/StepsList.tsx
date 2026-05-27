@@ -31,31 +31,33 @@ export function StepsList() {
     <div className={styles.wrap}>
       {flowCount > 1 && (
         <div className={styles.flowHeader} data-testid="steps-flow-header">
-          <button
-            type="button"
-            className={styles.flowBtn}
-            data-testid="steps-flow-prev"
-            aria-label="Previous flow"
-            title="Previous flow"
-            disabled={activeFlowIndex <= 0}
-            onClick={() => stepFlow('prev')}
-          >
-            <ChevronLeft size={13} />
-          </button>
+          <span className={styles.flowBtns}>
+            <button
+              type="button"
+              className={styles.flowBtn}
+              data-testid="steps-flow-prev"
+              aria-label="Previous flow"
+              title="Previous flow"
+              disabled={activeFlowIndex <= 0}
+              onClick={() => stepFlow('prev')}
+            >
+              <ChevronLeft size={13} />
+            </button>
+            <button
+              type="button"
+              className={styles.flowBtn}
+              data-testid="steps-flow-next"
+              aria-label="Next flow"
+              title="Next flow"
+              disabled={activeFlowIndex >= flowCount - 1}
+              onClick={() => stepFlow('next')}
+            >
+              <ChevronRight size={13} />
+            </button>
+          </span>
           <span className={styles.flowLabel}>
             Flow {activeFlowIndex + 1} of {flowCount} · {steps.length} steps
           </span>
-          <button
-            type="button"
-            className={styles.flowBtn}
-            data-testid="steps-flow-next"
-            aria-label="Next flow"
-            title="Next flow"
-            disabled={activeFlowIndex >= flowCount - 1}
-            onClick={() => stepFlow('next')}
-          >
-            <ChevronRight size={13} />
-          </button>
         </div>
       )}
       <ol className={styles.steps} data-testid="steps-list">

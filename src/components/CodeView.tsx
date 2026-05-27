@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
-import { SkipBack, ChevronsLeft, ChevronLeft, CornerLeftUp, ChevronRight, ChevronsRight, SkipForward, GitFork } from 'lucide-react';
+import { SkipBack, ChevronsLeft, ChevronLeft, CornerLeftUp, ChevronRight, ChevronsRight, SkipForward } from 'lucide-react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useStore } from '../state/store';
 import { useTheme } from '../state/theme';
@@ -112,15 +112,6 @@ export function CodeView() {
         <span style={{ flex: 1 }} />
         {finding && (
           <>
-            {flowCount > 1 && (
-              <div data-testid="flow-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 4px', flexShrink: 0, color: 'var(--fg-dim)' }}>
-                <GitFork size={13} aria-hidden="true" />
-                <button type="button" title="Previous flow" aria-label="Previous flow" data-testid="flow-prev" disabled={activeFlowIndex <= 0} onClick={() => stepFlow('prev')} style={navBtn}><ChevronLeft size={13} /></button>
-                <span style={{ whiteSpace: 'nowrap', minWidth: '2ch', textAlign: 'center' }}>{activeFlowIndex + 1}/{flowCount}</span>
-                <button type="button" title="Next flow" aria-label="Next flow" data-testid="flow-next" disabled={activeFlowIndex >= flowCount - 1} onClick={() => stepFlow('next')} style={navBtn}><ChevronRight size={13} /></button>
-                <span style={{ width: 1, alignSelf: 'stretch', background: 'var(--border)', margin: '2px 4px' }} />
-              </div>
-            )}
             <div data-testid="step-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px', flexShrink: 0 }}>
               <button type="button" title="First step (Home)" aria-label="First step" disabled={atStart} onClick={() => step('start')} style={navBtn}><SkipBack size={13} /></button>
               <button type="button" title="Back over a call (Shift+←)" aria-label="Back over a call" disabled={atStart} onClick={() => step('backOver')} style={navBtn}><ChevronsLeft size={13} /></button>
@@ -134,6 +125,14 @@ export function CodeView() {
                 <span style={{ display: 'inline-block', minWidth: `${String(stepCount).length}ch`, textAlign: 'right' }}>{cur + 1}</span>/{stepCount}
               </span>
             </div>
+            {flowCount > 1 && (
+              <div data-testid="flow-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px', flexShrink: 0, color: 'var(--fg-dim)' }}>
+                <span style={{ width: 1, alignSelf: 'stretch', background: 'var(--border)', margin: '2px 4px' }} />
+                <button type="button" title="Previous flow" aria-label="Previous flow" data-testid="flow-prev" disabled={activeFlowIndex <= 0} onClick={() => stepFlow('prev')} style={navBtn}><ChevronLeft size={13} /></button>
+                <button type="button" title="Next flow" aria-label="Next flow" data-testid="flow-next" disabled={activeFlowIndex >= flowCount - 1} onClick={() => stepFlow('next')} style={navBtn}><ChevronRight size={13} /></button>
+                <span style={{ whiteSpace: 'nowrap', minWidth: '2ch', textAlign: 'center', marginLeft: 2 }}>{activeFlowIndex + 1}/{flowCount}</span>
+              </div>
+            )}
           </>
         )}
       </div>
