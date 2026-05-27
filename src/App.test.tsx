@@ -44,12 +44,6 @@ describe('App', () => {
     expect(screen.getByTestId('editor-area')).toBeInTheDocument();
   });
 
-  it('opens the share dialog from the top bar', async () => {
-    render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: /share/i }));
-    expect(screen.getByTestId('share-url')).toBeInTheDocument();
-  });
-
   it('switches the sidebar between Findings and Rules from the activity bar (mutually exclusive)', async () => {
     render(<App />);
     expect(screen.getByTestId('findings-tree')).toBeInTheDocument();

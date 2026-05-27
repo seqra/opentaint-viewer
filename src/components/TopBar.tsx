@@ -9,7 +9,7 @@ const SITE_URL = 'https://opentaint.org/';
 
 type CopyStatus = 'idle' | 'copied' | 'failed';
 
-export function TopBar({ onShare }: { onShare: () => void }) {
+export function TopBar() {
   const theme = useTheme((s) => s.theme);
   const toggleTheme = useTheme((s) => s.toggle);
   const [status, setStatus] = useState<CopyStatus>('idle');
@@ -69,7 +69,6 @@ export function TopBar({ onShare }: { onShare: () => void }) {
       >
         {theme === 'dark' ? '☀' : '☾'}
       </button>
-      <button className={styles.pill} onClick={onShare}>share</button>
       <div className={styles.install}>
         <code ref={cmdRef} className={styles.cmd}>{INSTALL_CMD}</code>
         <button

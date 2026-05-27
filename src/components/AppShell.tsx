@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle, type ImperativePanelHandle } from 'react-resizable-panels';
 import { TopBar } from './TopBar';
 import { FindingsTree } from './FindingsTree';
 import { RulesTree } from './RulesTree';
 import { EditorArea } from './EditorArea';
 import { InfoPanel } from './InfoPanel';
-import { ShareDialog } from './ShareDialog';
 import { ActivityBar } from './ActivityBar';
 import { useStepKeys } from './useStepKeys';
 import { useStore } from '../state/store';
@@ -13,7 +12,6 @@ import { useTheme } from '../state/theme';
 import styles from './AppShell.module.css';
 
 export function AppShell() {
-  const [sharing, setSharing] = useState(false);
   const view = useStore((s) => s.sidebarView);
   const toggleSidebar = useStore((s) => s.toggleSidebar);
   const setSidebarView = useStore((s) => s.setSidebarView);
@@ -34,7 +32,7 @@ export function AppShell() {
 
   return (
     <div className={styles.shell}>
-      <TopBar onShare={() => setSharing(true)} />
+      <TopBar />
       <div className={styles.body}>
         <ActivityBar active={view} onSelect={toggleSidebar} />
         <PanelGroup direction="horizontal" autoSaveId="ot-body" className={styles.panels}>
@@ -69,7 +67,6 @@ export function AppShell() {
           </Panel>
         </PanelGroup>
       </div>
-      {sharing && <ShareDialog onClose={() => setSharing(false)} />}
     </div>
   );
 }

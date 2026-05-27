@@ -15,7 +15,7 @@ const lastStep = active.steps[active.steps.length - 1];
 const sinkBase = lastStep.file.split('/').pop()!;
 const stepText = lastStep.label.slice(0, 30);
 
-test('explore a finding, jump cross-file, split, and share', async ({ page }) => {
+test('explore a finding, jump cross-file, and split', async ({ page }) => {
   await page.goto('/');
 
   // The first scenario's finding is visible on first paint (its location is unique to
@@ -34,15 +34,6 @@ test('explore a finding, jump cross-file, split, and share', async ({ page }) =>
   // identical toggle, so scope to the editor area's layout-toggle.
   await page.getByTestId('editor-area').getByTestId('layout-toggle').click();
   await expect(page.getByTestId('code-view')).toBeVisible();
-  await expect(page.getByTestId('rules-view')).toBeVisible();
-
-  // Share -> URL has a hash.
-  await page.getByTestId('top-bar').getByRole('button', { name: /share/i }).click();
-  const url = await page.getByTestId('share-url').inputValue();
-  expect(url).toContain('#');
-
-  // Reopen the shared URL -> split mode restored.
-  await page.goto(url);
   await expect(page.getByTestId('rules-view')).toBeVisible();
 });
 
