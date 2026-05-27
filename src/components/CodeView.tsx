@@ -42,6 +42,13 @@ export function CodeView() {
   const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
   const decoRef = useRef<DecorationCollection | null>(null);
 
+  const revealCurrentStep = () => {
+    const editor = editorRef.current;
+    if (!editor || !finding || !activeFile) return;
+    const current = pathDecorations(finding.steps, activeFile, cur).find((d) => d.isCurrent);
+    if (current) editor.revealLineInCenter?.(current.startLine);
+  };
+
   const applyDecorations = () => {
     const editor = editorRef.current;
     const monaco = monacoRef.current;
@@ -57,14 +64,19 @@ export function CodeView() {
           : { inlineClassName: d.className, glyphMarginClassName: d.glyphClassName },
       })),
     ) as DecorationCollection;
-    const current = decos.find((d) => d.isCurrent);
-    if (current) editor.revealLineInCenter?.(current.startLine);
+    revealCurrentStep();
   };
 
   const onMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
     applyDecorations();
+    // Inside resizable panels the editor can mount before it has its final height, so the
+    // initial reveal lands off-centre. Re-centre once the first real layout arrives.
+    const sub = editor.onDidLayoutChange?.(() => {
+      sub?.dispose();
+      revealCurrentStep();
+    });
   };
 
   useEffect(() => {
