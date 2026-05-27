@@ -74,15 +74,15 @@ export function StepsList() {
               onClick={() => selectStep(finding.id, s.index)}
               onKeyDown={keyActivate(() => selectStep(finding.id, s.index))}
             >
-              <div className={styles.row}>
-                <span className={styles.marker}>{s.index + 1}</span>
+              <span className={styles.marker}>{s.index + 1}</span>
+              <div className={styles.label}>{s.label}</div>
+              <div className={styles.meta}>
                 {s.kind === 'sink' && <SeverityBadge severity={finding.severity} />}
                 <span className={styles.loc}>
                   {basename(s.file)}:{s.line}
                   {s.crossesFile ? ' ↗' : ''}
                 </span>
               </div>
-              <div className={styles.label}>{s.label}</div>
             </li>
           );
         })}

@@ -13,15 +13,16 @@
   border-radius: 4px; padding: 1px 4px; cursor: pointer;
 }
 .flowBtn:disabled { opacity: 0.4; cursor: default; }
-.step { padding: 7px 10px; cursor: pointer; border-left: 2px solid transparent; }
+.step { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; cursor: pointer; border-left: 2px solid transparent; }
 .step:hover { background: var(--sel-weak); }
 .step.active { background: var(--sel); border-left-color: var(--accent); }
-.row { display: flex; align-items: center; gap: 8px; }
 .marker {
+  flex-shrink: 0; margin-top: 1px;
   background: var(--accent); color: #fff; border-radius: 50%;
   min-width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center;
   font-size: 9px; font-family: var(--mono);
 }
-.loc { margin-left: auto; color: var(--fg-dim); font-family: var(--mono); font-size: 10px; }
-.label { color: var(--fg-dim); line-height: 1.5; margin-top: 3px; padding-left: 24px; }
+.label { flex: 1; min-width: 0; color: var(--fg-dim); line-height: 1.45; }
 .step.active .label { color: var(--fg); }
+.meta { flex-shrink: 0; display: flex; align-items: center; gap: 8px; margin-top: 1px; }
+.loc { color: var(--fg-dim); font-family: var(--mono); font-size: 10px; white-space: nowrap; }
