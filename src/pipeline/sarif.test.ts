@@ -111,3 +111,69 @@ describe('vulnClassForRule', () => {
     expect(vulnClassForRule('mystery.thing')).toBe('Thing');
   });
 });
+
+describe('transformSarif — code flows', () => {
+  const tfl = (uri: string, line: number, text: string) => ({
+    location: { physicalLocation: { artifactLocation: { uri }, region: { startLine: line } }, message: { text } },
+    kinds: ['taint'],
+  });
+  const flow = (...locs: ReturnType<typeof tfl>[]) => ({ threadFlows: [{ locations: locs }] });
+  const result = (ruleId: string, line: number, codeFlows: ReturnType<typeof flow>[]) => ({
+    ruleId,
+    level: 'error',
+    message: { text: 'm' },
+    locations: [{ physicalLocation: { artifactLocation: { uri: 'A.java' }, region: { startLine: line } } }],
+    codeFlows,
+  });
+
+  it('keeps every code flow as a Flow, in order', () => {
+    const log = { runs: [{ results: [result('java.security.ssti', 30, [
+      flow(tfl('A.java', 1, 'a'), tfl('A.java', 2, 'b')),
+      flow(tfl('A.java', 3, 'c'), tfl('A.java', 4, 'd'), tfl('A.java', 5, 'e')),
+    ])] }] };
+    const f = transformSarif(log)[0];
+    expect(f.flows).toHaveLength(2);
+    expect(f.flows[0].steps).toHaveLength(2);
+    expect(f.flows[1].steps).toHaveLength(3);
+    expect(f.flows[0].steps[0].kind).toBe('source');
+  });
+
+  it('defaults to the longest flow when there is no curated override', () => {
+    const log = { runs: [{ results: [result('java.security.ssti', 30, [
+      flow(tfl('A.java', 1, 'a'), tfl('A.java', 2, 'b')),
+      flow(tfl('A.java', 3, 'c'), tfl('A.java', 4, 'd'), tfl('A.java', 5, 'e')),
+    ])] }] };
+    expect(transformSarif(log)[0].defaultFlowIndex).toBe(1);
+  });
+
+  it('honors the curated override for MessageController.java:96 (the 26-step stored-XSS flow)', () => {
+    const log = { runs: [{ results: [{
+      ruleId: 'java.security.xss-in-spring-app',
+      level: 'error',
+      message: { text: 'm' },
+      locations: [{ physicalLocation: { artifactLocation: { uri: 'a/MessageController.java' }, region: { startLine: 96 } } }],
+      codeFlows: [
+        flow(tfl('a/MessageController.java', 87, 'short')),
+        flow(tfl('a/MessageController.java', 33, 'long'), tfl('a/MessageController.java', 96, 'sink')),
+      ],
+    }] }] };
+    expect(transformSarif(log)[0].defaultFlowIndex).toBe(1);
+  });
+
+  it('a result with no code flows still yields one empty flow', () => {
+    const log = { runs: [{ results: [{ ruleId: 'r', level: 'error', message: { text: 'm' }, locations: [] }] }] };
+    const f = transformSarif(log)[0];
+    expect(f.flows).toHaveLength(1);
+    expect(f.flows[0].steps).toEqual([]);
+    expect(f.defaultFlowIndex).toBe(0);
+  });
+
+  it('keeps `steps` as the default flow (back-compat until removal)', () => {
+    const log = { runs: [{ results: [result('java.security.ssti', 30, [
+      flow(tfl('A.java', 1, 'a')),
+      flow(tfl('A.java', 3, 'c'), tfl('A.java', 4, 'd')),
+    ])] }] };
+    const f = transformSarif(log)[0];
+    expect(f.steps).toBe(f.flows[f.defaultFlowIndex].steps);
+  });
+});

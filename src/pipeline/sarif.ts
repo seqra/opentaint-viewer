@@ -1,4 +1,4 @@
-import type { Finding, Severity, TaintStep } from '../types/content';
+import type { Finding, Flow, Severity, TaintStep } from '../types/content';
 import { basename } from '../util/path';
 
 /** Substring patterns → short vuln-class label, checked in order. */
@@ -97,27 +97,21 @@ function primaryLocation(res: SarifResult): string | null {
   return line ? `${basename(uri)}:${line}` : basename(uri);
 }
 
-/**
- * Pick the most complete trace for a result. opentaint emits several codeFlows for stored
- * taint: an abbreviated flow that starts where the value is read back out of storage, plus
- * the full flow from the original source through storage to the sink. They all end at the
- * same sink, so the longest threadFlow is the full source-to-sink path we want to show.
- */
-function longestFlow(res: SarifResult): SarifTfl[] {
-  let best: SarifTfl[] = [];
-  for (const cf of res.codeFlows ?? []) {
-    for (const tf of cf.threadFlows ?? []) {
-      const locs = tf.locations ?? [];
-      if (locs.length > best.length) best = locs;
-    }
-  }
+/** Per-finding default code-flow override, keyed by `${ruleId} @ ${primaryLocation}`. */
+const DEFAULT_FLOW_OVERRIDES: Record<string, number> = {
+  'java.security.xss-in-spring-app @ MessageController.java:96': 1,
+};
+
+function pickDefaultFlow(ruleId: string, location: string | null, flows: Flow[]): number {
+  const override = location ? DEFAULT_FLOW_OVERRIDES[`${ruleId} @ ${location}`] : undefined;
+  if (override != null && override >= 0 && override < flows.length) return override;
+  let best = 0; // longest flow wins; ties resolve to the lowest index
+  for (let i = 1; i < flows.length; i++) if (flows[i].steps.length > flows[best].steps.length) best = i;
   return best;
 }
 
-function buildFinding(res: SarifResult, idx: number, meta: Map<string, RuleMeta>): Finding {
-  const ruleId = res.ruleId ?? 'unknown';
-  const locs = longestFlow(res);
-  const steps: TaintStep[] = locs.map((tfl, i) => {
+function buildSteps(locs: SarifTfl[]): TaintStep[] {
+  return locs.map((tfl, i) => {
     const file = fileOf(tfl);
     const prevFile = i > 0 ? fileOf(locs[i - 1]) : file;
     const explicit = tfl.kinds?.find(
@@ -136,19 +130,31 @@ function buildFinding(res: SarifResult, idx: number, meta: Map<string, RuleMeta>
       crossesFile: i > 0 && file !== prevFile,
     };
   });
+}
+
+function buildFinding(res: SarifResult, idx: number, meta: Map<string, RuleMeta>): Finding {
+  const ruleId = res.ruleId ?? 'unknown';
+  const flows: Flow[] = (res.codeFlows ?? []).map((cf) => ({
+    steps: buildSteps(cf.threadFlows?.[0]?.locations ?? []),
+  }));
+  if (flows.length === 0) flows.push({ steps: [] }); // keep `flows` non-empty
+  const location = primaryLocation(res);
+  const defaultFlowIndex = pickDefaultFlow(ruleId, location, flows);
   return {
     id: `${ruleId}-${idx}`,
     ruleId,
     vulnClass: vulnClassForRule(ruleId),
     severity: severityFromLevel(res.level),
     endpoint: null,
-    location: primaryLocation(res),
+    location,
     file: primaryFile(res),
     ruleFile: null,
     cwe: meta.get(ruleId)?.cwe ?? [],
     description: meta.get(ruleId)?.description,
     message: res.message?.text ?? '',
-    steps,
+    flows,
+    defaultFlowIndex,
+    steps: flows[defaultFlowIndex].steps, // derived; removed in a later task
   };
 }
 

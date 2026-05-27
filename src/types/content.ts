@@ -17,6 +17,11 @@ export interface TaintStep {
   crossesFile: boolean;
 }
 
+export interface Flow {
+  /** Ordered source → … → sink for one code flow. */
+  steps: TaintStep[];
+}
+
 export interface Finding {
   id: string;
   ruleId: string;
@@ -35,6 +40,10 @@ export interface Finding {
   description?: string;
   message: string;
   steps: TaintStep[];
+  /** Every code flow the engine reported for this finding (≥ 1, in SARIF order). */
+  flows: Flow[];
+  /** Which flow to show first (0-based, in range of `flows`). */
+  defaultFlowIndex: number;
 }
 
 export interface ProjectFile {
