@@ -1,4 +1,9 @@
 .superpowers/
+# Local tooling / agent-plugin scratch (not project files)
+.agents/
+.claude/
+skills-lock.json
+.DS_Store
 node_modules/
 dist/
 dist-single/
