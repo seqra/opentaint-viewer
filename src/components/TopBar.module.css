@@ -4,7 +4,8 @@
 .grow { flex: 1; }
 .pill { flex: none; background: var(--bg-2); color: var(--fg); border: 1px solid var(--border); border-radius: 8px; padding: 3px 10px; font-size: 12px; font-family: var(--mono); cursor: pointer; }
 .pill:hover { border-color: var(--accent); }
-.install { display: inline-flex; align-items: center; gap: 6px; min-width: 0; background: var(--bg); border: 1px solid var(--accent); border-radius: 8px; padding: 2px 4px 2px 10px; }
-.cmd { font-family: var(--mono); font-size: 12px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.copy { flex: none; background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 12px; }
-.copy:hover { filter: brightness(1.08); }
+.star, .cta { flex: none; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; padding: 4px 12px; font-size: 12px; font-family: var(--mono); text-decoration: none; cursor: pointer; }
+.star { background: var(--bg-2); color: var(--fg); border: 1px solid var(--border); }
+.star:hover { border-color: var(--accent); color: var(--accent); }
+.cta { background: var(--accent); color: #fff; border: 1px solid var(--accent); font-weight: 600; }
+.cta:hover { filter: brightness(1.08); }

@@ -1,53 +1,16 @@
-import { useRef, useState } from 'react';
+import { Star, Terminal } from 'lucide-react';
 import { useTheme } from '../state/theme';
 import logoLight from '../assets/opentaint-header-light.svg';
 import logoDark from '../assets/opentaint-header-dark.svg';
 import styles from './TopBar.module.css';
 
-const INSTALL_CMD = 'curl -fsSL https://opentaint.org/install.sh | bash';
 const SITE_URL = 'https://opentaint.org/';
-
-type CopyStatus = 'idle' | 'copied' | 'failed';
+const REPO_URL = 'https://github.com/seqra/opentaint';
+const QUICKSTART_URL = 'https://github.com/seqra/opentaint#quick-start';
 
 export function TopBar() {
   const theme = useTheme((s) => s.theme);
   const toggleTheme = useTheme((s) => s.toggle);
-  const [status, setStatus] = useState<CopyStatus>('idle');
-  const cmdRef = useRef<HTMLElement>(null);
-
-  // Fallback when the clipboard API is unavailable (non-secure context / older browser):
-  // select the command text so the user can copy it manually. Must never throw.
-  const selectCommand = () => {
-    try {
-      const el = cmdRef.current;
-      const selection = window.getSelection?.();
-      if (!el || !selection) return;
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    } catch {
-      /* selection unsupported */
-    }
-  };
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(INSTALL_CMD);
-      setStatus('copied');
-      setTimeout(() => setStatus('idle'), 1500);
-    } catch {
-      selectCommand();
-      setStatus('failed');
-    }
-  };
-
-  const copyLabel =
-    status === 'copied'
-      ? 'Copied!'
-      : status === 'failed'
-        ? 'Copy failed — select and copy manually'
-        : 'Copy install command';
 
   return (
     <div className={styles.bar} data-testid="top-bar">
@@ -69,17 +32,12 @@ export function TopBar() {
       >
         {theme === 'dark' ? '☀' : '☾'}
       </button>
-      <div className={styles.install}>
-        <code ref={cmdRef} className={styles.cmd}>{INSTALL_CMD}</code>
-        <button
-          className={styles.copy}
-          aria-label={copyLabel}
-          title={copyLabel}
-          onClick={copy}
-        >
-          {status === 'copied' ? '✓' : status === 'failed' ? '✗' : '⧉'}
-        </button>
-      </div>
+      <a className={styles.star} href={REPO_URL} target="_blank" rel="noreferrer">
+        <Star size={14} aria-hidden="true" /> Star
+      </a>
+      <a className={styles.cta} href={QUICKSTART_URL} target="_blank" rel="noreferrer">
+        <Terminal size={14} aria-hidden="true" /> Install
+      </a>
     </div>
   );
 }

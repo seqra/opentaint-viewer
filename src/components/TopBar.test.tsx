@@ -1,37 +1,26 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TopBar } from './TopBar';
 import { useTheme } from '../state/theme';
 
-const CMD = 'curl -fsSL https://opentaint.org/install.sh | bash';
-const originalClipboard = navigator.clipboard;
-
-afterEach(() => {
-  Object.assign(navigator, { clipboard: originalClipboard });
-});
-
 describe('TopBar', () => {
-  it('shows the install command and links the brand to opentaint.org', () => {
+  it('links the brand to opentaint.org', () => {
     render(<TopBar />);
-    expect(screen.getByText(CMD)).toBeInTheDocument();
-    const brand = screen.getByRole('link', { name: /opentaint/i });
-    expect(brand).toHaveAttribute('href', expect.stringContaining('opentaint.org'));
+    expect(screen.getByRole('link', { name: /opentaint/i })).toHaveAttribute('href', 'https://opentaint.org/');
   });
 
-  it('copies the install command to the clipboard', async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.assign(navigator, { clipboard: { writeText } });
+  it('shows a Star CTA linking to the GitHub repo', () => {
     render(<TopBar />);
-    await userEvent.click(screen.getByRole('button', { name: /copy install command/i }));
-    expect(writeText).toHaveBeenCalledWith(CMD);
+    expect(screen.getByRole('link', { name: /star/i })).toHaveAttribute('href', 'https://github.com/seqra/opentaint');
   });
 
-  it('falls back to a failed state (no throw) when the clipboard API is unavailable', async () => {
-    Object.assign(navigator, { clipboard: undefined });
+  it('shows an Install CTA linking to the repo quick-start', () => {
     render(<TopBar />);
-    await userEvent.click(screen.getByRole('button', { name: /copy install command/i }));
-    expect(await screen.findByRole('button', { name: /copy failed/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /install/i })).toHaveAttribute(
+      'href',
+      'https://github.com/seqra/opentaint#quick-start',
+    );
   });
 
   it('toggles the theme', async () => {
