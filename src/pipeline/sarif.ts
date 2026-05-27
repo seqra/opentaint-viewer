@@ -154,7 +154,6 @@ function buildFinding(res: SarifResult, idx: number, meta: Map<string, RuleMeta>
     message: res.message?.text ?? '',
     flows,
     defaultFlowIndex,
-    steps: flows[defaultFlowIndex].steps, // derived; removed in a later task
   };
 }
 

@@ -39,7 +39,6 @@ export interface Finding {
   /** Full rule description from the report (markdown). */
   description?: string;
   message: string;
-  steps: TaintStep[];
   /** Every code flow the engine reported for this finding (≥ 1, in SARIF order). */
   flows: Flow[];
   /** Which flow to show first (0-based, in range of `flows`). */

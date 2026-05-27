@@ -25,7 +25,8 @@ describe('transformSarif', () => {
   });
 
   it('builds ordered steps with positionally-inferred kinds (real kinds are ["taint"])', () => {
-    const steps = findings[0].steps;
+    const f = findings[0];
+    const steps = f.flows[f.defaultFlowIndex].steps;
     expect(steps.map((s) => s.kind)).toEqual(['source', 'propagation', 'sink']);
     expect(steps[0]).toMatchObject({
       index: 0,
@@ -36,8 +37,10 @@ describe('transformSarif', () => {
   });
 
   it('captures the precise column span for each step', () => {
-    expect(findings[0].steps[0]).toMatchObject({ startColumn: 9, endLine: 54, endColumn: 41 });
-    expect(findings[0].steps[1]).toMatchObject({ startColumn: 5, endLine: 12, endColumn: 30 });
+    const f = findings[0];
+    const steps = f.flows[f.defaultFlowIndex].steps;
+    expect(steps[0]).toMatchObject({ startColumn: 9, endLine: 54, endColumn: 41 });
+    expect(steps[1]).toMatchObject({ startColumn: 5, endLine: 12, endColumn: 30 });
   });
 
   it('attaches CWE tags and the full markdown description from the report', () => {
@@ -46,58 +49,13 @@ describe('transformSarif', () => {
   });
 
   it('marks the hop that changes file as crossesFile', () => {
-    const steps = findings[0].steps;
+    const f = findings[0];
+    const steps = f.flows[f.defaultFlowIndex].steps;
     expect(steps[1]).toMatchObject({ file: 'src/main/java/org/seqra/complexity/HtmlPageBuilder.java', crossesFile: true });
     expect(steps[2].crossesFile).toBe(true);
   });
 });
 
-describe('transformSarif codeFlow selection', () => {
-  // opentaint emits several codeFlows per result for stored taint: an abbreviated flow
-  // that starts where the value is read back, and the full flow from the original source
-  // through storage. We want the full one, regardless of codeFlow order.
-  const mk = (uri: string, line: number, text: string) => ({
-    location: { physicalLocation: { artifactLocation: { uri }, region: { startLine: line } }, message: { text } },
-    kinds: ['taint'],
-  });
-
-  it('picks the most complete threadFlow even when a shorter codeFlow comes first', () => {
-    const log = {
-      runs: [
-        {
-          results: [
-            {
-              ruleId: 'java.security.xss-in-spring-app',
-              level: 'error',
-              locations: [{ physicalLocation: { artifactLocation: { uri: 'A.java' }, region: { startLine: 96 } } }],
-              codeFlows: [
-                // Abbreviated read-half flow (listed first, as opentaint does).
-                { threadFlows: [{ locations: [mk('A.java', 87, 'read back'), mk('A.java', 96, 'sink')] }] },
-                // Full stored flow: original source -> store -> read back -> sink.
-                {
-                  threadFlows: [
-                    {
-                      locations: [
-                        mk('A.java', 33, 'request untrusted'),
-                        mk('B.java', 31, 'saved to repository'),
-                        mk('A.java', 87, 'read back'),
-                        mk('A.java', 96, 'sink'),
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
-    const [finding] = transformSarif(log);
-    expect(finding.steps).toHaveLength(4);
-    expect(finding.steps[0]).toMatchObject({ kind: 'source', line: 33, label: 'request untrusted' });
-    expect(finding.steps.at(-1)).toMatchObject({ kind: 'sink', line: 96 });
-  });
-});
 
 describe('vulnClassForRule', () => {
   it('maps namespaced opentaint rule ids to short labels', () => {
@@ -168,12 +126,4 @@ describe('transformSarif — code flows', () => {
     expect(f.defaultFlowIndex).toBe(0);
   });
 
-  it('keeps `steps` as the default flow (back-compat until removal)', () => {
-    const log = { runs: [{ results: [result('java.security.ssti', 30, [
-      flow(tfl('A.java', 1, 'a')),
-      flow(tfl('A.java', 3, 'c'), tfl('A.java', 4, 'd')),
-    ])] }] };
-    const f = transformSarif(log)[0];
-    expect(f.steps).toBe(f.flows[f.defaultFlowIndex].steps);
-  });
 });

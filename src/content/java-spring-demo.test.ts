@@ -19,7 +19,7 @@ describe('committed content', () => {
 
   it('every taint step references an existing file', () => {
     const filePaths = new Set(content.files.map((f) => f.path));
-    for (const f of content.findings) for (const s of f.steps) {
+    for (const f of content.findings) for (const flow of f.flows) for (const s of flow.steps) {
       expect(filePaths.has(s.file)).toBe(true);
     }
   });

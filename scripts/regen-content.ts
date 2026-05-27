@@ -116,7 +116,7 @@ function buildScenarios(findings: Finding[]): Scenario[] {
       id: slug(vulnClass),
       title: vulnClass,
       blurb: VULN_BLURB[vulnClass] ?? `${vulnClass} found by opentaint in this project.`,
-      startFile: f.steps[0]?.file ?? '',
+      startFile: f.flows[f.defaultFlowIndex].steps[0]?.file ?? '',
       defaultFindingId: f.id,
     };
   });
