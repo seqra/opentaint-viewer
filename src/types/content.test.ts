@@ -7,10 +7,18 @@ describe('isViewerContent', () => {
       projectId: 'java-spring-demo',
       scenarios: [{ id: 's1', title: 'SQLi', blurb: 'b', startFile: 'A.java', defaultFindingId: 'f1' }],
       files: [{ path: 'A.java', language: 'java', content: '...' }],
-      findings: [{ id: 'f1', ruleId: 'sqli', vulnClass: 'SQL Injection', severity: 'error', endpoint: null, message: 'm', steps: [] }],
+      findings: [{ id: 'f1', ruleId: 'sqli', vulnClass: 'SQL Injection', severity: 'error', endpoint: null, message: 'm', flows: [{ steps: [] }], defaultFlowIndex: 0 }],
       rules: [{ id: 'sqli', origin: 'builtin', kind: 'rule', path: 'Builtin/rule/sqli.yaml', content: 'id: sqli' }],
     };
     expect(isViewerContent(c)).toBe(true);
+  });
+
+  it('rejects a finding with no flows or an out-of-range default index', () => {
+    const base = { projectId: 'p', scenarios: [], files: [], rules: [] };
+    const finding = (extra: object) => ({ findings: [{ id: 'f', ruleId: 'r', vulnClass: 'X', severity: 'error', endpoint: null, message: 'm', ...extra }] });
+    expect(isViewerContent({ ...base, ...finding({ flows: [], defaultFlowIndex: 0 }) })).toBe(false);
+    expect(isViewerContent({ ...base, ...finding({ flows: [{ steps: [] }], defaultFlowIndex: 5 }) })).toBe(false);
+    expect(isViewerContent({ ...base, ...finding({ flows: [{ steps: [] }] }) })).toBe(false);
   });
 
   it('rejects a non-object', () => {

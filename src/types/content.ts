@@ -80,11 +80,27 @@ export interface ViewerContent {
 export function isViewerContent(value: unknown): value is ViewerContent {
   if (typeof value !== 'object' || value === null) return false;
   const c = value as Record<string, unknown>;
-  return (
-    typeof c.projectId === 'string' &&
-    Array.isArray(c.scenarios) &&
-    Array.isArray(c.files) &&
-    Array.isArray(c.findings) &&
-    Array.isArray(c.rules)
-  );
+  if (
+    typeof c.projectId !== 'string' ||
+    !Array.isArray(c.scenarios) ||
+    !Array.isArray(c.files) ||
+    !Array.isArray(c.findings) ||
+    !Array.isArray(c.rules)
+  ) {
+    return false;
+  }
+  return (c.findings as unknown[]).every((f) => {
+    if (typeof f !== 'object' || f === null) return false;
+    const finding = f as Record<string, unknown>;
+    const flows = finding.flows;
+    const idx = finding.defaultFlowIndex;
+    return (
+      Array.isArray(flows) &&
+      flows.length > 0 &&
+      typeof idx === 'number' &&
+      Number.isInteger(idx) &&
+      idx >= 0 &&
+      idx < flows.length
+    );
+  });
 }
