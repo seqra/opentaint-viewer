@@ -97,9 +97,26 @@ function primaryLocation(res: SarifResult): string | null {
   return line ? `${basename(uri)}:${line}` : basename(uri);
 }
 
+/**
+ * Pick the most complete trace for a result. opentaint emits several codeFlows for stored
+ * taint: an abbreviated flow that starts where the value is read back out of storage, plus
+ * the full flow from the original source through storage to the sink. They all end at the
+ * same sink, so the longest threadFlow is the full source-to-sink path we want to show.
+ */
+function longestFlow(res: SarifResult): SarifTfl[] {
+  let best: SarifTfl[] = [];
+  for (const cf of res.codeFlows ?? []) {
+    for (const tf of cf.threadFlows ?? []) {
+      const locs = tf.locations ?? [];
+      if (locs.length > best.length) best = locs;
+    }
+  }
+  return best;
+}
+
 function buildFinding(res: SarifResult, idx: number, meta: Map<string, RuleMeta>): Finding {
   const ruleId = res.ruleId ?? 'unknown';
-  const locs = res.codeFlows?.[0]?.threadFlows?.[0]?.locations ?? [];
+  const locs = longestFlow(res);
   const steps: TaintStep[] = locs.map((tfl, i) => {
     const file = fileOf(tfl);
     const prevFile = i > 0 ? fileOf(locs[i - 1]) : file;
