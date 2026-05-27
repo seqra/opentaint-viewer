@@ -156,6 +156,215 @@
       ],
       "description": "Server-side template injection occurs when untrusted input reaches template-engine APIs\nas template content, template name, or expression-bearing payload.\n\nVulnerable example:\n\n```java\nimport freemarker.template.Configuration;\nimport freemarker.template.Template;\nimport java.io.StringReader;\n\npublic class TemplateService {\n    public Template compile(Configuration cfg, String templateFromRequest) throws Exception {\n        // templateFromRequest is untrusted\n        return new Template(\"userTpl\", new StringReader(templateFromRequest), cfg); // VULNERABLE\n    }\n}\n```\n\nSafe example:\n\n```java\nimport freemarker.template.Configuration;\nimport freemarker.template.Template;\nimport java.util.Map;\n\npublic class TemplateService {\n    public String render(Configuration cfg, String templateKey, Map<String, Object> model) throws Exception {\n        String selected = switch (templateKey) {\n            case \"welcome\" -> \"welcome.ftl\";\n            case \"receipt\" -> \"receipt.ftl\";\n            default -> throw new IllegalArgumentException(\"Unsupported template\");\n        };\n\n        Template tpl = cfg.getTemplate(selected);\n        java.io.StringWriter out = new java.io.StringWriter();\n        tpl.process(model, out);\n        return out.toString();\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include FreeMarker/Velocity/Thymeleaf/Jinjava/Pebble\ntemplate compilation and processing APIs with tainted template identifiers/content.",
       "message": "Potential template injection: unvalidated user data flows into template engine",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 75,
+              "startColumn": 12,
+              "endLine": 75,
+              "endColumn": 83,
+              "label": "Method entry marks \"request\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 77,
+              "startColumn": 13,
+              "endLine": 77,
+              "endColumn": 66,
+              "label": "Calling \"getTemplateContent\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/RenderRequest.java",
+              "line": 15,
+              "startColumn": 9,
+              "endLine": 15,
+              "endColumn": 31,
+              "label": "The returning value is assigned marked data from \"this.templateContent\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/RenderRequest.java",
+              "line": 16,
+              "startColumn": 5,
+              "endLine": 16,
+              "endColumn": 6,
+              "label": "Exiting \"getTemplateContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 77,
+              "startColumn": 13,
+              "endLine": 77,
+              "endColumn": 66,
+              "label": "Method \"getTemplateContent\" propagates $UNTRUSTED data from \"request\" to \"templateContent\"",
+              "crossesFile": true
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 78,
+              "startColumn": 13,
+              "endLine": 78,
+              "endColumn": 79,
+              "label": "Calling \"renderFromContent\" with $UNTRUSTED data at \"templateContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
+              "line": 26,
+              "startColumn": 12,
+              "endLine": 26,
+              "endColumn": 60,
+              "label": "Entering \"renderFromContent\" with $UNTRUSTED data at \"templateContent\"",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
+              "line": 30,
+              "startColumn": 16,
+              "endLine": 30,
+              "endColumn": 64,
+              "label": "Potential template injection: unvalidated user data flows into template engine",
+              "crossesFile": false
+            }
+          ]
+        },
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 62,
+              "startColumn": 12,
+              "endLine": 62,
+              "endColumn": 85,
+              "label": "Method entry marks \"request\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 64,
+              "startColumn": 13,
+              "endLine": 64,
+              "endColumn": 71,
+              "label": "Calling \"renderFromRequest\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
+              "line": 37,
+              "startColumn": 12,
+              "endLine": 37,
+              "endColumn": 59,
+              "label": "Entering \"renderFromRequest\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
+              "line": 38,
+              "startColumn": 9,
+              "endLine": 38,
+              "endColumn": 54,
+              "label": "Calling \"getTemplateContent\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/RenderRequest.java",
+              "line": 15,
+              "startColumn": 9,
+              "endLine": 15,
+              "endColumn": 31,
+              "label": "The returning value is assigned marked data from \"this.templateContent\"",
+              "crossesFile": true
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/RenderRequest.java",
+              "line": 16,
+              "startColumn": 5,
+              "endLine": 16,
+              "endColumn": 6,
+              "label": "Exiting \"getTemplateContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
+              "line": 38,
+              "startColumn": 9,
+              "endLine": 38,
+              "endColumn": 54,
+              "label": "Method \"getTemplateContent\" propagates $UNTRUSTED data from \"request\" to \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
+              "line": 39,
+              "startColumn": 16,
+              "endLine": 39,
+              "endColumn": 42,
+              "label": "Calling \"renderFromContent\" with $UNTRUSTED data at \"content\"",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
+              "line": 26,
+              "startColumn": 12,
+              "endLine": 26,
+              "endColumn": 60,
+              "label": "Entering \"renderFromContent\" with $UNTRUSTED data at \"templateContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 9,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/content/TemplateRenderingService.java",
+              "line": 30,
+              "startColumn": 16,
+              "endLine": 30,
+              "endColumn": 64,
+              "label": "Potential template injection: unvalidated user data flows into template engine",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 1,
       "steps": [
         {
           "index": 0,
@@ -284,6 +493,204 @@
       ],
       "description": "Server-side template injection occurs when untrusted input reaches template-engine APIs\nas template content, template name, or expression-bearing payload.\n\nVulnerable example:\n\n```java\nimport freemarker.template.Configuration;\nimport freemarker.template.Template;\nimport java.io.StringReader;\n\npublic class TemplateService {\n    public Template compile(Configuration cfg, String templateFromRequest) throws Exception {\n        // templateFromRequest is untrusted\n        return new Template(\"userTpl\", new StringReader(templateFromRequest), cfg); // VULNERABLE\n    }\n}\n```\n\nSafe example:\n\n```java\nimport freemarker.template.Configuration;\nimport freemarker.template.Template;\nimport java.util.Map;\n\npublic class TemplateService {\n    public String render(Configuration cfg, String templateKey, Map<String, Object> model) throws Exception {\n        String selected = switch (templateKey) {\n            case \"welcome\" -> \"welcome.ftl\";\n            case \"receipt\" -> \"receipt.ftl\";\n            default -> throw new IllegalArgumentException(\"Unsupported template\");\n        };\n\n        Template tpl = cfg.getTemplate(selected);\n        java.io.StringWriter out = new java.io.StringWriter();\n        tpl.process(model, out);\n        return out.toString();\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include FreeMarker/Velocity/Thymeleaf/Jinjava/Pebble\ntemplate compilation and processing APIs with tainted template identifiers/content.",
       "message": "Potential template injection: unvalidated user data flows into template engine",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 22,
+              "startColumn": 9,
+              "endLine": 22,
+              "endColumn": 87,
+              "label": "Call to \"Configuration\" initializer puts $CFG data to \"templateConfig\"",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 25,
+              "startColumn": 9,
+              "endLine": 25,
+              "endColumn": 28,
+              "label": "\"this.templateConfig\" is assigned a value with $CFG data",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 26,
+              "startColumn": 5,
+              "endLine": 26,
+              "endColumn": 6,
+              "label": "Exiting \"MarketingTemplateService\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 35,
+              "startColumn": 12,
+              "endLine": 35,
+              "endColumn": 87,
+              "label": "Entering \"previewMarketing\" with $CFG data at the MarketingTemplateService",
+              "crossesFile": true
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 37,
+              "startColumn": 13,
+              "endLine": 37,
+              "endColumn": 109,
+              "label": "Calling \"render\" with $CFG data at \"MarketingTemplateService\"",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 28,
+              "startColumn": 12,
+              "endLine": 28,
+              "endColumn": 54,
+              "label": "Entering \"render\" with $CFG data at the calling object",
+              "crossesFile": true
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 29,
+              "startColumn": 9,
+              "endLine": 29,
+              "endColumn": 90,
+              "label": "\"Template\" initializer starts with $CFG at \"this.templateConfig\"; $UNTRUSTED at a local variable, then puts $TEMPLATE data to \"template\"",
+              "crossesFile": false
+            },
+            {
+              "index": 7,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 36,
+              "startColumn": 9,
+              "endLine": 36,
+              "endColumn": 40,
+              "label": "Potential template injection: unvalidated user data flows into template engine",
+              "crossesFile": false
+            }
+          ]
+        },
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 35,
+              "startColumn": 12,
+              "endLine": 35,
+              "endColumn": 87,
+              "label": "Method entry marks \"request\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 37,
+              "startColumn": 80,
+              "endLine": 37,
+              "endColumn": 108,
+              "label": "Calling \"getTemplateContent\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/RenderRequest.java",
+              "line": 15,
+              "startColumn": 9,
+              "endLine": 15,
+              "endColumn": 31,
+              "label": "The returning value is assigned marked data from \"this.templateContent\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/RenderRequest.java",
+              "line": 16,
+              "startColumn": 5,
+              "endLine": 16,
+              "endColumn": 6,
+              "label": "Exiting \"getTemplateContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 37,
+              "startColumn": 80,
+              "endLine": 37,
+              "endColumn": 108,
+              "label": "Method \"getTemplateContent\" propagates $UNTRUSTED data from \"request\" to a local variable",
+              "crossesFile": true
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/CampaignController.java",
+              "line": 37,
+              "startColumn": 13,
+              "endLine": 37,
+              "endColumn": 109,
+              "label": "Calling \"render\" with $CFG data at \"MarketingTemplateService\", $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 28,
+              "startColumn": 12,
+              "endLine": 28,
+              "endColumn": 54,
+              "label": "Entering \"render\" with $CFG data at the calling object, $UNTRUSTED data at \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 29,
+              "startColumn": 9,
+              "endLine": 29,
+              "endColumn": 91,
+              "label": "Takes $UNTRUSTED data at \"content\" and ends up with $TEMPLATE data at \"template\"",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/content/MarketingTemplateService.java",
+              "line": 36,
+              "startColumn": 9,
+              "endLine": 36,
+              "endColumn": 40,
+              "label": "Potential template injection: unvalidated user data flows into template engine",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 1,
       "steps": [
         {
           "index": 0,
@@ -400,6 +807,501 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 33,
+              "startColumn": 12,
+              "endLine": 33,
+              "endColumn": 89,
+              "label": "Method entry marks \"request\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 36,
+              "startColumn": 17,
+              "endLine": 36,
+              "endColumn": 37,
+              "label": "Calling \"getContent\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/CreateMessageRequest.java",
+              "line": 27,
+              "startColumn": 9,
+              "endLine": 27,
+              "endColumn": 23,
+              "label": "The returning value is assigned marked data from \"this.content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/CreateMessageRequest.java",
+              "line": 28,
+              "startColumn": 5,
+              "endLine": 28,
+              "endColumn": 6,
+              "label": "Exiting \"getContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 36,
+              "startColumn": 17,
+              "endLine": 36,
+              "endColumn": 37,
+              "label": "Method \"getContent\" propagates $UNTRUSTED data from \"request\" to a local variable",
+              "crossesFile": true
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 34,
+              "startColumn": 9,
+              "endLine": 38,
+              "endColumn": 10,
+              "label": "Calling \"createMessage\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 28,
+              "startColumn": 12,
+              "endLine": 28,
+              "endColumn": 78,
+              "label": "Entering \"createMessage\" with $UNTRUSTED data at \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 30,
+              "startColumn": 9,
+              "endLine": 30,
+              "endColumn": 62,
+              "label": "Calling \"Message\" initializer with $UNTRUSTED data at \"content\"",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 32,
+              "startColumn": 12,
+              "endLine": 32,
+              "endColumn": 64,
+              "label": "Entering \"Message\" initializer with marked data at \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 34,
+              "startColumn": 9,
+              "endLine": 34,
+              "endColumn": 21,
+              "label": "\"this.content\" is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 36,
+              "startColumn": 5,
+              "endLine": 36,
+              "endColumn": 6,
+              "label": "Exiting \"Message\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 30,
+              "startColumn": 9,
+              "endLine": 30,
+              "endColumn": 62,
+              "label": "\"Message\" initializer propagates $UNTRUSTED data from \"content\" to \"message\"",
+              "crossesFile": true
+            },
+            {
+              "index": 12,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 31,
+              "startColumn": 16,
+              "endLine": 31,
+              "endColumn": 47,
+              "label": "Method \"save\" propagates $UNTRUSTED data from \"message\" to the MessageRepository",
+              "crossesFile": false
+            },
+            {
+              "index": 13,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 32,
+              "startColumn": 5,
+              "endLine": 32,
+              "endColumn": 6,
+              "label": "Exiting \"createMessage\"",
+              "crossesFile": false
+            },
+            {
+              "index": 14,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 34,
+              "startColumn": 9,
+              "endLine": 38,
+              "endColumn": 10,
+              "label": "Method \"createMessage\" propagates $UNTRUSTED data from a local variable to the MessageRepository",
+              "crossesFile": true
+            },
+            {
+              "index": 15,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 40,
+              "startColumn": 5,
+              "endLine": 40,
+              "endColumn": 6,
+              "label": "Exiting \"createMessage\"",
+              "crossesFile": false
+            },
+            {
+              "index": 16,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 48,
+              "startColumn": 12,
+              "endLine": 48,
+              "endColumn": 75,
+              "label": "Entering \"getMessageContent\" with $UNTRUSTED data at the MessageRepository",
+              "crossesFile": false
+            },
+            {
+              "index": 17,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 49,
+              "startColumn": 9,
+              "endLine": 49,
+              "endColumn": 67,
+              "label": "Method \"findById\" propagates $UNTRUSTED data from the MessageRepository to \"messageOpt\"",
+              "crossesFile": false
+            },
+            {
+              "index": 18,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 54,
+              "startColumn": 9,
+              "endLine": 54,
+              "endColumn": 44,
+              "label": "Takes $UNTRUSTED data at \"messageOpt\" and ends up with $UNTRUSTED data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 19,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 56,
+              "startColumn": 9,
+              "endLine": 56,
+              "endColumn": 67,
+              "label": "Calling \"getMessageContent\" with $UNTRUSTED data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 20,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 46,
+              "startColumn": 12,
+              "endLine": 46,
+              "endColumn": 53,
+              "label": "Entering \"getMessageContent\" with marked data at \"message\"",
+              "crossesFile": true
+            },
+            {
+              "index": 21,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 47,
+              "startColumn": 16,
+              "endLine": 47,
+              "endColumn": 36,
+              "label": "Calling \"getContent\" with marked data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 22,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 55,
+              "startColumn": 9,
+              "endLine": 55,
+              "endColumn": 23,
+              "label": "The returning value is assigned marked data from \"this.content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 23,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 56,
+              "startColumn": 5,
+              "endLine": 56,
+              "endColumn": 6,
+              "label": "Exiting \"getContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 24,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 47,
+              "startColumn": 9,
+              "endLine": 47,
+              "endColumn": 36,
+              "label": "The returning value is assigned marked data from \"getContent\" call",
+              "crossesFile": true
+            },
+            {
+              "index": 25,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 48,
+              "startColumn": 5,
+              "endLine": 48,
+              "endColumn": 6,
+              "label": "Exiting \"getMessageContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 26,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 56,
+              "startColumn": 9,
+              "endLine": 56,
+              "endColumn": 67,
+              "label": "Method \"getMessageContent\" propagates $UNTRUSTED data from \"message\" to \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 27,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 59,
+              "startColumn": 18,
+              "endLine": 59,
+              "endColumn": 31,
+              "label": "Method \"body\" starts with $UNTRUSTED at \"content\", then propagates marked data from a local variable to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 28,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 57,
+              "startColumn": 9,
+              "endLine": 59,
+              "endColumn": 31,
+              "label": "The returning value is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 29,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 57,
+              "startColumn": 9,
+              "endLine": 59,
+              "endColumn": 31,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        },
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 48,
+              "startColumn": 12,
+              "endLine": 48,
+              "endColumn": 75,
+              "label": "Marked data at method entry",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 54,
+              "startColumn": 9,
+              "endLine": 54,
+              "endColumn": 43,
+              "label": "\"message\" is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 56,
+              "startColumn": 9,
+              "endLine": 56,
+              "endColumn": 67,
+              "label": "Calling \"getMessageContent\" with $UNTRUSTED data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 46,
+              "startColumn": 12,
+              "endLine": 46,
+              "endColumn": 53,
+              "label": "Entering \"getMessageContent\" with marked data at a static field, marked data at \"message\"",
+              "crossesFile": true
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 47,
+              "startColumn": 16,
+              "endLine": 47,
+              "endColumn": 36,
+              "label": "Calling \"getContent\" with marked data at a static field, marked data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 55,
+              "startColumn": 9,
+              "endLine": 55,
+              "endColumn": 23,
+              "label": "The returning value is assigned marked data from \"this.content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 56,
+              "startColumn": 5,
+              "endLine": 56,
+              "endColumn": 6,
+              "label": "Exiting \"getContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 47,
+              "startColumn": 9,
+              "endLine": 47,
+              "endColumn": 36,
+              "label": "The returning value is assigned marked data from \"getContent\" call",
+              "crossesFile": true
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 48,
+              "startColumn": 5,
+              "endLine": 48,
+              "endColumn": 6,
+              "label": "Exiting \"getMessageContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 56,
+              "startColumn": 9,
+              "endLine": 56,
+              "endColumn": 67,
+              "label": "Method \"getMessageContent\" propagates $UNTRUSTED data from \"message\" to \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 58,
+              "startColumn": 18,
+              "endLine": 58,
+              "endColumn": 50,
+              "label": "Method \"contentType\" propagates marked data from \"org.springframework.http.MediaType.TEXT_HTML\" to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 59,
+              "startColumn": 18,
+              "endLine": 59,
+              "endColumn": 31,
+              "label": "Method \"body\" starts with $UNTRUSTED at \"content\", then propagates marked data from a local variable to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 12,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 57,
+              "startColumn": 9,
+              "endLine": 59,
+              "endColumn": 31,
+              "label": "The returning value is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 13,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 57,
+              "startColumn": 9,
+              "endLine": 59,
+              "endColumn": 31,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -747,6 +1649,325 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 33,
+              "startColumn": 12,
+              "endLine": 33,
+              "endColumn": 89,
+              "label": "Method entry marks \"request\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 36,
+              "startColumn": 17,
+              "endLine": 36,
+              "endColumn": 37,
+              "label": "Calling \"getContent\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/CreateMessageRequest.java",
+              "line": 27,
+              "startColumn": 9,
+              "endLine": 27,
+              "endColumn": 23,
+              "label": "The returning value is assigned marked data from \"this.content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/CreateMessageRequest.java",
+              "line": 28,
+              "startColumn": 5,
+              "endLine": 28,
+              "endColumn": 6,
+              "label": "Exiting \"getContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 36,
+              "startColumn": 17,
+              "endLine": 36,
+              "endColumn": 37,
+              "label": "Method \"getContent\" propagates $UNTRUSTED data from \"request\" to a local variable",
+              "crossesFile": true
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 34,
+              "startColumn": 9,
+              "endLine": 38,
+              "endColumn": 10,
+              "label": "Calling \"createMessage\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 28,
+              "startColumn": 12,
+              "endLine": 28,
+              "endColumn": 78,
+              "label": "Entering \"createMessage\" with marked data at \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 29,
+              "startColumn": 9,
+              "endLine": 29,
+              "endColumn": 25,
+              "label": "\"this.lastContent\" is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 32,
+              "startColumn": 5,
+              "endLine": 32,
+              "endColumn": 6,
+              "label": "Exiting \"createMessage\"",
+              "crossesFile": false
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 34,
+              "startColumn": 9,
+              "endLine": 38,
+              "endColumn": 10,
+              "label": "Method \"createMessage\" propagates $UNTRUSTED data from a local variable to the MessageService",
+              "crossesFile": true
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 40,
+              "startColumn": 5,
+              "endLine": 40,
+              "endColumn": 6,
+              "label": "Exiting \"createMessage\"",
+              "crossesFile": false
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 126,
+              "startColumn": 12,
+              "endLine": 126,
+              "endColumn": 51,
+              "label": "Entering \"getLastContent\" with $UNTRUSTED data at the MessageService",
+              "crossesFile": false
+            },
+            {
+              "index": 12,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 127,
+              "startColumn": 9,
+              "endLine": 127,
+              "endColumn": 57,
+              "label": "Calling \"getLastContent\" with $UNTRUSTED data at \"MessageService\"",
+              "crossesFile": false
+            },
+            {
+              "index": 13,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 65,
+              "startColumn": 9,
+              "endLine": 65,
+              "endColumn": 27,
+              "label": "The returning value is assigned marked data from \"this.lastContent\"",
+              "crossesFile": true
+            },
+            {
+              "index": 14,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 66,
+              "startColumn": 5,
+              "endLine": 66,
+              "endColumn": 6,
+              "label": "Exiting \"getLastContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 15,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 127,
+              "startColumn": 9,
+              "endLine": 127,
+              "endColumn": 57,
+              "label": "Method \"getLastContent\" propagates $UNTRUSTED data from \"MessageService\" to \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 16,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 133,
+              "startColumn": 18,
+              "endLine": 133,
+              "endColumn": 31,
+              "label": "Method \"body\" starts with $UNTRUSTED at \"content\", then propagates marked data from a local variable to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 17,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 131,
+              "startColumn": 9,
+              "endLine": 133,
+              "endColumn": 31,
+              "label": "The returning value is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 18,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 131,
+              "startColumn": 9,
+              "endLine": 133,
+              "endColumn": 31,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        },
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 126,
+              "startColumn": 12,
+              "endLine": 126,
+              "endColumn": 51,
+              "label": "Marked data at method entry",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 127,
+              "startColumn": 9,
+              "endLine": 127,
+              "endColumn": 57,
+              "label": "Calling \"getLastContent\" with $UNTRUSTED data at \"MessageService\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 65,
+              "startColumn": 9,
+              "endLine": 65,
+              "endColumn": 27,
+              "label": "The returning value is assigned marked data from \"this.lastContent\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 66,
+              "startColumn": 5,
+              "endLine": 66,
+              "endColumn": 6,
+              "label": "Exiting \"getLastContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 127,
+              "startColumn": 9,
+              "endLine": 127,
+              "endColumn": 57,
+              "label": "Method \"getLastContent\" propagates $UNTRUSTED data from \"MessageService\" to \"content\"",
+              "crossesFile": true
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 132,
+              "startColumn": 18,
+              "endLine": 132,
+              "endColumn": 50,
+              "label": "Method \"contentType\" propagates marked data from \"org.springframework.http.MediaType.TEXT_HTML\" to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 133,
+              "startColumn": 18,
+              "endLine": 133,
+              "endColumn": 31,
+              "label": "Method \"body\" starts with $UNTRUSTED at \"content\", then propagates marked data from a local variable to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 131,
+              "startColumn": 9,
+              "endLine": 133,
+              "endColumn": 31,
+              "label": "The returning value is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 131,
+              "startColumn": 9,
+              "endLine": 133,
+              "endColumn": 31,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -973,6 +2194,413 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 87,
+              "startColumn": 12,
+              "endLine": 87,
+              "endColumn": 73,
+              "label": "Marked data at method entry",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 93,
+              "startColumn": 9,
+              "endLine": 93,
+              "endColumn": 43,
+              "label": "\"message\" is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 95,
+              "startColumn": 9,
+              "endLine": 95,
+              "endColumn": 42,
+              "label": "Calling \"getTitle\" with $UNTRUSTED data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 47,
+              "startColumn": 9,
+              "endLine": 47,
+              "endColumn": 21,
+              "label": "The returning value is assigned marked data from \"this.title\"",
+              "crossesFile": true
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 48,
+              "startColumn": 5,
+              "endLine": 48,
+              "endColumn": 6,
+              "label": "Exiting \"getTitle\"",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 95,
+              "startColumn": 9,
+              "endLine": 95,
+              "endColumn": 42,
+              "label": "Method \"getTitle\" propagates $UNTRUSTED data from \"message\" to \"title\"",
+              "crossesFile": true
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 97,
+              "startColumn": 18,
+              "endLine": 97,
+              "endColumn": 50,
+              "label": "Method \"contentType\" propagates marked data from \"org.springframework.http.MediaType.TEXT_HTML\" to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 98,
+              "startColumn": 18,
+              "endLine": 98,
+              "endColumn": 29,
+              "label": "Method \"body\" starts with $UNTRUSTED at \"title\", then propagates marked data from a local variable to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 96,
+              "startColumn": 9,
+              "endLine": 98,
+              "endColumn": 29,
+              "label": "The returning value is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 9,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 96,
+              "startColumn": 9,
+              "endLine": 98,
+              "endColumn": 29,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        },
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 33,
+              "startColumn": 12,
+              "endLine": 33,
+              "endColumn": 89,
+              "label": "Method entry marks \"request\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 35,
+              "startColumn": 17,
+              "endLine": 35,
+              "endColumn": 35,
+              "label": "Calling \"getTitle\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/CreateMessageRequest.java",
+              "line": 19,
+              "startColumn": 9,
+              "endLine": 19,
+              "endColumn": 21,
+              "label": "The returning value is assigned marked data from \"this.title\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/CreateMessageRequest.java",
+              "line": 20,
+              "startColumn": 5,
+              "endLine": 20,
+              "endColumn": 6,
+              "label": "Exiting \"getTitle\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 35,
+              "startColumn": 17,
+              "endLine": 35,
+              "endColumn": 35,
+              "label": "Method \"getTitle\" propagates $UNTRUSTED data from \"request\" to a local variable",
+              "crossesFile": true
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 34,
+              "startColumn": 9,
+              "endLine": 38,
+              "endColumn": 10,
+              "label": "Calling \"createMessage\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 28,
+              "startColumn": 12,
+              "endLine": 28,
+              "endColumn": 78,
+              "label": "Entering \"createMessage\" with $UNTRUSTED data at \"title\"",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 30,
+              "startColumn": 9,
+              "endLine": 30,
+              "endColumn": 62,
+              "label": "Calling \"Message\" initializer with $UNTRUSTED data at \"title\"",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 32,
+              "startColumn": 12,
+              "endLine": 32,
+              "endColumn": 64,
+              "label": "Entering \"Message\" initializer with marked data at \"title\"",
+              "crossesFile": true
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 33,
+              "startColumn": 9,
+              "endLine": 33,
+              "endColumn": 19,
+              "label": "\"this.title\" is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 36,
+              "startColumn": 5,
+              "endLine": 36,
+              "endColumn": 6,
+              "label": "Exiting \"Message\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 30,
+              "startColumn": 9,
+              "endLine": 30,
+              "endColumn": 62,
+              "label": "\"Message\" initializer propagates $UNTRUSTED data from \"title\" to \"message\"",
+              "crossesFile": true
+            },
+            {
+              "index": 12,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 31,
+              "startColumn": 16,
+              "endLine": 31,
+              "endColumn": 47,
+              "label": "Method \"save\" propagates $UNTRUSTED data from \"message\" to the MessageRepository",
+              "crossesFile": false
+            },
+            {
+              "index": 13,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageService.java",
+              "line": 32,
+              "startColumn": 5,
+              "endLine": 32,
+              "endColumn": 6,
+              "label": "Exiting \"createMessage\"",
+              "crossesFile": false
+            },
+            {
+              "index": 14,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 34,
+              "startColumn": 9,
+              "endLine": 38,
+              "endColumn": 10,
+              "label": "Method \"createMessage\" propagates $UNTRUSTED data from a local variable to the MessageRepository",
+              "crossesFile": true
+            },
+            {
+              "index": 15,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 40,
+              "startColumn": 5,
+              "endLine": 40,
+              "endColumn": 6,
+              "label": "Exiting \"createMessage\"",
+              "crossesFile": false
+            },
+            {
+              "index": 16,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 87,
+              "startColumn": 12,
+              "endLine": 87,
+              "endColumn": 73,
+              "label": "Entering \"getMessageTitle\" with $UNTRUSTED data at the MessageRepository",
+              "crossesFile": false
+            },
+            {
+              "index": 17,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 88,
+              "startColumn": 9,
+              "endLine": 88,
+              "endColumn": 67,
+              "label": "Method \"findById\" propagates $UNTRUSTED data from the MessageRepository to \"messageOpt\"",
+              "crossesFile": false
+            },
+            {
+              "index": 18,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 93,
+              "startColumn": 9,
+              "endLine": 93,
+              "endColumn": 44,
+              "label": "Takes $UNTRUSTED data at \"messageOpt\" and ends up with $UNTRUSTED data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 19,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 95,
+              "startColumn": 9,
+              "endLine": 95,
+              "endColumn": 42,
+              "label": "Calling \"getTitle\" with $UNTRUSTED data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 20,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 47,
+              "startColumn": 9,
+              "endLine": 47,
+              "endColumn": 21,
+              "label": "The returning value is assigned marked data from \"this.title\"",
+              "crossesFile": true
+            },
+            {
+              "index": 21,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/persistence/Message.java",
+              "line": 48,
+              "startColumn": 5,
+              "endLine": 48,
+              "endColumn": 6,
+              "label": "Exiting \"getTitle\"",
+              "crossesFile": false
+            },
+            {
+              "index": 22,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 95,
+              "startColumn": 9,
+              "endLine": 95,
+              "endColumn": 42,
+              "label": "Method \"getTitle\" propagates $UNTRUSTED data from \"message\" to \"title\"",
+              "crossesFile": true
+            },
+            {
+              "index": 23,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 98,
+              "startColumn": 18,
+              "endLine": 98,
+              "endColumn": 29,
+              "label": "Method \"body\" starts with $UNTRUSTED at \"title\", then propagates marked data from a local variable to a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 24,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 96,
+              "startColumn": 9,
+              "endLine": 98,
+              "endColumn": 29,
+              "label": "The returning value is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 25,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/spring/messaging/MessageController.java",
+              "line": 96,
+              "startColumn": 9,
+              "endLine": 98,
+              "endColumn": 29,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 1,
       "steps": [
         {
           "index": 0,
@@ -1276,6 +2904,259 @@
       ],
       "description": "SSRF occurs when untrusted input reaches outbound network APIs without strict destination controls.\nThis rule focuses on calls such as URL/URI connection methods, `RestTemplate` requests,\nsocket address creation, and URL-based DB connection entrypoints.\n\nVulnerable example:\n\n```java\nimport java.net.URL;\n\npublic class FetchService {\n    public String fetch(String targetFromRequest) throws Exception {\n        // targetFromRequest is untrusted\n        URL url = new URL(targetFromRequest);\n\n        // VULNERABLE\n        return new String(url.openStream().readAllBytes());\n    }\n}\n```\n\nSafe example:\n\n```java\nimport java.net.InetAddress;\nimport java.net.URI;\nimport java.util.Set;\n\npublic class FetchService {\n    private static final Set<String> ALLOWED_HOSTS = Set.of(\"api.example.com\", \"partner.example.com\");\n\n    public URI validate(String targetFromRequest) throws Exception {\n        URI uri = new URI(targetFromRequest);\n        if (!\"https\".equalsIgnoreCase(uri.getScheme())) {\n            throw new IllegalArgumentException(\"Only HTTPS allowed\");\n        }\n\n        String host = uri.getHost();\n        if (host == null || !ALLOWED_HOSTS.contains(host.toLowerCase())) {\n            throw new SecurityException(\"Host not allowed\");\n        }\n\n        InetAddress addr = InetAddress.getByName(host);\n        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress() || addr.isSiteLocalAddress()) {\n            throw new SecurityException(\"Internal addresses are forbidden\");\n        }\n\n        return uri;\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include `URL.open*`, `URI.create(...).toURL()`,\n`RestTemplate` request methods with tainted URI/string targets, and tainted socket/connection targets.",
       "message": "Potential SSRF: the web server receives a URL or similar request from an upstream component and retrieves the contents of this URL, it does not sufficiently ensure that the request is being sent to the expected destination.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/ProxyController.kt",
+              "line": 21,
+              "startColumn": 5,
+              "endLine": 21,
+              "endColumn": 77,
+              "label": "Method entry marks \"request\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/ProxyController.kt",
+              "line": 23,
+              "startColumn": 13,
+              "endLine": 23,
+              "endColumn": 72,
+              "label": "Calling \"getUrl\" with $UNTRUSTED data at \"request\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/FetchRequest.kt",
+              "line": 8,
+              "startColumn": 5,
+              "endLine": 8,
+              "endColumn": 25,
+              "label": "The returning value is assigned marked data from \"this.url\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/FetchRequest.kt",
+              "line": 8,
+              "startColumn": 5,
+              "endLine": 8,
+              "endColumn": 25,
+              "label": "Exiting \"getUrl\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/ProxyController.kt",
+              "line": 23,
+              "startColumn": 13,
+              "endLine": 23,
+              "endColumn": 72,
+              "label": "Method \"getUrl\" propagates $UNTRUSTED data from \"request\" to a local variable",
+              "crossesFile": true
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/ProxyController.kt",
+              "line": 23,
+              "startColumn": 13,
+              "endLine": 23,
+              "endColumn": 72,
+              "label": "Calling \"fetch\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 28,
+              "startColumn": 5,
+              "endLine": 28,
+              "endColumn": 78,
+              "label": "Entering \"fetch\" with $UNTRUSTED data at \"url\"",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 31,
+              "startColumn": 9,
+              "endLine": 31,
+              "endColumn": 14,
+              "label": "Calling \"UrlFetchService.fetch.1\" initializer with $UNTRUSTED data at \"url\"",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 31,
+              "startColumn": 9,
+              "endLine": 31,
+              "endColumn": 14,
+              "label": "Takes $UNTRUSTED data at \"url\" and ends up with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 31,
+              "startColumn": 9,
+              "endLine": 31,
+              "endColumn": 14,
+              "label": "Calling \"launch\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 31,
+              "startColumn": 9,
+              "endLine": 31,
+              "endColumn": 14,
+              "label": "Entering \"invokeSuspend\" with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 33,
+              "startColumn": 17,
+              "endLine": 33,
+              "endColumn": 74,
+              "label": "Takes $UNTRUSTED data at \"this.$url\" and ends up with marked data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 12,
+              "kind": "sink",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 33,
+              "startColumn": 17,
+              "endLine": 33,
+              "endColumn": 74,
+              "label": "Potential SSRF: the web server receives a URL or similar request from an upstream component and retrieves the contents of this URL, it does not sufficiently ensure that the request is being sent to the expected destination.",
+              "crossesFile": false
+            }
+          ]
+        },
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/ProxyController.kt",
+              "line": 34,
+              "startColumn": 5,
+              "endLine": 34,
+              "endColumn": 72,
+              "label": "Method entry marks \"url\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/ProxyController.kt",
+              "line": 36,
+              "startColumn": 13,
+              "endLine": 36,
+              "endColumn": 47,
+              "label": "Calling \"fetch\" with $UNTRUSTED data at \"url\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 28,
+              "startColumn": 5,
+              "endLine": 28,
+              "endColumn": 78,
+              "label": "Entering \"fetch\" with $UNTRUSTED data at \"url\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 31,
+              "startColumn": 9,
+              "endLine": 31,
+              "endColumn": 14,
+              "label": "Calling \"UrlFetchService.fetch.1\" initializer with $UNTRUSTED data at \"url\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 31,
+              "startColumn": 9,
+              "endLine": 31,
+              "endColumn": 14,
+              "label": "Takes $UNTRUSTED data at \"url\" and ends up with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 31,
+              "startColumn": 9,
+              "endLine": 31,
+              "endColumn": 14,
+              "label": "Calling \"launch\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 31,
+              "startColumn": 9,
+              "endLine": 31,
+              "endColumn": 14,
+              "label": "Entering \"invokeSuspend\" with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 33,
+              "startColumn": 17,
+              "endLine": 33,
+              "endColumn": 74,
+              "label": "Takes $UNTRUSTED data at \"this.$url\" and ends up with marked data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "sink",
+              "file": "src/main/kotlin/org/seqra/spring/proxy/UrlFetchService.kt",
+              "line": 33,
+              "startColumn": 17,
+              "endLine": 33,
+              "endColumn": 74,
+              "label": "Potential SSRF: the web server receives a URL or similar request from an upstream component and retrieves the contents of this URL, it does not sufficiently ensure that the request is being sent to the expected destination.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -1436,6 +3317,35 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 18,
+              "startColumn": 9,
+              "endLine": 18,
+              "endColumn": 86,
+              "label": "Puts $UNTRUSTED data to the returned value",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 18,
+              "startColumn": 9,
+              "endLine": 18,
+              "endColumn": 85,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -1475,6 +3385,343 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 105,
+              "startColumn": 12,
+              "endLine": 106,
+              "endColumn": 72,
+              "label": "Method entry marks \"content\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 108,
+              "startColumn": 9,
+              "endLine": 108,
+              "endColumn": 72,
+              "label": "Calling \"Profile.UserProfile\" initializer with $UNTRUSTED data at \"content\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 14,
+              "startColumn": 16,
+              "endLine": 14,
+              "endColumn": 40,
+              "label": "Entering \"Profile.UserProfile\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 15,
+              "startColumn": 13,
+              "endLine": 15,
+              "endColumn": 52,
+              "label": "Calling \"Profile.UserSettings\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 26,
+              "startColumn": 16,
+              "endLine": 26,
+              "endColumn": 41,
+              "label": "Entering \"Profile.UserSettings\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 27,
+              "startColumn": 13,
+              "endLine": 27,
+              "endColumn": 56,
+              "label": "Calling \"Profile.NotificationConfig\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 38,
+              "startColumn": 16,
+              "endLine": 38,
+              "endColumn": 47,
+              "label": "Entering \"Profile.NotificationConfig\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 39,
+              "startColumn": 13,
+              "endLine": 39,
+              "endColumn": 55,
+              "label": "Calling \"Profile.MessageTemplate\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 50,
+              "startColumn": 16,
+              "endLine": 50,
+              "endColumn": 44,
+              "label": "Entering \"Profile.MessageTemplate\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 51,
+              "startColumn": 13,
+              "endLine": 51,
+              "endColumn": 70,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 51,
+              "startColumn": 13,
+              "endLine": 51,
+              "endColumn": 70,
+              "label": "Calling \"Profile.MessageBody\" initializer with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 62,
+              "startColumn": 16,
+              "endLine": 62,
+              "endColumn": 40,
+              "label": "Entering \"Profile.MessageBody\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 12,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 63,
+              "startColumn": 13,
+              "endLine": 63,
+              "endColumn": 77,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 13,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 63,
+              "startColumn": 13,
+              "endLine": 63,
+              "endColumn": 77,
+              "label": "Calling \"Profile.MessageContent\" initializer with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 14,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 71,
+              "startColumn": 16,
+              "endLine": 71,
+              "endColumn": 43,
+              "label": "Entering \"Profile.MessageContent\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 15,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 72,
+              "startColumn": 13,
+              "endLine": 72,
+              "endColumn": 63,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 16,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 74,
+              "startColumn": 9,
+              "endLine": 74,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.MessageContent\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 17,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 63,
+              "startColumn": 13,
+              "endLine": 63,
+              "endColumn": 77,
+              "label": "Takes $UNTRUSTED data at a local variable and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 18,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 64,
+              "startColumn": 9,
+              "endLine": 64,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.MessageBody\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 19,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 51,
+              "startColumn": 13,
+              "endLine": 51,
+              "endColumn": 70,
+              "label": "Takes $UNTRUSTED data at a local variable and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 20,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 52,
+              "startColumn": 9,
+              "endLine": 52,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.MessageTemplate\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 21,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 39,
+              "startColumn": 13,
+              "endLine": 39,
+              "endColumn": 55,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 22,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 40,
+              "startColumn": 9,
+              "endLine": 40,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.NotificationConfig\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 23,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 27,
+              "startColumn": 13,
+              "endLine": 27,
+              "endColumn": 56,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 24,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 28,
+              "startColumn": 9,
+              "endLine": 28,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.UserSettings\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 25,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 15,
+              "startColumn": 13,
+              "endLine": 15,
+              "endColumn": 52,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 26,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 16,
+              "startColumn": 9,
+              "endLine": 16,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.UserProfile\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 27,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 108,
+              "startColumn": 9,
+              "endLine": 108,
+              "endColumn": 72,
+              "label": "\"Profile.UserProfile\" initializer propagates $UNTRUSTED data from \"content\" to \"profile\"",
+              "crossesFile": true
+            },
+            {
+              "index": 28,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 111,
+              "startColumn": 9,
+              "endLine": 111,
+              "endColumn": 66,
+              "label": "The returning value is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 29,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 111,
+              "startColumn": 9,
+              "endLine": 111,
+              "endColumn": 66,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -1822,6 +4069,156 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 129,
+              "startColumn": 12,
+              "endLine": 130,
+              "endColumn": 68,
+              "label": "Method entry marks \"message\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 132,
+              "startColumn": 23,
+              "endLine": 132,
+              "endColumn": 61,
+              "label": "Calling \"message\" with $UNTRUSTED data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 9,
+              "startColumn": 12,
+              "endLine": 9,
+              "endColumn": 51,
+              "label": "Entering \"message\" with marked data at \"message\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 10,
+              "startColumn": 9,
+              "endLine": 10,
+              "endColumn": 21,
+              "label": "\"this.message\" is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 11,
+              "startColumn": 9,
+              "endLine": 11,
+              "endColumn": 20,
+              "label": "The returning value is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 12,
+              "startColumn": 5,
+              "endLine": 12,
+              "endColumn": 6,
+              "label": "Exiting \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 132,
+              "startColumn": 23,
+              "endLine": 132,
+              "endColumn": 61,
+              "label": "Method \"message\" propagates $UNTRUSTED data from \"message\" to a local variable",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 132,
+              "startColumn": 9,
+              "endLine": 132,
+              "endColumn": 73,
+              "label": "Calling \"buildPage\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 25,
+              "startColumn": 9,
+              "endLine": 25,
+              "endColumn": 86,
+              "label": "Takes $UNTRUSTED data at the calling object and ends up with $UNTRUSTED data at the returned value",
+              "crossesFile": true
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 26,
+              "startColumn": 5,
+              "endLine": 26,
+              "endColumn": 6,
+              "label": "Exiting \"buildPage\"",
+              "crossesFile": false
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 132,
+              "startColumn": 9,
+              "endLine": 132,
+              "endColumn": 73,
+              "label": "Method \"buildPage\" propagates $UNTRUSTED data from a local variable to \"page\"",
+              "crossesFile": true
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 134,
+              "startColumn": 9,
+              "endLine": 134,
+              "endColumn": 20,
+              "label": "The returning value is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 12,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 134,
+              "startColumn": 9,
+              "endLine": 134,
+              "endColumn": 20,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -1982,6 +4379,57 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 34,
+              "startColumn": 12,
+              "endLine": 35,
+              "endColumn": 67,
+              "label": "Method entry marks \"message\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 37,
+              "startColumn": 9,
+              "endLine": 37,
+              "endColumn": 15,
+              "label": "Takes $UNTRUSTED data at \"message\" and ends up with $UNTRUSTED data at \"htmlContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 39,
+              "startColumn": 9,
+              "endLine": 39,
+              "endColumn": 27,
+              "label": "The returning value is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 3,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 39,
+              "startColumn": 9,
+              "endLine": 39,
+              "endColumn": 27,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -2043,6 +4491,255 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 151,
+              "startColumn": 12,
+              "endLine": 152,
+              "endColumn": 68,
+              "label": "Method entry marks \"message\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 154,
+              "startColumn": 23,
+              "endLine": 154,
+              "endColumn": 61,
+              "label": "Calling \"message\" with $UNTRUSTED data at \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 9,
+              "startColumn": 12,
+              "endLine": 9,
+              "endColumn": 51,
+              "label": "Entering \"message\" with marked data at \"message\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 10,
+              "startColumn": 9,
+              "endLine": 10,
+              "endColumn": 21,
+              "label": "\"this.message\" is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 11,
+              "startColumn": 9,
+              "endLine": 11,
+              "endColumn": 20,
+              "label": "The returning value is assigned a value with marked data",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 12,
+              "startColumn": 5,
+              "endLine": 12,
+              "endColumn": 6,
+              "label": "Exiting \"message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 154,
+              "startColumn": 23,
+              "endLine": 154,
+              "endColumn": 61,
+              "label": "Method \"message\" propagates $UNTRUSTED data from \"message\" to a local variable",
+              "crossesFile": true
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 155,
+              "startColumn": 18,
+              "endLine": 155,
+              "endColumn": 48,
+              "label": "Calling \"format\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 19,
+              "startColumn": 12,
+              "endLine": 19,
+              "endColumn": 56,
+              "label": "Entering \"format\" with $UNTRUSTED data at the calling object",
+              "crossesFile": true
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 20,
+              "startColumn": 24,
+              "endLine": 20,
+              "endColumn": 54,
+              "label": "Calling \"format\" with $UNTRUSTED data at \"this.message\"",
+              "crossesFile": false
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/DefaultFormatter.java",
+              "line": 6,
+              "startColumn": 9,
+              "endLine": 6,
+              "endColumn": 22,
+              "label": "Takes marked data at \"value\" and ends up with marked data at the returned value",
+              "crossesFile": true
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/DefaultFormatter.java",
+              "line": 7,
+              "startColumn": 5,
+              "endLine": 7,
+              "endColumn": 6,
+              "label": "Exiting \"format\"",
+              "crossesFile": false
+            },
+            {
+              "index": 12,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 20,
+              "startColumn": 9,
+              "endLine": 20,
+              "endColumn": 55,
+              "label": "Takes $UNTRUSTED data at \"this.message\" and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": true
+            },
+            {
+              "index": 13,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 21,
+              "startColumn": 9,
+              "endLine": 21,
+              "endColumn": 20,
+              "label": "The returning value is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 14,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 22,
+              "startColumn": 5,
+              "endLine": 22,
+              "endColumn": 6,
+              "label": "Exiting \"format\"",
+              "crossesFile": false
+            },
+            {
+              "index": 15,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 155,
+              "startColumn": 18,
+              "endLine": 155,
+              "endColumn": 48,
+              "label": "Method \"format\" propagates $UNTRUSTED data from a local variable to a local variable",
+              "crossesFile": true
+            },
+            {
+              "index": 16,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 154,
+              "startColumn": 9,
+              "endLine": 155,
+              "endColumn": 60,
+              "label": "Calling \"buildPage\" with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 17,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 25,
+              "startColumn": 9,
+              "endLine": 25,
+              "endColumn": 86,
+              "label": "Takes $UNTRUSTED data at the calling object and ends up with $UNTRUSTED data at the returned value",
+              "crossesFile": true
+            },
+            {
+              "index": 18,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/HtmlPageBuilder.java",
+              "line": 26,
+              "startColumn": 5,
+              "endLine": 26,
+              "endColumn": 6,
+              "label": "Exiting \"buildPage\"",
+              "crossesFile": false
+            },
+            {
+              "index": 19,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 154,
+              "startColumn": 9,
+              "endLine": 155,
+              "endColumn": 60,
+              "label": "Method \"buildPage\" propagates $UNTRUSTED data from a local variable to \"page\"",
+              "crossesFile": true
+            },
+            {
+              "index": 20,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 157,
+              "startColumn": 9,
+              "endLine": 157,
+              "endColumn": 20,
+              "label": "The returning value is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 21,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 157,
+              "startColumn": 9,
+              "endLine": 157,
+              "endColumn": 20,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -2302,6 +4999,90 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 56,
+              "startColumn": 12,
+              "endLine": 57,
+              "endColumn": 69,
+              "label": "Method entry marks \"greeting\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 58,
+              "startColumn": 9,
+              "endLine": 58,
+              "endColumn": 61,
+              "label": "Calling \"buildDashboardContent\" with $UNTRUSTED data at \"greeting\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 64,
+              "startColumn": 9,
+              "endLine": 64,
+              "endColumn": 81,
+              "label": "Takes $UNTRUSTED data at \"greeting\" and ends up with $UNTRUSTED data at the returned value",
+              "crossesFile": false
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 65,
+              "startColumn": 5,
+              "endLine": 65,
+              "endColumn": 6,
+              "label": "Exiting \"buildDashboardContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 58,
+              "startColumn": 9,
+              "endLine": 58,
+              "endColumn": 61,
+              "label": "Method \"buildDashboardContent\" propagates $UNTRUSTED data from \"greeting\" to \"htmlContent\"",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 59,
+              "startColumn": 9,
+              "endLine": 59,
+              "endColumn": 27,
+              "label": "The returning value is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 59,
+              "startColumn": 9,
+              "endLine": 59,
+              "endColumn": 27,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
@@ -2396,6 +5177,211 @@
       ],
       "description": "Cross-site scripting (XSS) occurs when untrusted input is included in an HTML response without\nproper encoding, allowing an attacker to inject client-side code (usually JavaScript) into pages\nviewed by other users. In Spring applications, this happens when a handler writes untrusted input\ndirectly to `HttpServletResponse` with an HTML content type, or returns untrusted input from a\nhandler annotated with `produces = \"text/html\"`. Here the response content type is statically\nconfirmed to be `text/html`, so the browser will render the response as HTML and execute any\ninjected scripts.\n\nVulnerable example:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        // VULNERABLE: tainted data returned from a text/html handler unencoded\n        return \"<h1>Hello, \" + name + \"!</h1>\";\n    }\n}\n```\n\nSafe example — encode before returning HTML:\n\n```java\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.util.HtmlUtils;\n\n@RestController\npublic class GreetingController {\n    @GetMapping(value = \"/greet\", produces = \"text/html\")\n    public String greet(@RequestParam String name) {\n        return \"<h1>Hello, \" + HtmlUtils.htmlEscape(name) + \"!</h1>\";\n    }\n}\n```\n\nSafe example — return a typed DTO so Jackson serializes as JSON instead of HTML:\n\n```java\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\npublic class GreetingController {\n    public static class GreetingDto {\n        public String name;\n        public GreetingDto(String name) { this.name = name; }\n    }\n\n    @GetMapping(\"/greet\")\n    public ResponseEntity<GreetingDto> greet(@RequestParam(required = false, defaultValue = \"\") String name) {\n        // Jackson serializes the DTO as application/json — the browser will not render it as HTML\n        return ResponseEntity.ok(new GreetingDto(name));\n    }\n}\n```\n\nKey vulnerable patterns covered by this rule include controller returns from handlers with\n`produces = \"text/html\"`, direct writes to `HttpServletResponse.getWriter` / `getOutputStream`\nfrom a handler that sets a `text/html` content type, and `ResponseEntity` bodies with an\nHTML content type built from tainted strings.",
       "message": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+      "flows": [
+        {
+          "steps": [
+            {
+              "index": 0,
+              "kind": "source",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 85,
+              "startColumn": 12,
+              "endLine": 86,
+              "endColumn": 72,
+              "label": "Method entry marks \"content\" as $UNTRUSTED",
+              "crossesFile": false
+            },
+            {
+              "index": 1,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 87,
+              "startColumn": 9,
+              "endLine": 87,
+              "endColumn": 81,
+              "label": "Calling \"Profile.MessageTemplate\" initializer with $UNTRUSTED data at \"content\"",
+              "crossesFile": false
+            },
+            {
+              "index": 2,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 50,
+              "startColumn": 16,
+              "endLine": 50,
+              "endColumn": 44,
+              "label": "Entering \"Profile.MessageTemplate\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": true
+            },
+            {
+              "index": 3,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 51,
+              "startColumn": 13,
+              "endLine": 51,
+              "endColumn": 70,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 4,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 51,
+              "startColumn": 13,
+              "endLine": 51,
+              "endColumn": 70,
+              "label": "Calling \"Profile.MessageBody\" initializer with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 5,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 62,
+              "startColumn": 16,
+              "endLine": 62,
+              "endColumn": 40,
+              "label": "Entering \"Profile.MessageBody\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 6,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 63,
+              "startColumn": 13,
+              "endLine": 63,
+              "endColumn": 77,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 7,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 63,
+              "startColumn": 13,
+              "endLine": 63,
+              "endColumn": 77,
+              "label": "Calling \"Profile.MessageContent\" initializer with $UNTRUSTED data at a local variable",
+              "crossesFile": false
+            },
+            {
+              "index": 8,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 71,
+              "startColumn": 16,
+              "endLine": 71,
+              "endColumn": 43,
+              "label": "Entering \"Profile.MessageContent\" initializer with $UNTRUSTED data at \"text\"",
+              "crossesFile": false
+            },
+            {
+              "index": 9,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 72,
+              "startColumn": 13,
+              "endLine": 72,
+              "endColumn": 63,
+              "label": "Takes $UNTRUSTED data at \"text\" and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 10,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 74,
+              "startColumn": 9,
+              "endLine": 74,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.MessageContent\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 11,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 63,
+              "startColumn": 13,
+              "endLine": 63,
+              "endColumn": 77,
+              "label": "Takes $UNTRUSTED data at a local variable and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 12,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 64,
+              "startColumn": 9,
+              "endLine": 64,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.MessageBody\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 13,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 51,
+              "startColumn": 13,
+              "endLine": 51,
+              "endColumn": 70,
+              "label": "Takes $UNTRUSTED data at a local variable and ends up with $UNTRUSTED data at the calling object",
+              "crossesFile": false
+            },
+            {
+              "index": 14,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/Profile.java",
+              "line": 52,
+              "startColumn": 9,
+              "endLine": 52,
+              "endColumn": 10,
+              "label": "Exiting \"Profile.MessageTemplate\" initializer",
+              "crossesFile": false
+            },
+            {
+              "index": 15,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 87,
+              "startColumn": 9,
+              "endLine": 87,
+              "endColumn": 81,
+              "label": "\"Profile.MessageTemplate\" initializer propagates $UNTRUSTED data from \"content\" to \"template\"",
+              "crossesFile": true
+            },
+            {
+              "index": 16,
+              "kind": "propagation",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 89,
+              "startColumn": 9,
+              "endLine": 89,
+              "endColumn": 42,
+              "label": "The returning value is assigned a value with $UNTRUSTED data",
+              "crossesFile": false
+            },
+            {
+              "index": 17,
+              "kind": "sink",
+              "file": "src/main/java/org/seqra/complexity/UserProfileController.java",
+              "line": 89,
+              "startColumn": 9,
+              "endLine": 89,
+              "endColumn": 42,
+              "label": "Cross-site scripting (XSS): untrusted input flows into a Spring response with text/html content type, so injected scripts will execute in the browser.",
+              "crossesFile": false
+            }
+          ]
+        }
+      ],
+      "defaultFlowIndex": 0,
       "steps": [
         {
           "index": 0,
