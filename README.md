@@ -53,7 +53,7 @@ Then open the URL Vite prints (default http://localhost:5173).
 | `npm run test:watch` | Vitest in watch mode. |
 | `npm run coverage` | Vitest with V8 coverage. |
 | `npm run e2e` | Playwright end-to-end tests. |
-| `npm run regen` | Regenerate the bundled content from a real OpenTaint run (see below). |
+| `npm run gen` | Regenerate `data/content.json` from a SARIF + source dir + rules dir (see below). |
 
 ## How it works
 
@@ -61,7 +61,7 @@ The app loads a single bundled content file and renders everything from it — t
 are no network calls for analysis.
 
 ```
-src/content/java-spring-demo.json   ← committed, pre-analyzed content
+data/content.json   ← committed, pre-analyzed content
         │
         ▼
 loadContent()  →  validate (isViewerContent)  →  Zustand store  →  UI
@@ -95,34 +95,32 @@ src/
   types/        content type model + guard
   util/         path, tree, severity, file-tab helpers
 scripts/
-  regen-content.ts   regenerates the bundled content from a real engine run
+  gen-content.ts     generates data/content.json from a SARIF + source + rules
 e2e/                 Playwright specs
 fixtures/            sample SARIF for tests
 ```
 
-## Regenerating content
+## Customizing for your own project
 
-The bundled content is produced from an actual OpenTaint scan, not hand-written. To
-regenerate it you need **Docker running** and the demo checked out at `./java-spring-demo`:
+The viewer renders a single committed `data/content.json`. To point it at a different project:
 
-```bash
-git clone https://github.com/seqra/java-spring-demo
-npm run regen
-```
-
-`scripts/regen-content.ts` runs the OpenTaint engine (pinned by image **digest** for
-reproducibility), transforms the resulting SARIF into the viewer content model,
-links each finding to the rule file that defined it, curates one scenario per
-vulnerability class, and writes a contract-validated
-`src/content/java-spring-demo.json`. Each step is skipped if its artifact already
-exists, so re-runs are cheap.
+1. **Produce a SARIF** by running OpenTaint on your project (see the OpenTaint CLI). You'll
+   have a SARIF report, your project's source directory, and the ruleset directory you scanned with.
+2. **Generate the content** (one command):
+   ```bash
+   npm run gen -- --sarif <report.sarif> --src <source-dir> --rules <rules-dir> [--name <project-id>]
+   ```
+   This writes `data/content.json`: the findings, the source files they reference (pruned to
+   only those), the full ruleset, and the analyzer name/version read from the SARIF.
+3. **Ship it** — either deploy the hosted build (`npm run build` → `dist/`) or produce a single
+   fully-offline file (`npm run build:single` → `dist-single/index.html`).
 
 ## Testing
 
 - **Unit/component:** [Vitest](https://vitest.dev/) + Testing Library + jsdom
   (`npm test`, coverage via `npm run coverage`). Tests live next to the code they cover.
 - **End-to-end:** [Playwright](https://playwright.dev/) (`npm run e2e`). The smoke test
-  derives its expectations from the committed content so it survives a `regen`.
+  derives its expectations from the committed content so it survives a `gen` run.
 
 CI (`.github/workflows/ci.yml`) runs the build, coverage, and Playwright suite on every
 push to `main` and on pull requests.
