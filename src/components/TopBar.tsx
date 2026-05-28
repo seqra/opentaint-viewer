@@ -1,5 +1,6 @@
 import { Star, Terminal } from 'lucide-react';
 import { useTheme } from '../state/theme';
+import { useStore } from '../state/store';
 import logoLight from '../assets/opentaint-header-light.svg';
 import logoDark from '../assets/opentaint-header-dark.svg';
 import styles from './TopBar.module.css';
@@ -11,6 +12,8 @@ const QUICKSTART_URL = 'https://github.com/seqra/opentaint#quick-start';
 export function TopBar() {
   const theme = useTheme((s) => s.theme);
   const toggleTheme = useTheme((s) => s.toggle);
+  const tool = useStore((s) => s.content?.tool);
+  const label = tool?.semanticVersion ? `v${tool.semanticVersion}` : tool?.version;
 
   return (
     <div className={styles.bar} data-testid="top-bar">
@@ -23,6 +26,15 @@ export function TopBar() {
           height={26}
         />
       </a>
+      {label && (
+        <span
+          className={styles.version}
+          data-testid="tool-version"
+          title={`${tool?.name ?? ''}${tool?.version ? ' ' + tool.version : ''}`.trim()}
+        >
+          {label}
+        </span>
+      )}
       <span className={styles.grow} />
       <button
         className={styles.pill}

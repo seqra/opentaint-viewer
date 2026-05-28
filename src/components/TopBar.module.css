@@ -9,3 +9,4 @@
 .star:hover { border-color: var(--accent); color: var(--accent); }
 .cta { background: var(--accent); color: #fff; border: 1px solid var(--accent); font-weight: 600; }
 .cta:hover { filter: brightness(1.08); }
+.version { flex: none; color: var(--fg-dim); font-size: 11px; font-family: var(--mono); }

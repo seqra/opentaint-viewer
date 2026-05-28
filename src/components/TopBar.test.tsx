@@ -1,10 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TopBar } from './TopBar';
 import { useTheme } from '../state/theme';
+import { useStore } from '../state/store';
 
 describe('TopBar', () => {
+  beforeEach(() => useStore.setState({ content: null }));
+
   it('links the brand to opentaint.org', () => {
     render(<TopBar />);
     expect(screen.getByRole('link', { name: /opentaint/i })).toHaveAttribute('href', 'https://opentaint.org/');
@@ -28,5 +31,19 @@ describe('TopBar', () => {
     render(<TopBar />);
     await userEvent.click(screen.getByRole('button', { name: /toggle theme/i }));
     expect(useTheme.getState().theme).toBe('light');
+  });
+
+  it('shows the semver version chip with the analyzer build in its title', () => {
+    useStore.setState({ content: { projectId: 'p', tool: { name: 'OpenTaint', semanticVersion: '0.3.0', version: 'analyzer/abc' }, files: [], rules: [], findings: [] } as never });
+    render(<TopBar />);
+    const chip = screen.getByTestId('tool-version');
+    expect(chip).toHaveTextContent('v0.3.0');
+    expect(chip.getAttribute('title')).toContain('analyzer/abc');
+  });
+
+  it('renders no version chip when the content has no tool versions', () => {
+    useStore.setState({ content: { projectId: 'p', tool: { name: 'OpenTaint' }, files: [], rules: [], findings: [] } as never });
+    render(<TopBar />);
+    expect(screen.queryByTestId('tool-version')).toBeNull();
   });
 });
