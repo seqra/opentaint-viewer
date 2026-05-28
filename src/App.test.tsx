@@ -30,7 +30,7 @@ import { useStore } from './state/store';
 import { loadContent } from './content/loadContent';
 
 const content = loadContent();
-const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
+const active = content.findings[0];
 
 describe('App', () => {
   // Sidebar/info-tab state now lives in the store (a singleton), so reset between tests.

@@ -6,7 +6,7 @@ import { useStore } from '../state/store';
 import { loadContent } from '../content/loadContent';
 
 const content = loadContent();
-const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
+const active = content.findings[0];
 const otherRule = content.findings.find((f) => f.ruleId !== active.ruleId)!;
 const dirPath = (active.file ?? '').split('/').slice(0, -1).join('/');
 const filter = () => screen.getByRole('combobox', { name: /filter findings by rule/i });

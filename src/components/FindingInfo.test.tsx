@@ -6,7 +6,7 @@ import { useStore } from '../state/store';
 import { loadContent } from '../content/loadContent';
 
 const content = loadContent();
-const finding = content.findings.find((x) => x.id === content.scenarios[0].defaultFindingId)!;
+const finding = content.findings[0];
 
 describe('FindingInfo', () => {
   beforeEach(() => {

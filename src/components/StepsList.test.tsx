@@ -6,7 +6,7 @@ import { useStore } from '../state/store';
 import { loadContent } from '../content/loadContent';
 
 const content = loadContent();
-const active = content.findings.find((f) => f.id === content.scenarios[0].defaultFindingId)!;
+const active = content.findings[0];
 const activeSteps = active.flows[active.defaultFlowIndex].steps;
 const lastStep = activeSteps[activeSteps.length - 1];
 const stepEl = (label: string) => screen.getByText((c) => c.includes(label));
