@@ -5,14 +5,12 @@ import { readFileSync } from 'node:fs';
 interface Step { file: string; label: string }
 interface Flow { steps: Step[] }
 interface Finding { id: string; ruleId: string; vulnClass: string; location: string; flows: Flow[]; defaultFlowIndex: number }
-interface Content { scenarios: { defaultFindingId: string; startFile: string }[]; findings: Finding[] }
+interface Content { findings: Finding[] }
 
-const content: Content = JSON.parse(readFileSync('src/content/java-spring-demo.json', 'utf8'));
-const scenario = content.scenarios[0];
-const active = content.findings.find((f) => f.id === scenario.defaultFindingId)!;
+const content: Content = JSON.parse(readFileSync('data/content.json', 'utf8'));
+const active = content.findings[0];
 const activeSteps = active.flows[active.defaultFlowIndex].steps;
 const location = active.location; // unique to the finding row (vuln class also appears in the filter select)
-const startBase = scenario.startFile.split('/').pop()!;
 const lastStep = activeSteps[activeSteps.length - 1];
 const sinkBase = lastStep.file.split('/').pop()!;
 const stepText = lastStep.label.slice(0, 30);
@@ -28,14 +26,8 @@ const defaultOnlyLabel = multiFlow.flows[multiFlow.defaultFlowIndex].steps
 test('explore a finding, jump cross-file, and split', async ({ page }) => {
   await page.goto('/');
 
-  // The first scenario's finding is visible on first paint (its location is unique to
-  // the finding row; the vuln class also appears in selects).
   await expect(page.getByTestId('findings-tree').getByText(location)).toBeVisible();
-
-  // Code view shows the scenario's start file as a tab.
-  await expect(page.getByRole('tab', { name: startBase })).toBeVisible();
-
-  // Open the Steps tab and click the sink step -> active file switches to the sink's file.
+  await expect(page.getByRole('tab', { name: sinkBase })).toBeVisible();
   await page.getByTestId('info-tab-steps').click();
   await page.getByTestId('steps-list').getByText(stepText).first().click();
   await expect(page.getByRole('tab', { name: sinkBase })).toHaveAttribute('aria-selected', 'true');
@@ -164,4 +156,9 @@ test('switching code flow on MessageController.java:96 changes the taint path', 
   await (multiFlow.defaultFlowIndex === 0 ? next : prev).click();
   await expect(page.getByTestId('steps-flow-header')).toContainText(`Flow ${otherFlowIndex + 1} of 2`);
   await expect(page.getByTestId('steps-list').getByText(defaultOnlyLabel.slice(0, 30))).toHaveCount(0);
+});
+
+test('shows the analyzer version from the SARIF in the top bar', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('top-bar').getByTestId('tool-version')).toBeVisible();
 });
