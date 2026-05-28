@@ -107,18 +107,30 @@ commands.
 
 ### 1. Run OpenTaint to produce a SARIF and a rules directory
 
-If you have the OpenTaint CLI installed, run it directly. Otherwise, the published
-Docker image works the same way (run these from a directory whose `your-project/`
-subfolder holds your source):
+**Install the CLI:**
 
 ```bash
-# Scan your project — writes results.sarif next to it
-docker run --rm \
-  -v "$PWD/your-project:/project" \
-  ghcr.io/seqra/opentaint \
-  opentaint scan --output /project/results.sarif /project
+# Linux / macOS
+curl -fsSL https://opentaint.org/install.sh | bash
 
-# Export the built-in ruleset so the viewer can show each rule that fired
+# macOS (Homebrew)
+brew install --cask seqra/tap/opentaint
+
+# Windows (PowerShell)
+irm https://opentaint.org/install.ps1 | iex
+```
+
+**Scan your project** — writes a SARIF report next to it:
+
+```bash
+opentaint scan --output results.sarif your-project
+```
+
+**Export the built-in ruleset** so the viewer can show each rule that fired.
+This one-time extract uses the published image; skip it if you already have
+the OpenTaint rules tree on disk:
+
+```bash
 mkdir -p rules
 docker run --rm --entrypoint sh \
   -v "$PWD/rules:/out" \
@@ -126,10 +138,18 @@ docker run --rm --entrypoint sh \
   -c 'cp -r /usr/local/lib/opentaint/lib/rules/. /out/'
 ```
 
-For reproducible reports, pin the engine by digest
-(`ghcr.io/seqra/opentaint@sha256:…`). See the
-[OpenTaint quick-start](https://github.com/seqra/opentaint#quick-start) for the
-canonical invocation and the digest of the version you intend to use.
+> **Prefer not to install the CLI?** Run the engine through Docker instead:
+>
+> ```bash
+> docker run --rm \
+>   -v "$PWD/your-project:/project" \
+>   ghcr.io/seqra/opentaint \
+>   opentaint scan --output /project/results.sarif /project
+> ```
+>
+> Pin the engine by digest (`ghcr.io/seqra/opentaint@sha256:…`) for reproducible
+> reports. See the [OpenTaint quick-start](https://github.com/seqra/opentaint#quick-start)
+> for the canonical invocation and the digest of the version you intend to use.
 
 ### 2. Generate the viewer content
 
