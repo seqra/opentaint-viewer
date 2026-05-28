@@ -41,7 +41,7 @@ export interface Finding {
   location: string | null;
   /** Full path of the primary-location file — used to group findings by directory. */
   file: string | null;
-  /** Path of the rule file that defines `ruleId`, if known (filled during regen). */
+  /** Path of the rule file that defines `ruleId`, if known (filled by gen-content). */
   ruleFile: string | null;
   /** CWE tags from the report (e.g. ["CWE-94"]). */
   cwe?: string[];
