@@ -1,4 +1,4 @@
-import raw from './java-spring-demo.json';
+import raw from '../../data/content.json';
 import { isViewerContent } from '../types/content';
 import type { Finding, ViewerContent, ProjectFile, RuleOrigin, RuleSpec, TaintStep } from '../types/content';
 

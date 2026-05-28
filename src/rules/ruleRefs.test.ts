@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ruleRefs, ruleRefTarget, RULE_REF_SCHEME } from './ruleRefs';
-import content from '../content/java-spring-demo.json';
+import content from '../../data/content.json';
 
 describe('ruleRefs', () => {
   it('parses a `rule:` reference with a fragment into path + anchor and an exact span', () => {
