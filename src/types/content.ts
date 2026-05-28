@@ -69,20 +69,12 @@ export interface RuleSpec {
   content: string;
 }
 
-export interface Scenario {
-  id: string;
-  title: string;
-  blurb: string;
-  startFile: string;
-  defaultFindingId: string;
-}
-
 export interface ViewerContent {
   projectId: string;
-  scenarios: Scenario[];
+  tool?: ToolInfo;
   files: ProjectFile[];
-  findings: Finding[];
   rules: RuleSpec[];
+  findings: Finding[];
 }
 
 export function isViewerContent(value: unknown): value is ViewerContent {
@@ -90,12 +82,15 @@ export function isViewerContent(value: unknown): value is ViewerContent {
   const c = value as Record<string, unknown>;
   if (
     typeof c.projectId !== 'string' ||
-    !Array.isArray(c.scenarios) ||
     !Array.isArray(c.files) ||
     !Array.isArray(c.findings) ||
     !Array.isArray(c.rules)
   ) {
     return false;
+  }
+  if (c.tool !== undefined) {
+    const t = c.tool as Record<string, unknown> | null;
+    if (typeof t !== 'object' || t === null || typeof t.name !== 'string') return false;
   }
   return (c.findings as unknown[]).every((f) => {
     if (typeof f !== 'object' || f === null) return false;
@@ -103,12 +98,8 @@ export function isViewerContent(value: unknown): value is ViewerContent {
     const flows = finding.flows;
     const idx = finding.defaultFlowIndex;
     return (
-      Array.isArray(flows) &&
-      flows.length > 0 &&
-      typeof idx === 'number' &&
-      Number.isInteger(idx) &&
-      idx >= 0 &&
-      idx < flows.length
+      Array.isArray(flows) && flows.length > 0 &&
+      typeof idx === 'number' && Number.isInteger(idx) && idx >= 0 && idx < flows.length
     );
   });
 }

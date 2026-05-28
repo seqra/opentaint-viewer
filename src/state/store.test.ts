@@ -4,7 +4,6 @@ import { loadContent } from '../content/loadContent';
 import { navigate } from '../taint/nav';
 
 const content = loadContent();
-const scenario = content.scenarios[0];
 const stepsOf = (f: typeof content.findings[number]) => f.flows[f.defaultFlowIndex].steps;
 const multiStep = content.findings.find((f) => stepsOf(f).length > 1)!;
 const multiFlow = content.findings.find((f) => f.flows.length > 1)!;
@@ -12,13 +11,12 @@ const multiFlow = content.findings.find((f) => f.flows.length > 1)!;
 describe('viewer store', () => {
   beforeEach(() => useStore.getState().reset());
 
-  it('loadContent selects the first scenario, its default finding, focused on the sink (last step)', () => {
+  it('loadContent selects the first finding, focused on the sink (last step)', () => {
     useStore.getState().loadContent(content);
     const s = useStore.getState();
-    const defaultFinding = content.findings.find((f) => f.id === scenario.defaultFindingId)!;
+    const defaultFinding = content.findings[0];
     const lastIdx = defaultFinding.flows[defaultFinding.defaultFlowIndex].steps.length - 1;
-    expect(s.scenarioId).toBe(scenario.id);
-    expect(s.activeFindingId).toBe(scenario.defaultFindingId);
+    expect(s.activeFindingId).toBe(defaultFinding.id);
     expect(s.activeStepIndex).toBe(lastIdx);
     expect(s.activeFile).toBe(defaultFinding.flows[defaultFinding.defaultFlowIndex].steps[lastIdx].file);
     expect(s.viewMode).toBe('tabs');
@@ -39,8 +37,8 @@ describe('viewer store', () => {
     useStore.setState({ activeFindingId: 'no-such-finding', activeStepIndex: 99, content: null });
     useStore.getState().loadContent(content);
     const s = useStore.getState();
-    const defaultFinding = content.findings.find((f) => f.id === scenario.defaultFindingId)!;
-    expect(s.activeFindingId).toBe(scenario.defaultFindingId);
+    const defaultFinding = content.findings[0];
+    expect(s.activeFindingId).toBe(defaultFinding.id);
     expect(s.activeStepIndex).toBe(defaultFinding.flows[defaultFinding.defaultFlowIndex].steps.length - 1);
   });
 
@@ -131,7 +129,7 @@ describe('viewer store', () => {
   it('loadContent sets activeFlowIndex to the default and focuses that flow\'s sink', () => {
     useStore.getState().loadContent(content);
     const s = useStore.getState();
-    const f = content.findings.find((x) => x.id === scenario.defaultFindingId)!;
+    const f = content.findings[0];
     expect(s.activeFlowIndex).toBe(f.defaultFlowIndex);
     expect(s.activeStepIndex).toBe(f.flows[f.defaultFlowIndex].steps.length - 1);
   });

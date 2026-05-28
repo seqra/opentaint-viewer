@@ -23,7 +23,16 @@ import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdirSy
 import { join, relative, extname } from 'node:path';
 import { transformSarif } from '../src/pipeline/sarif';
 import { isViewerContent } from '../src/types/content';
-import type { Finding, Language, ProjectFile, RuleSpec, Scenario } from '../src/types/content';
+import type { Finding, Language, ProjectFile, RuleSpec } from '../src/types/content';
+
+/** Local type for the scenarios field written by this script (kept in the JSON for reference). */
+interface Scenario {
+  id: string;
+  title: string;
+  blurb: string;
+  startFile: string;
+  defaultFindingId: string;
+}
 
 const IMAGE =
   'ghcr.io/seqra/opentaint@sha256:cd545080aca60f5583523277589f5e086fd630e6555eb5e718384afc7469cf7d';

@@ -13,7 +13,6 @@ export type InfoTab = 'info' | 'steps';
 
 interface State {
   content: ViewerContent | null;
-  scenarioId: string | null;
   activeFindingId: string | null;
   activeStepIndex: number | null;
   /** Which code flow of the active finding is shown (0-based). */
@@ -36,7 +35,6 @@ interface State {
 
 interface Actions {
   loadContent: (c: ViewerContent) => void;
-  selectScenario: (id: string) => void;
   selectFinding: (id: string) => void;
   selectStep: (findingId: string, index: number) => void;
   step: (op: StepOp) => void;
@@ -54,7 +52,7 @@ interface Actions {
 }
 
 const initial: State = {
-  content: null, scenarioId: null, activeFindingId: null, activeStepIndex: null, activeFlowIndex: 0,
+  content: null, activeFindingId: null, activeStepIndex: null, activeFlowIndex: 0,
   activeFile: null, activeRuleId: null, activeRuleAnchor: null, ruleFocusTick: 0, viewMode: 'tabs', activeTab: 'code',
   sidebarView: 'findings', infoTab: 'info', infoViewMode: 'tabs',
 };
@@ -62,7 +60,7 @@ const initial: State = {
 /** The slice persisted to localStorage — the view, not the bundled content or transient focus. */
 type PersistedView = Pick<
   State,
-  'scenarioId' | 'activeFindingId' | 'activeStepIndex' | 'activeFlowIndex' | 'activeFile' | 'activeRuleId'
+  'activeFindingId' | 'activeStepIndex' | 'activeFlowIndex' | 'activeFile' | 'activeRuleId'
   | 'activeTab' | 'sidebarView' | 'infoTab' | 'viewMode' | 'infoViewMode'
 >;
 
@@ -93,19 +91,17 @@ const safeStorage: StateStorage = {
   },
 };
 
-/** Curated default focus: the default flow of the default finding, on its sink. */
+/** Default focus: the first finding, its default flow, on the sink. */
 function defaultFocus(content: ViewerContent) {
-  const scenario = content.scenarios[0] ?? null;
-  const finding = scenario ? findingById(content, scenario.defaultFindingId) : undefined;
+  const finding = content.findings[0] ?? null;
   const flowIndex = finding?.defaultFlowIndex ?? 0;
   const steps = finding ? flowSteps(finding, flowIndex) : [];
   const lastIdx = steps.length ? steps.length - 1 : null;
   return {
-    scenarioId: scenario?.id ?? null,
-    activeFindingId: scenario?.defaultFindingId ?? null,
+    activeFindingId: finding?.id ?? null,
     activeFlowIndex: flowIndex,
     activeStepIndex: lastIdx,
-    activeFile: steps[lastIdx ?? 0]?.file ?? scenario?.startFile ?? null,
+    activeFile: steps[lastIdx ?? 0]?.file ?? null,
     activeRuleId: content.rules[0]?.id ?? null,
   };
 }
@@ -126,10 +122,8 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
       if (stepOk) {
         const fileOk = s.activeFile != null && content.files.some((f) => f.path === s.activeFile);
         const ruleOk = s.activeRuleId != null && content.rules.some((r) => r.id === s.activeRuleId);
-        const scenarioOk = content.scenarios.some((sc) => sc.id === s.scenarioId);
         set({
           content,
-          scenarioId: scenarioOk ? s.scenarioId : content.scenarios[0]?.id ?? null,
           activeFindingId: s.activeFindingId,
           activeFlowIndex: flowIndex,
           activeStepIndex: s.activeStepIndex,
@@ -140,14 +134,6 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
       }
     }
     set({ content, ...defaultFocus(content) });
-  },
-
-  selectScenario: (id) => {
-    const c = get().content;
-    const scenario = c?.scenarios.find((s) => s.id === id);
-    if (!scenario) return;
-    const f = c ? findingById(c, scenario.defaultFindingId) : undefined;
-    set({ scenarioId: id, activeFindingId: scenario.defaultFindingId, activeFlowIndex: f?.defaultFlowIndex ?? 0, activeStepIndex: 0, activeFile: scenario.startFile });
   },
 
   selectFinding: (id) => {
@@ -204,7 +190,6 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
   storage: createJSONStorage(() => safeStorage),
   // Persist only the view slice (content is bundled; anchor/focus tick are transient).
   partialize: (s): PersistedView => ({
-    scenarioId: s.scenarioId,
     activeFindingId: s.activeFindingId,
     activeStepIndex: s.activeStepIndex,
     activeFlowIndex: s.activeFlowIndex,
