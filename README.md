@@ -29,8 +29,8 @@ content artifact, so the whole experience is instant and works offline.
 - **Offline single-file export** — build a single self-contained `index.html`
   (JS, CSS, fonts, and Monaco all inlined).
 
-The bundled demo covers **13 findings** across **3 curated scenarios** — Template
-Injection, SSRF (Kotlin), and XSS — over **23 source files** and **47 rules**.
+The bundled demo covers **13 findings** — Template Injection, SSRF (Kotlin), and XSS —
+over the source files they reference and **47 rules**.
 
 ## Quick start
 
@@ -69,11 +69,10 @@ loadContent()  →  validate (isViewerContent)  →  Zustand store  →  UI
 
 The content shape is defined in [`src/types/content.ts`](src/types/content.ts):
 
-- `scenarios` — curated entry points (one per vulnerability class) with a title, blurb,
-  start file, and default finding.
+- `tool` — the analyzer name and version (semver + build) read from the SARIF.
 - `findings` — each with a rule id, vuln class, severity, CWE tags, markdown
-  description, primary location, and an ordered list of `TaintStep`s.
-- `files` — the project source files shown in the editor.
+  description, primary location, code flows, and ordered `TaintStep`s.
+- `files` — the project source files referenced by findings.
 - `rules` — the ruleset (`builtin` or `custom`), keyed by their real ruleset-relative
   path so findings can link straight to the rule that defined them.
 
