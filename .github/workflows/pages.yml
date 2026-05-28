@@ -1,0 +1,47 @@
+# Publishes the Vite build to GitHub Pages once CI passes on main.
+# One-time setup: repo Settings → Pages → Source = "GitHub Actions".
+name: pages
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment in flight at a time; let queued ones finish (a successful
+# build should always reach Pages, even if a newer one is already running).
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # workflow_run fires on every CI completion — gate on success. workflow_dispatch has no
+    # workflow_run payload, so the second clause lets manual re-deploys through unconditionally.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Build the exact commit CI green-lit (workflow_run.head_sha), not whatever HEAD is now.
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deploy
+        uses: actions/deploy-pages@v4
