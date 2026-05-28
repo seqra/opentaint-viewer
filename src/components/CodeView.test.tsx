@@ -1,10 +1,18 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-const { createDecorationsCollection, defineTheme } = vi.hoisted(() => ({
-  createDecorationsCollection: vi.fn(() => ({ clear: vi.fn() })),
-  defineTheme: vi.fn(),
-}));
+const { createDecorationsCollection, defineTheme, onKeyDown, onKeyDownHandlers } = vi.hoisted(() => {
+  const handlers: Array<(e: { code: string; preventDefault: () => void; stopPropagation: () => void }) => void> = [];
+  return {
+    createDecorationsCollection: vi.fn(() => ({ clear: vi.fn() })),
+    defineTheme: vi.fn(),
+    onKeyDown: vi.fn((cb: (e: { code: string; preventDefault: () => void; stopPropagation: () => void }) => void) => {
+      handlers.push(cb);
+      return { dispose: vi.fn() };
+    }),
+    onKeyDownHandlers: handlers,
+  };
+});
 
 vi.mock('@monaco-editor/react', () => ({
   default: (props: {
@@ -15,7 +23,7 @@ vi.mock('@monaco-editor/react', () => ({
   }) => {
     props.beforeMount?.({ editor: { defineTheme } });
     props.onMount?.(
-      { createDecorationsCollection },
+      { createDecorationsCollection, onKeyDown },
       { Range: class { constructor(public sl: number, public sc: number, public el: number, public ec: number) {} } },
     );
     return <div data-testid="monaco" data-path={props.path}>{props.value}</div>;
@@ -39,6 +47,8 @@ describe('CodeView', () => {
   beforeEach(() => {
     createDecorationsCollection.mockClear();
     defineTheme.mockClear();
+    onKeyDown.mockClear();
+    onKeyDownHandlers.length = 0;
     useStore.getState().reset();
     useStore.getState().loadContent(content);
   });
@@ -86,6 +96,29 @@ describe('CodeView', () => {
     useStore.getState().selectFinding(single.id);
     render(<CodeView />);
     expect(screen.queryByTestId('flow-nav')).toBeNull();
+  });
+
+  it('blocks Monaco caret/scroll keys via the editor onKeyDown hook', () => {
+    render(<CodeView />);
+    expect(onKeyDownHandlers.length).toBeGreaterThan(0);
+    for (const code of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']) {
+      const preventDefault = vi.fn();
+      const stopPropagation = vi.fn();
+      onKeyDownHandlers.forEach((cb) => cb({ code, preventDefault, stopPropagation }));
+      expect(preventDefault).toHaveBeenCalled();
+      expect(stopPropagation).toHaveBeenCalled();
+    }
+  });
+
+  it('lets non-navigation keys through to Monaco', () => {
+    render(<CodeView />);
+    for (const code of ['KeyA', 'KeyC', 'Tab', 'Escape']) {
+      const preventDefault = vi.fn();
+      const stopPropagation = vi.fn();
+      onKeyDownHandlers.forEach((cb) => cb({ code, preventDefault, stopPropagation }));
+      expect(preventDefault).not.toHaveBeenCalled();
+      expect(stopPropagation).not.toHaveBeenCalled();
+    }
   });
 
   it('shows the flow nav and switches flows for multi-flow findings', async () => {

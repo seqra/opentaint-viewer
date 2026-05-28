@@ -59,13 +59,14 @@ describe('useStepKeys', () => {
     expect(useStore.getState().activeStepIndex).toBe(0);
   });
 
-  it('ignores arrow keys while the code editor (Monaco) owns them', () => {
+  it('keeps caret keys in form controls but drives step nav from the code editor', () => {
     const { getByTestId } = render(<Harness />);
-    // A bare textarea (and anything inside .monaco-editor) should keep its caret keys.
+    // A bare textarea still owns its arrow keys.
     fireEvent.keyDown(getByTestId('ta'), { key: 'ArrowRight' });
     expect(useStore.getState().activeStepIndex).toBe(0);
 
-    fireEvent.keyDown(getByTestId('mono-child'), { key: 'ArrowLeft' });
-    expect(useStore.getState().activeStepIndex).toBe(0);
+    // The (read-only) code editor is not a typing context — arrows step.
+    fireEvent.keyDown(getByTestId('mono-child'), { key: 'ArrowRight' });
+    expect(useStore.getState().activeStepIndex).toBe(navigate(activeSteps, 0, 'next'));
   });
 });

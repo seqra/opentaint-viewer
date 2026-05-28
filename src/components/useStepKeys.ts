@@ -20,25 +20,24 @@ function opForKey(e: KeyboardEvent): StepOp | null {
 }
 
 /**
- * True when the event targets a widget that should own arrow keys itself — a form
- * control, a contenteditable, or the (read-only) Monaco code editor, where arrows move
- * the caret / selection. Keeps step navigation from firing on top of cursor movement.
+ * True when the event targets a form control or contenteditable that owns its own
+ * arrow / Home / End keys. The (read-only) Monaco code panel is deliberately *not* a
+ * typing context — step nav overrides its caret keys.
  */
 function isTypingContext(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   if (!el) return false;
   const tag = el.tagName;
   if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return true;
-  if (el.isContentEditable) return true;
-  return el.closest?.('.monaco-editor') != null;
+  return el.isContentEditable;
 }
 
 /**
  * Global keyboard control of taint-path stepping:
  *   ←/→ back/next · Shift+←/→ back-over/next-over · ↑ out (back to caller) · Home/End start/end.
- * Yields to the focused widget when the user is in a form control or the code editor, so
- * arrow keys move the caret there instead of stepping (use the on-screen buttons, or click
- * outside the editor, to step from the keyboard while the editor holds focus).
+ * Yields to the focused widget in form controls and contenteditables. Inside the read-only
+ * code panel we swallow the key (capture-phase + stopPropagation) so Monaco's caret keys
+ * don't fire alongside the step.
  */
 export function useStepKeys(): void {
   useEffect(() => {
@@ -49,6 +48,7 @@ export function useStepKeys(): void {
       const s = useStore.getState();
       if (!s.activeFindingId) return;
       e.preventDefault();
+      e.stopPropagation();
       s.step(op);
     };
     window.addEventListener('keydown', handler, true);

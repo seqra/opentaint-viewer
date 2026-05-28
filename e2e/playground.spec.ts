@@ -158,6 +158,27 @@ test('switching code flow on MessageController.java:96 changes the taint path', 
   await expect(page.getByTestId('steps-list').getByText(defaultOnlyLabel.slice(0, 30))).toHaveCount(0);
 });
 
+test('ArrowDown / PageDown in the code panel do not move Monaco\'s caret', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('code-view')).toBeVisible();
+  // Click into the editor so Monaco renders its caret and owns focus.
+  await page.locator('[data-testid="code-view"] .monaco-editor').first().click();
+  const cursor = page.locator('[data-testid="code-view"] .cursors-layer .cursor').first();
+  await expect(cursor).toBeVisible({ timeout: 10000 });
+
+  // Snapshot the caret's vertical position. Monaco moves it via inline `top` on each keystroke.
+  const before = await cursor.evaluate((el) => (el as HTMLElement).style.top);
+  const stepBefore = await page.getByTestId('step-nav').textContent();
+
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('PageDown');
+
+  // Neither key should move the caret (wrapper-level capture handler stops them) and
+  // neither is a step-nav key, so the step counter must also stay put.
+  expect(await cursor.evaluate((el) => (el as HTMLElement).style.top)).toBe(before);
+  expect(await page.getByTestId('step-nav').textContent()).toBe(stepBefore);
+});
+
 test('shows the analyzer version from the SARIF in the top bar', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('top-bar').getByTestId('tool-version')).toBeVisible();

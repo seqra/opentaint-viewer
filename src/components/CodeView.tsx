@@ -85,6 +85,18 @@ export function CodeView() {
       sub?.dispose();
       revealCurrentStep();
     });
+    // Forbid Monaco's caret/scroll keys in the read-only code panel. Step-nav keys
+    // (←/→/↑/Home/End) are already stopped by useStepKeys' window-capture handler when
+    // a finding is active; this catches the rest (↓, PageUp/Down) and the no-finding case.
+    const blocked = new Set([
+      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+      'Home', 'End', 'PageUp', 'PageDown',
+    ]);
+    editor.onKeyDown?.((e) => {
+      if (!blocked.has(e.code)) return;
+      e.preventDefault();
+      e.stopPropagation();
+    });
   };
 
   useEffect(() => {
