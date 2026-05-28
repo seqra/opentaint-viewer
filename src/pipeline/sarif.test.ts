@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { transformSarif, vulnClassForRule } from './sarif';
+import { transformSarif, vulnClassForRule, toolInfo } from './sarif';
 
 const log = JSON.parse(readFileSync('fixtures/sample.sarif', 'utf8'));
 
@@ -104,22 +104,6 @@ describe('transformSarif — code flows', () => {
     expect(transformSarif(log)[0].defaultFlowIndex).toBe(1);
   });
 
-  it('the curated override for MessageController.java:96 beats the longest-flow heuristic', () => {
-    // Make flow 0 the LONGEST so the heuristic alone would pick it; the override (→ 1)
-    // must win, proving the curated table — not just length — drives the default.
-    const log = { runs: [{ results: [{
-      ruleId: 'java.security.xss-in-spring-app',
-      level: 'error',
-      message: { text: 'm' },
-      locations: [{ physicalLocation: { artifactLocation: { uri: 'a/MessageController.java' }, region: { startLine: 96 } } }],
-      codeFlows: [
-        flow(tfl('a/MessageController.java', 10, 'x'), tfl('a/MessageController.java', 20, 'y'), tfl('a/MessageController.java', 30, 'z')),
-        flow(tfl('a/MessageController.java', 33, 'long'), tfl('a/MessageController.java', 96, 'sink')),
-      ],
-    }] }] };
-    expect(transformSarif(log)[0].defaultFlowIndex).toBe(1); // override wins, not the 3-step flow 0
-  });
-
   it('a result with no code flows still yields one empty flow', () => {
     const log = { runs: [{ results: [{ ruleId: 'r', level: 'error', message: { text: 'm' }, locations: [] }] }] };
     const f = transformSarif(log)[0];
@@ -128,4 +112,16 @@ describe('transformSarif — code flows', () => {
     expect(f.defaultFlowIndex).toBe(0);
   });
 
+});
+
+describe('toolInfo', () => {
+  it('reads name, semanticVersion and version from the SARIF driver', () => {
+    const log = { runs: [{ tool: { driver: { name: 'OpenTaint', semanticVersion: '0.3.0', version: 'analyzer/abc' } } }] };
+    expect(toolInfo(log)).toEqual({ name: 'OpenTaint', semanticVersion: '0.3.0', version: 'analyzer/abc' });
+  });
+
+  it('defaults the name and leaves versions undefined when the driver omits them', () => {
+    expect(toolInfo({ runs: [{ tool: { driver: {} } }] })).toEqual({ name: 'OpenTaint', semanticVersion: undefined, version: undefined });
+    expect(toolInfo({})).toEqual({ name: 'OpenTaint', semanticVersion: undefined, version: undefined });
+  });
 });

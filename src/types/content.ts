@@ -3,6 +3,15 @@ export type Severity = 'error' | 'warning' | 'note';
 export type RuleOrigin = 'builtin' | 'custom';
 export type Language = 'java' | 'kotlin' | 'yaml' | 'xml' | 'properties' | 'plaintext';
 
+export interface ToolInfo {
+  /** Analyzer name from the SARIF driver, e.g. "OpenTaint". */
+  name: string;
+  /** SARIF driver.semanticVersion, e.g. "0.3.0". */
+  semanticVersion?: string;
+  /** SARIF driver.version, e.g. "analyzer/2026.05.15.f15ed3a". */
+  version?: string;
+}
+
 export interface TaintStep {
   index: number;
   kind: StepKind;
