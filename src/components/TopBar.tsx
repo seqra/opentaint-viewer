@@ -13,7 +13,12 @@ export function TopBar() {
   const theme = useTheme((s) => s.theme);
   const toggleTheme = useTheme((s) => s.toggle);
   const tool = useStore((s) => s.content?.tool);
-  const label = tool?.semanticVersion ? `v${tool.semanticVersion}` : tool?.version;
+  // Show both the semver and the build version (calver+hash) when both are present.
+  // The leading `analyzer/` is namespacing noise — strip it for display but keep the full
+  // string in the tooltip title for fidelity.
+  const semver = tool?.semanticVersion ? `v${tool.semanticVersion}` : null;
+  const buildVer = tool?.version ? tool.version.replace(/^analyzer\//, '') : null;
+  const label = [semver, buildVer].filter(Boolean).join(' · ');
 
   return (
     <div className={styles.bar} data-testid="top-bar">

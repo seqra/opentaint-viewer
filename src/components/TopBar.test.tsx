@@ -33,12 +33,18 @@ describe('TopBar', () => {
     expect(useTheme.getState().theme).toBe('light');
   });
 
-  it('shows the semver version chip with the analyzer build in its title', () => {
+  it('shows the semver and the build version (calver+hash) side by side, with the full analyzer string in title', () => {
     useStore.setState({ content: { projectId: 'p', tool: { name: 'OpenTaint', semanticVersion: '0.3.0', version: 'analyzer/abc' }, files: [], rules: [], findings: [] } as never });
     render(<TopBar />);
     const chip = screen.getByTestId('tool-version');
-    expect(chip).toHaveTextContent('v0.3.0');
-    expect(chip.getAttribute('title')).toContain('analyzer/abc');
+    expect(chip.textContent).toBe('v0.3.0 · abc'); // 'analyzer/' prefix stripped from display
+    expect(chip.getAttribute('title')).toContain('analyzer/abc'); // full string still in tooltip
+  });
+
+  it('shows just the build version when there is no semver', () => {
+    useStore.setState({ content: { projectId: 'p', tool: { name: 'OpenTaint', version: 'analyzer/2026.05.15.f15ed3a' }, files: [], rules: [], findings: [] } as never });
+    render(<TopBar />);
+    expect(screen.getByTestId('tool-version').textContent).toBe('2026.05.15.f15ed3a');
   });
 
   it('renders no version chip when the content has no tool versions', () => {
