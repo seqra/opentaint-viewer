@@ -99,20 +99,68 @@ e2e/                 Playwright specs
 fixtures/            sample SARIF for tests
 ```
 
-## Customizing for your own project
+## Generate a static HTML report for your project
 
-The viewer renders a single committed `data/content.json`. To point it at a different project:
+The viewer is a generic React app that renders one committed `data/content.json`.
+To produce a self-contained, offline HTML report for your own project, run three
+commands.
 
-1. **Produce a SARIF** by running OpenTaint on your project (see the OpenTaint CLI). You'll
-   have a SARIF report, your project's source directory, and the ruleset directory you scanned with.
-2. **Generate the content** (one command):
-   ```bash
-   npm run gen -- --sarif <report.sarif> --src <source-dir> --rules <rules-dir> [--name <project-id>]
-   ```
-   This writes `data/content.json`: the findings, the source files they reference (pruned to
-   only those), the full ruleset, and the analyzer name/version read from the SARIF.
-3. **Ship it** — either deploy the hosted build (`npm run build` → `dist/`) or produce a single
-   fully-offline file (`npm run build:single` → `dist-single/index.html`).
+### 1. Run OpenTaint to produce a SARIF and a rules directory
+
+If you have the OpenTaint CLI installed, run it directly. Otherwise, the published
+Docker image works the same way (run these from a directory whose `your-project/`
+subfolder holds your source):
+
+```bash
+# Scan your project — writes results.sarif next to it
+docker run --rm \
+  -v "$PWD/your-project:/project" \
+  ghcr.io/seqra/opentaint \
+  opentaint scan --output /project/results.sarif /project
+
+# Export the built-in ruleset so the viewer can show each rule that fired
+mkdir -p rules
+docker run --rm --entrypoint sh \
+  -v "$PWD/rules:/out" \
+  ghcr.io/seqra/opentaint \
+  -c 'cp -r /usr/local/lib/opentaint/lib/rules/. /out/'
+```
+
+For reproducible reports, pin the engine by digest
+(`ghcr.io/seqra/opentaint@sha256:…`). See the
+[OpenTaint quick-start](https://github.com/seqra/opentaint#quick-start) for the
+canonical invocation and the digest of the version you intend to use.
+
+### 2. Generate the viewer content
+
+```bash
+npm install   # once
+npm run gen -- \
+  --sarif your-project/results.sarif \
+  --src   your-project/src \
+  --rules ./rules \
+  --name  your-project
+```
+
+That writes `data/content.json`: the findings, the source files they reference
+(pruned to only those), the full ruleset, and the analyzer name + version read
+from the SARIF (shown in the TopBar, e.g. `v0.3.0 · 2026.05.15.f15ed3a`).
+
+If your SARIF `artifactLocation.uri` values aren't relative to the parent of
+`--src` (the common `<root>/src/...` layout), pass `--root <dir>` so collected
+file paths match the URIs.
+
+### 3. Build the offline HTML report
+
+```bash
+npm run build:single
+```
+
+`dist-single/index.html` is a single self-contained file — JS, CSS, fonts, and
+Monaco editor all inlined. Open it in a browser or share it as-is; no server,
+no network required.
+
+For a hosted (multi-file) build instead, use `npm run build` → `dist/`.
 
 ## Testing
 
