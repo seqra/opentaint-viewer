@@ -10,6 +10,12 @@ A bundled demo built from
 [`seqra/java-spring-demo`](https://github.com/seqra/java-spring-demo) is committed
 so you can [try the viewer instantly](#try-the-bundled-demo).
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/viewer-light.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/viewer-dark.png">
+  <img alt="OpenTaint Viewer — a stored-XSS finding selected, the tainted path highlighted blue through createMessage with the sink in red, and the ordered source→sink steps listed below" src="docs/screenshots/viewer-dark.png">
+</picture>
+
 ## Generate a static HTML report for your project
 
 The viewer is a generic React app that renders one committed `data/content.json`.

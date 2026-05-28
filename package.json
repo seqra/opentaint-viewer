@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "e2e": "playwright test",
-    "gen": "tsx scripts/gen-content.ts"
+    "gen": "tsx scripts/gen-content.ts",
+    "screenshots": "tsx scripts/screenshots.ts"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.2.8",
