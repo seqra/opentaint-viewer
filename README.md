@@ -105,9 +105,11 @@ The viewer is a generic React app that renders one committed `data/content.json`
 To produce a self-contained, offline HTML report for your own project, run three
 commands.
 
-### 1. Run OpenTaint to produce a SARIF and a rules directory
+### 1. Run OpenTaint to produce a SARIF
 
-**Install the CLI:**
+**Install the CLI** — it bundles the ruleset alongside the binary at
+`<install-prefix>/lib/rules`, so a native install gives you both the engine and
+the rules in one step:
 
 ```bash
 # Linux / macOS
@@ -126,18 +128,6 @@ irm https://opentaint.org/install.ps1 | iex
 opentaint scan --output results.sarif your-project
 ```
 
-**Export the built-in ruleset** so the viewer can show each rule that fired.
-This one-time extract uses the published image; skip it if you already have
-the OpenTaint rules tree on disk:
-
-```bash
-mkdir -p rules
-docker run --rm --entrypoint sh \
-  -v "$PWD/rules:/out" \
-  ghcr.io/seqra/opentaint \
-  -c 'cp -r /usr/local/lib/opentaint/lib/rules/. /out/'
-```
-
 > **Prefer not to install the CLI?** Run the engine through Docker instead:
 >
 > ```bash
@@ -147,18 +137,32 @@ docker run --rm --entrypoint sh \
 >   opentaint scan --output /project/results.sarif /project
 > ```
 >
+> Docker users also need to extract the ruleset once (the native install
+> already includes it):
+>
+> ```bash
+> mkdir -p rules
+> docker run --rm --entrypoint sh \
+>   -v "$PWD/rules:/out" \
+>   ghcr.io/seqra/opentaint \
+>   -c 'cp -r /usr/local/lib/opentaint/lib/rules/. /out/'
+> ```
+>
 > Pin the engine by digest (`ghcr.io/seqra/opentaint@sha256:…`) for reproducible
 > reports. See the [OpenTaint quick-start](https://github.com/seqra/opentaint#quick-start)
 > for the canonical invocation and the digest of the version you intend to use.
 
 ### 2. Generate the viewer content
 
+Point `--rules` at the bundled ruleset that came with the install (or at the
+`rules/` directory you extracted in the Docker fallback above):
+
 ```bash
 npm install   # once
 npm run gen -- \
   --sarif your-project/results.sarif \
   --src   your-project/src \
-  --rules ./rules \
+  --rules "$(dirname "$(command -v opentaint)")/../lib/rules" \
   --name  your-project
 ```
 
