@@ -52,4 +52,11 @@ describe('TopBar', () => {
     render(<TopBar />);
     expect(screen.queryByTestId('tool-version')).toBeNull();
   });
+
+  it('the menu button opens the drawer by setting sidebarView', async () => {
+    useStore.getState().setSidebarView(null);
+    render(<TopBar />);
+    await userEvent.click(screen.getByTestId('top-bar-menu'));
+    expect(useStore.getState().sidebarView).not.toBeNull();
+  });
 });

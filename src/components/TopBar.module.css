@@ -10,3 +10,23 @@
 .cta { background: var(--accent); color: #fff; border: 1px solid var(--accent); font-weight: 600; }
 .cta:hover { filter: brightness(1.08); }
 .version { flex: none; color: var(--fg-dim); font-size: 11px; font-family: var(--mono); }
+.menuBtn {
+  flex: none;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .menuBtn { display: inline-flex; }
+  .pill { display: none; }
+  .version { display: none; }
+  .brand .logo { height: 22px; }
+}
