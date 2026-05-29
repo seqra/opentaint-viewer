@@ -17,22 +17,17 @@ globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObse
 // active element (e.g. StepsList) can run under tests.
 Element.prototype.scrollIntoView ??= function scrollIntoView() {};
 
-// Ensure localStorage is properly available in the test environment
-// jsdom provides a localStorage but it may not be fully functional, so we wrap it.
-const createLocalStorageMock = () => {
+// vitest's jsdom exposes a `globalThis.localStorage` object with no methods; the
+// store's safeStorage wrapper swallows that silently, but tests that need to drive
+// the persist middleware (e.g. rehydrate guards) need a real shim.
+if (typeof globalThis.localStorage?.setItem !== 'function') {
   const store = new Map<string, string>();
-  return {
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => store.set(key, value),
-    removeItem: (key: string) => store.delete(key),
-    clear: () => store.clear(),
-    key: (index: number) => Array.from(store.keys())[index] ?? null,
-    get length() {
-      return store.size;
-    },
+  globalThis.localStorage = {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => { store.set(k, v); },
+    removeItem: (k: string) => { store.delete(k); },
+    clear: () => { store.clear(); },
+    key: (i: number) => Array.from(store.keys())[i] ?? null,
+    get length() { return store.size; },
   } as Storage;
-};
-
-if (!globalThis.localStorage || typeof globalThis.localStorage.setItem !== 'function') {
-  globalThis.localStorage = createLocalStorageMock();
 }
