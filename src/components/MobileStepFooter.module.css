@@ -1,6 +1,9 @@
 .footer {
   display: flex;
   align-items: stretch;
+  /* Fixed panel height (a one-line location + a three-line message). The body's
+     parts flex within it, so a long filename can wrap without resizing the panel. */
+  height: 76px;
   background: var(--bg-2);
   border-top: 1px solid var(--border);
   font-family: var(--mono);
@@ -27,32 +30,33 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 2px;
   padding: 6px 12px;
+  overflow: hidden;
 }
 .head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
+  flex: none;
 }
 .where {
   color: var(--fg);
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   min-width: 0;
+  /* Show the whole filename: wrap (breaking the name if needed) instead of clipping. */
+  overflow-wrap: anywhere;
 }
 .counter { color: var(--fg-dim); font-weight: 600; flex: none; }
 .what {
   font-size: 11px;
   color: var(--fg-dim);
   line-height: 1.35;
-  /* Fixed three-line height so the panel never changes size as you step: short
-     labels leave blank space, long ones scroll within the strip. */
-  height: calc(3 * 1.35em);
+  /* Takes the remaining fixed-panel space; long labels scroll within the strip.
+     When the filename wraps the head grows and this shrinks, keeping height fixed. */
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
