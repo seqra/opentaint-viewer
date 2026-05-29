@@ -56,6 +56,10 @@
   --code-line-num: #52525b;
 }
 * { box-sizing: border-box; }
+/* Stop iOS Safari from auto-inflating text on narrow viewports (iPhone mini-class):
+   without this it boosts Monaco's font well past our 12px base, so the code reads
+   "too zoomed". Pin the adjustment to 100% so on-screen sizes match what we set. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html, body, #root { height: 100%; margin: 0; }
 body { background: var(--bg); color: var(--fg); font-family: var(--sans); }
 .taint-faint { background: hsl(var(--taint-hsl) / 0.16); border-radius: 2px; }
