@@ -50,9 +50,9 @@
   font-size: 11px;
   color: var(--fg-dim);
   line-height: 1.35;
-  /* Long step labels are common; let the user scroll within the strip rather
-     than clipping. Capped at ~4 lines so the editor still has room. */
-  max-height: calc(4 * 1.35em);
+  /* Keep the panel compact and a stable height as you step: cap the label at two
+     lines and let long ones scroll within the strip rather than growing the footer. */
+  max-height: calc(2 * 1.35em);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
