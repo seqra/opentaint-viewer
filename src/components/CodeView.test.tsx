@@ -162,7 +162,8 @@ describe('phoneEditorOverrides', () => {
       lineNumbersMinChars: 3,
       scrollBeyondLastLine: false,
       wordWrap: 'off',
-      fontSize: 13,
     });
+    // fontSize is owned by the persisted editorZoom slice, not by the phone overrides.
+    expect((phoneEditorOverrides() as { fontSize?: number }).fontSize).toBeUndefined();
   });
 });

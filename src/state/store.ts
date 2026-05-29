@@ -35,6 +35,24 @@ interface State {
   infoViewMode: ViewMode;
   /** Phone top tab (Code / Details / Rule). Desktop ignores this. */
   mobileTab: MobileTab;
+  /** Editor zoom level, in percent. 100 = baseline 12px; range [50, 200]. */
+  editorZoom: number;
+}
+
+export const EDITOR_ZOOM_MIN = 50;
+export const EDITOR_ZOOM_MAX = 200;
+export const EDITOR_ZOOM_STEP = 10;
+export const EDITOR_ZOOM_DEFAULT = 100;
+const EDITOR_FONT_BASE_PX = 12;
+
+/** Map an editor zoom percentage to the Monaco fontSize in px. */
+export function editorFontPx(zoom: number): number {
+  return Math.max(1, Math.round((EDITOR_FONT_BASE_PX * zoom) / 100));
+}
+
+function clampZoom(z: unknown): number {
+  if (typeof z !== 'number' || !Number.isFinite(z)) return EDITOR_ZOOM_DEFAULT;
+  return Math.min(EDITOR_ZOOM_MAX, Math.max(EDITOR_ZOOM_MIN, Math.round(z)));
 }
 
 interface Actions {
@@ -53,6 +71,7 @@ interface Actions {
   setInfoTab: (tab: InfoTab) => void;
   setInfoViewMode: (m: ViewMode) => void;
   setMobileTab: (t: MobileTab) => void;
+  setEditorZoom: (z: number) => void;
   reset: () => void;
 }
 
@@ -60,6 +79,7 @@ const initial: State = {
   content: null, activeFindingId: null, activeStepIndex: null, activeFlowIndex: 0,
   activeFile: null, activeRuleId: null, activeRuleAnchor: null, ruleFocusTick: 0, viewMode: 'tabs', activeTab: 'code',
   sidebarView: 'findings', infoTab: 'info', infoViewMode: 'tabs', mobileTab: 'code',
+  editorZoom: EDITOR_ZOOM_DEFAULT,
 };
 
 /** The slice persisted to localStorage — the view, not the bundled content or transient focus. */
@@ -67,6 +87,7 @@ type PersistedView = Pick<
   State,
   'activeFindingId' | 'activeStepIndex' | 'activeFlowIndex' | 'activeFile' | 'activeRuleId'
   | 'activeTab' | 'sidebarView' | 'infoTab' | 'viewMode' | 'infoViewMode' | 'mobileTab'
+  | 'editorZoom'
 >;
 
 const oneOf = <T,>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback);
@@ -189,6 +210,7 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
   setInfoTab: (infoTab) => set({ infoTab }),
   setInfoViewMode: (infoViewMode) => set({ infoViewMode }),
   setMobileTab: (mobileTab) => set({ mobileTab }),
+  setEditorZoom: (z) => set({ editorZoom: clampZoom(z) }),
   reset: () => set({ ...initial }),
 }), {
   name: 'ot-view',
@@ -207,6 +229,7 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
     viewMode: s.viewMode,
     infoViewMode: s.infoViewMode,
     mobileTab: s.mobileTab,
+    editorZoom: s.editorZoom,
   }),
   // Validate enums on rehydrate so corrupt/old storage can't render an invalid view.
   merge: (persisted, current) => {
@@ -221,6 +244,7 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
       viewMode: oneOf(p.viewMode, ['tabs', 'split'] as const, 'tabs'),
       infoViewMode: oneOf(p.infoViewMode, ['tabs', 'split'] as const, 'tabs'),
       mobileTab: oneOf(p.mobileTab, ['code', 'details', 'rule'] as const, 'code'),
+      editorZoom: clampZoom(p.editorZoom),
     };
   },
 }));

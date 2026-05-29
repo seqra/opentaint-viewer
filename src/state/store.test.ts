@@ -185,3 +185,47 @@ describe('store — mobileTab', () => {
     expect(useStore.getState().mobileTab).toBe('code');
   });
 });
+
+describe('store — editorZoom', () => {
+  beforeEach(() => useStore.getState().reset());
+
+  it('defaults editorZoom to 100', () => {
+    expect(useStore.getState().editorZoom).toBe(100);
+  });
+
+  it('setEditorZoom clamps to [50, 200] and rounds to an integer', () => {
+    useStore.getState().setEditorZoom(150);
+    expect(useStore.getState().editorZoom).toBe(150);
+    useStore.getState().setEditorZoom(10);
+    expect(useStore.getState().editorZoom).toBe(50);
+    useStore.getState().setEditorZoom(999);
+    expect(useStore.getState().editorZoom).toBe(200);
+    useStore.getState().setEditorZoom(110.6);
+    expect(useStore.getState().editorZoom).toBe(111);
+  });
+
+  it('merge guard rejects non-numeric and out-of-range persisted zoom', async () => {
+    localStorage.setItem(
+      'ot-view',
+      JSON.stringify({ state: { editorZoom: 'big' }, version: 1 }),
+    );
+    await useStore.persist.rehydrate();
+    expect(useStore.getState().editorZoom).toBe(100);
+
+    localStorage.setItem(
+      'ot-view',
+      JSON.stringify({ state: { editorZoom: 5000 }, version: 1 }),
+    );
+    await useStore.persist.rehydrate();
+    expect(useStore.getState().editorZoom).toBe(200);
+  });
+});
+
+describe('editorFontPx helper', () => {
+  it('returns 12 at 100%, 6 at 50%, 24 at 200%', async () => {
+    const { editorFontPx } = await import('./store');
+    expect(editorFontPx(100)).toBe(12);
+    expect(editorFontPx(50)).toBe(6);
+    expect(editorFontPx(200)).toBe(24);
+  });
+});

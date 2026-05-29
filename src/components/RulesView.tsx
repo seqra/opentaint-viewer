@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import type * as Mon from 'monaco-editor';
-import { useStore } from '../state/store';
+import { useStore, editorFontPx } from '../state/store';
 import { useTheme } from '../state/theme';
 import { findRuleLine } from '../rules/ruleLine';
 import { ruleRefs, ruleRefTarget, RULE_REF_SCHEME } from '../rules/ruleRefs';
 import { breadcrumb } from '../util/path';
 import { otDark, otLight, monacoThemeName } from './monacoThemes';
+import { EditorZoom } from './EditorZoom';
 
 type EditorInstance = Parameters<OnMount>[0];
 type Monaco = Parameters<OnMount>[1];
@@ -47,6 +48,7 @@ export function RulesView() {
   const activeRuleId = useStore((s) => s.activeRuleId);
   const activeRuleAnchor = useStore((s) => s.activeRuleAnchor);
   const ruleFocusTick = useStore((s) => s.ruleFocusTick);
+  const editorZoom = useStore((s) => s.editorZoom);
   const monacoTheme = useTheme((s) => monacoThemeName(s.theme));
   const rule = content?.rules.find((r) => r.id === activeRuleId);
 
@@ -85,8 +87,11 @@ export function RulesView() {
 
   return (
     <div data-testid="rules-view" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div data-testid="rule-path" style={{ fontSize: 11, color: 'var(--fg-dim)', padding: '3px 8px', background: 'var(--bg-2)' }}>
-        {breadcrumb(rule.path)}
+      <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-2)', borderBottom: '1px solid var(--border)' }}>
+        <div data-testid="rule-path" style={{ fontSize: 11, color: 'var(--fg-dim)', padding: '3px 8px', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {breadcrumb(rule.path)}
+        </div>
+        <EditorZoom />
       </div>
       <div style={{ flex: 1 }}>
         <Editor
@@ -102,7 +107,7 @@ export function RulesView() {
           options={{
             readOnly: true,
             minimap: { enabled: false },
-            fontSize: 13,
+            fontSize: editorFontPx(editorZoom),
             // matches --mono in theme.css (Monaco can't read CSS vars)
             fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
             automaticLayout: true,

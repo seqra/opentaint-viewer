@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { SkipBack, ChevronsLeft, ChevronLeft, CornerLeftUp, ChevronRight, ChevronsRight, SkipForward } from 'lucide-react';
 import Editor, { type OnMount } from '@monaco-editor/react';
-import { useStore } from '../state/store';
+import { useStore, editorFontPx } from '../state/store';
 import { useTheme } from '../state/theme';
 import { fileByPath, findingById, flowSteps } from '../content/loadContent';
 import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from '../util/fileTabLabel';
 import { otDark, otLight, monacoThemeName } from './monacoThemes';
+import { EditorZoom } from './EditorZoom';
 
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
@@ -24,7 +25,6 @@ export function phoneEditorOverrides(): Record<string, unknown> {
     lineNumbersMinChars: 3,
     scrollBeyondLastLine: false,
     wordWrap: 'off',
-    fontSize: 13,
   };
 }
 
@@ -41,6 +41,7 @@ export function CodeView() {
   const step = useStore((s) => s.step);
   const activeFlowIndex = useStore((s) => s.activeFlowIndex);
   const stepFlow = useStore((s) => s.stepFlow);
+  const editorZoom = useStore((s) => s.editorZoom);
   const monacoTheme = useTheme((s) => monacoThemeName(s.theme));
 
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
@@ -163,6 +164,7 @@ export function CodeView() {
             )}
           </>
         )}
+        <EditorZoom />
       </div>
       <div style={{ flex: 1 }}>
         <Editor
@@ -178,7 +180,7 @@ export function CodeView() {
             readOnly: true,
             minimap: { enabled: false },
             glyphMargin: true,
-            fontSize: 13,
+            fontSize: editorFontPx(editorZoom),
             // matches --mono in theme.css (Monaco can't read CSS vars)
             fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
             automaticLayout: true,
