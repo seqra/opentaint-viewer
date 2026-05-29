@@ -1,6 +1,22 @@
-.tree { font-family: var(--mono); font-size: 12px; color: var(--fg); padding: 8px; }
-.filterRow { padding: 0 4px 8px; }
+.tree { font-family: var(--mono); font-size: 12px; color: var(--fg); }
+.filterRow { padding: 8px; }
 .filter { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; font-size: 11px; font-family: var(--mono); }
+.rows { padding: 0 8px 8px; }
+.rowsInner { min-width: 0; }
+
+@media (max-width: 640px) {
+  /* Float the rule filter at the top of the panel at the panel's own width: long
+     paths scroll inside .rows (below), so the filter never stretches to max-content. */
+  .filterRow {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-2);
+    padding: 6px 8px;
+  }
+  .rows { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .rowsInner { min-width: max-content; }
+}
 /* Rows truncate with an ellipsis instead of wrapping when the panel is narrowed. */
 .file, .finding { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .file { padding: 2px 4px; cursor: pointer; color: var(--fg); }

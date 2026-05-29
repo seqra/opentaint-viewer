@@ -1,6 +1,13 @@
 .tree { font-family: var(--mono); font-size: 12px; color: var(--fg); padding: 8px; }
+.rowsInner { min-width: 0; }
 /* Rows truncate with an ellipsis instead of wrapping when the panel is narrowed (as the findings tree does). */
 .origin, .leaf { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 640px) {
+  /* Long rule paths scroll horizontally inside .rows rather than truncating. */
+  .rows { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .rowsInner { min-width: max-content; }
+}
 .origin { padding: 3px 4px; }
 .leaf { padding: 2px 4px; color: var(--fg-dim); cursor: pointer; font-size: 11px; }
 .leaf.active { background: var(--sel); color: var(--fg); border-radius: 4px; }

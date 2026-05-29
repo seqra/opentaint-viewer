@@ -36,18 +36,22 @@ export function RulesTree() {
 
   return (
     <div className={styles.tree} data-testid="rules-tree">
-      {ORIGIN_ORDER.map((origin) => {
-        const rules = grouped[origin];
-        const tree = buildPathTree(rules.map((r) => ({ dir: dirname(r.path), item: r })));
-        return (
-          <div key={origin}>
-            <div className={styles.origin}>
-              <Folder size={13} style={{ verticalAlign: -2 }} /> {ORIGIN_LABELS[origin]} <span className={styles.empty}>{rules.length === 0 ? 'empty' : `(${rules.length})`}</span>
-            </div>
-            <DirTree node={tree} depth={1} collapsed={collapsed} toggle={toggle} renderItems={renderRules} />
-          </div>
-        );
-      })}
+      <div className={styles.rows}>
+        <div className={styles.rowsInner}>
+          {ORIGIN_ORDER.map((origin) => {
+            const rules = grouped[origin];
+            const tree = buildPathTree(rules.map((r) => ({ dir: dirname(r.path), item: r })));
+            return (
+              <div key={origin}>
+                <div className={styles.origin}>
+                  <Folder size={13} style={{ verticalAlign: -2 }} /> {ORIGIN_LABELS[origin]} <span className={styles.empty}>{rules.length === 0 ? 'empty' : `(${rules.length})`}</span>
+                </div>
+                <DirTree node={tree} depth={1} collapsed={collapsed} toggle={toggle} renderItems={renderRules} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

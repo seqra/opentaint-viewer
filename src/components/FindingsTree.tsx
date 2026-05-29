@@ -97,7 +97,11 @@ export function FindingsTree() {
           ))}
         </select>
       </div>
-      <DirTree node={tree} depth={0} collapsed={collapsed} toggle={toggle} renderItems={renderFiles} />
+      <div className={styles.rows}>
+        <div className={styles.rowsInner}>
+          <DirTree node={tree} depth={0} collapsed={collapsed} toggle={toggle} renderItems={renderFiles} />
+        </div>
+      </div>
     </div>
   );
 }
