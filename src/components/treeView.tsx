@@ -10,9 +10,12 @@ export interface Collapsible {
   toggle: (key: string) => void;
 }
 
-/** Fold/expand state keyed by node path — shared by the findings and rules trees. */
-export function useCollapsibleSet(): Collapsible {
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+/**
+ * Fold/expand state keyed by node path — shared by the findings and rules trees.
+ * `initial` (lazy, evaluated once) seeds the collapsed set, e.g. to start folded.
+ */
+export function useCollapsibleSet(initial?: () => Iterable<string>): Collapsible {
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set(initial?.() ?? []));
   const toggle = (key: string) =>
     setCollapsed((s) => {
       const n = new Set(s);

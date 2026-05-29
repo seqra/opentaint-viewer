@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
-interface Finding { id: string; location: string }
+interface Finding { id: string; location: string; file: string }
 interface Content { findings: Finding[] }
 
 const content: Content = JSON.parse(readFileSync('data/content.json', 'utf8'));
@@ -20,7 +20,9 @@ test('mobile golden path: drawer → finding → details/steps → step footer',
   await expect(page.getByTestId('mobile-drawer')).toBeVisible();
   await expect(page.getByTestId('findings-tree')).toBeVisible();
 
-  // Tap a finding other than the default. Drawer closes; Code tab activates.
+  // The tree opens folded on mobile, so expand the file first, then tap a finding
+  // other than the default. Drawer closes; Code tab activates.
+  await page.getByTestId('findings-tree').locator(`[data-file="${target.file}"]`).tap();
   await page.getByTestId('findings-tree').getByText(target.location).tap();
   await expect(page.getByTestId('mobile-drawer')).not.toBeVisible();
   await expect(page.getByTestId('mobile-tab-code')).toHaveAttribute('aria-selected', 'true');

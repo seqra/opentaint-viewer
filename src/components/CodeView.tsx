@@ -6,6 +6,7 @@ import { useTheme } from '../state/theme';
 import { fileByPath, findingById, flowSteps } from '../content/loadContent';
 import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from '../util/fileTabLabel';
+import { isPhoneViewport } from '../util/viewport';
 import { otDark, otLight, monacoThemeName } from './monacoThemes';
 import { EditorZoom } from './EditorZoom';
 import { usePinchZoom } from './usePinchZoom';
@@ -14,14 +15,6 @@ import styles from './CodeView.module.css';
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
 };
-
-export function isPhoneViewport(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(max-width: 640px)').matches
-  );
-}
 
 export function phoneEditorOverrides(): Record<string, unknown> {
   if (!isPhoneViewport()) return {};

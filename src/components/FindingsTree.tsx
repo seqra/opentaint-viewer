@@ -4,6 +4,7 @@ import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
 import { buildPathTree } from '../util/tree';
 import { basename, dirname } from '../util/path';
+import { isPhoneViewport } from '../util/viewport';
 import { DirTree, FoldRow, indent, useCollapsibleSet } from './treeView';
 import type { Finding } from '../types/content';
 import { SeverityDot } from './SeverityDot';
@@ -11,13 +12,21 @@ import styles from './FindingsTree.module.css';
 
 const dirOf = (f: Finding): string => dirname(f.file ?? '');
 
+/** Collapse the file rows so the tree opens showing the folder/file overview, not every finding. */
+function foldKeys(findings: Finding[]): string[] {
+  return [...new Set(findings.map((f) => f.file ?? ''))];
+}
+
 export function FindingsTree() {
   const content = useStore((s) => s.content);
   const activeFindingId = useStore((s) => s.activeFindingId);
   const selectFinding = useStore((s) => s.selectFinding);
 
   const [ruleFilter, setRuleFilter] = useState('');
-  const { collapsed, toggle } = useCollapsibleSet();
+  // On phones the tree starts fully folded so the drawer opens compact; desktop stays expanded.
+  const { collapsed, toggle } = useCollapsibleSet(
+    isPhoneViewport() ? () => foldKeys(content?.findings ?? []) : undefined,
+  );
 
   if (!content) return null;
   const findings = content.findings;

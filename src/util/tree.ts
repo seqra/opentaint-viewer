@@ -46,3 +46,8 @@ export function buildPathTree<T>(entries: { dir: string; item: T }[]): PathTree<
 
   return { ...root, dirs: root.dirs.map(collapse) };
 }
+
+/** Paths of directory nodes that directly hold items — the leaf-bearing folds. */
+export function itemDirPaths<T>(node: PathTree<T>): string[] {
+  return node.dirs.flatMap((d) => [...(d.items.length ? [d.path] : []), ...itemDirPaths(d)]);
+}

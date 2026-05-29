@@ -2,20 +2,32 @@ import { Folder, FileText } from 'lucide-react';
 import { useStore } from '../state/store';
 import { keyActivate } from './keyActivate';
 import { rulesByOrigin } from '../content/loadContent';
-import { buildPathTree } from '../util/tree';
+import { buildPathTree, itemDirPaths } from '../util/tree';
 import { basename, dirname } from '../util/path';
+import { isPhoneViewport } from '../util/viewport';
 import { DirTree, indent, useCollapsibleSet } from './treeView';
-import type { RuleOrigin, RuleSpec } from '../types/content';
+import type { RuleOrigin, RuleSpec, ViewerContent } from '../types/content';
 import styles from './RulesTree.module.css';
 
 const ORIGIN_ORDER: RuleOrigin[] = ['builtin', 'custom'];
 const ORIGIN_LABELS: Record<RuleOrigin, string> = { builtin: 'Builtin', custom: 'Custom' };
 
+/** Collapse the leaf-bearing dirs across both origins so the tree opens as a folder overview. */
+function foldKeys(content: ViewerContent): string[] {
+  const grouped = rulesByOrigin(content);
+  return ORIGIN_ORDER.flatMap((origin) =>
+    itemDirPaths(buildPathTree(grouped[origin].map((r) => ({ dir: dirname(r.path), item: r })))),
+  );
+}
+
 export function RulesTree() {
   const content = useStore((s) => s.content);
   const activeRuleId = useStore((s) => s.activeRuleId);
   const selectRule = useStore((s) => s.selectRule);
-  const { collapsed, toggle } = useCollapsibleSet();
+  // On phones the tree starts fully folded so the drawer opens compact; desktop stays expanded.
+  const { collapsed, toggle } = useCollapsibleSet(
+    isPhoneViewport() ? () => (content ? foldKeys(content) : []) : undefined,
+  );
   if (!content) return null;
   const grouped = rulesByOrigin(content);
 

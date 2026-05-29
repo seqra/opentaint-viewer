@@ -1,10 +1,16 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
-interface Finding { id: string; location: string }
+interface Finding { id: string; location: string; file: string }
 interface Content { findings: Finding[] }
 const content: Content = JSON.parse(readFileSync('data/content.json', 'utf8'));
 const target = content.findings[1];
+
+// The tree opens folded on mobile — expand the finding's file before tapping it.
+const selectTarget = async (page: import('@playwright/test').Page) => {
+  await page.getByTestId('findings-tree').locator(`[data-file="${target.file}"]`).tap();
+  await page.getByTestId('findings-tree').getByText(target.location).tap();
+};
 
 const readZoom = (page: import('@playwright/test').Page) =>
   page.evaluate(() => JSON.parse(localStorage.getItem('ot-view') || '{}').state?.editorZoom ?? 100);
@@ -36,7 +42,7 @@ test('mobile: two-finger pinch zooms the editor in and out', async ({ page }) =>
   await page.goto('/');
   // Select a finding so the Code tab mounts the editor.
   await page.getByTestId('top-bar-menu').tap();
-  await page.getByTestId('findings-tree').getByText(target.location).tap();
+  await selectTarget(page);
   await expect(page.getByTestId('mobile-drawer')).not.toBeVisible();
   await page.locator('.monaco-editor').first().waitFor();
 
@@ -53,7 +59,7 @@ test('mobile: two-finger pinch zooms the editor in and out', async ({ page }) =>
 test('mobile: the Code-tab flow selector is hidden (Details › Steps owns it)', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('top-bar-menu').tap();
-  await page.getByTestId('findings-tree').getByText(target.location).tap();
+  await selectTarget(page);
   await expect(page.getByTestId('mobile-tab-code')).toHaveAttribute('aria-selected', 'true');
   const flowNav = page.getByTestId('flow-nav');
   if (await flowNav.count()) await expect(flowNav).not.toBeVisible();
