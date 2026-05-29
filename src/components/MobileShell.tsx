@@ -30,10 +30,7 @@ export function MobileShell() {
     const fChanged = s.activeFindingId !== prev.findingId;
     const rChanged = s.activeRuleId !== prev.ruleId;
     lastSelectionRef.current = { findingId: s.activeFindingId, ruleId: s.activeRuleId };
-    // The initial loadContent flips activeFindingId from null to a real id. That's
-    // the app booting, not a user picking a finding — don't slam the sidebar shut.
-    const initialLoad = (fChanged && prev.findingId === null) || (rChanged && prev.ruleId === null);
-    if ((fChanged || rChanged) && !initialLoad && s.sidebarView !== null) {
+    if ((fChanged || rChanged) && s.sidebarView !== null) {
       s.setSidebarView(null);
       s.setMobileTab(fChanged ? 'code' : 'rule');
     }

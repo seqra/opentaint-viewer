@@ -38,24 +38,24 @@ describe('App', () => {
 
   it('renders the shell with a finding visible on first paint', () => {
     render(<App />);
-    expect(screen.getAllByTestId('top-bar').length).toBeGreaterThan(0);
-    expect(screen.getAllByTestId('findings-tree').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('top-bar')).toBeInTheDocument();
+    expect(screen.getByTestId('findings-tree')).toBeInTheDocument();
     expect(screen.getAllByText(active.location!).length).toBeGreaterThan(0);
-    expect(screen.getAllByTestId('editor-area').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('editor-area')).toBeInTheDocument();
   });
 
   it('switches the sidebar between Findings and Rules from the activity bar (mutually exclusive)', async () => {
     render(<App />);
-    expect(screen.getAllByTestId('findings-tree').length).toBeGreaterThan(0);
-    expect(screen.queryAllByTestId('rules-tree').length).toBe(0);
+    expect(screen.getByTestId('findings-tree')).toBeInTheDocument();
+    expect(screen.queryByTestId('rules-tree')).toBeNull();
 
     await userEvent.click(screen.getByTestId('activity-rules'));
-    expect(screen.getAllByTestId('rules-tree').length).toBeGreaterThan(0);
-    expect(screen.queryAllByTestId('findings-tree').length).toBe(0);
+    expect(screen.getByTestId('rules-tree')).toBeInTheDocument();
+    expect(screen.queryByTestId('findings-tree')).toBeNull();
 
     // Clicking the active view again collapses the sidebar (no tree shown).
     await userEvent.click(screen.getByTestId('activity-rules'));
-    expect(screen.queryAllByTestId('rules-tree').length).toBe(0);
-    expect(screen.queryAllByTestId('findings-tree').length).toBe(0);
+    expect(screen.queryByTestId('rules-tree')).toBeNull();
+    expect(screen.queryByTestId('findings-tree')).toBeNull();
   });
 });

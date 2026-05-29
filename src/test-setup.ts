@@ -17,6 +17,19 @@ globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObse
 // active element (e.g. StepsList) can run under tests.
 Element.prototype.scrollIntoView ??= function scrollIntoView() {};
 
+// jsdom doesn't implement window.matchMedia. AppShell uses it to pick desktop vs
+// mobile; CodeView's phoneEditorOverrides reads it once at editor mount. Default
+// to "no match" (desktop) so existing tests render DesktopShell; the few tests
+// that exercise the mobile-side helper stub matchMedia themselves with cleanup.
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  window.matchMedia = ((query: string) => ({
+    matches: false, media: query, onchange: null,
+    addListener() {}, removeListener() {},
+    addEventListener() {}, removeEventListener() {},
+    dispatchEvent() { return false; },
+  })) as unknown as typeof window.matchMedia;
+}
+
 // vitest's jsdom exposes a `globalThis.localStorage` object with no methods; the
 // store's safeStorage wrapper swallows that silently, but tests that need to drive
 // the persist middleware (e.g. rehydrate guards) need a real shim.
