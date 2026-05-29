@@ -26,3 +26,9 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+
+/* On phones use the device's native pinch-zoom on the whole viewport — the
+   editor scales with the page. The +/- panel is desktop chrome only. */
+@media (max-width: 640px) {
+  .zoom { display: none; }
+}
