@@ -8,18 +8,23 @@ import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from '../util/fileTabLabel';
 import { otDark, otLight, monacoThemeName } from './monacoThemes';
 import { EditorZoom } from './EditorZoom';
+import { usePinchZoom } from './usePinchZoom';
 import styles from './CodeView.module.css';
 
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
 };
 
-export function phoneEditorOverrides(): Record<string, unknown> {
-  const matches =
+export function isPhoneViewport(): boolean {
+  return (
     typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
-    window.matchMedia('(max-width: 640px)').matches;
-  if (!matches) return {};
+    window.matchMedia('(max-width: 640px)').matches
+  );
+}
+
+export function phoneEditorOverrides(): Record<string, unknown> {
+  if (!isPhoneViewport()) return {};
   return {
     readOnly: true,
     minimap: { enabled: false },
@@ -43,6 +48,7 @@ export function CodeView() {
   const activeFlowIndex = useStore((s) => s.activeFlowIndex);
   const stepFlow = useStore((s) => s.stepFlow);
   const editorZoom = useStore((s) => s.editorZoom);
+  const setEditorZoom = useStore((s) => s.setEditorZoom);
   const monacoTheme = useTheme((s) => monacoThemeName(s.theme));
 
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
@@ -63,6 +69,15 @@ export function CodeView() {
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
   const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
   const decoRef = useRef<DecorationCollection | null>(null);
+
+  // Phones hide the +/- zoom panel; a two-finger pinch on the editor drives the same
+  // editorZoom font scale instead. Read the live zoom via getState so the start value
+  // is always current without re-wiring the listeners on every zoom change.
+  const editorBoxRef = usePinchZoom({
+    enabled: isPhoneViewport(),
+    getZoom: () => useStore.getState().editorZoom,
+    setZoom: setEditorZoom,
+  });
 
   const revealCurrentStep = () => {
     const editor = editorRef.current;
@@ -167,7 +182,7 @@ export function CodeView() {
         )}
         <EditorZoom />
       </div>
-      <div style={{ flex: 1 }}>
+      <div ref={editorBoxRef} style={{ flex: 1 }}>
         <Editor
           path={file.path}
           language={MONACO_LANG[file.language] ?? 'plaintext'}

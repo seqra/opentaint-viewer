@@ -27,8 +27,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* On phones use the device's native pinch-zoom on the whole viewport — the
-   editor scales with the page. The +/- panel is desktop chrome only. */
+/* On phones a two-finger pinch on the editor drives the zoom (see usePinchZoom);
+   the +/- panel is desktop chrome only. */
 @media (max-width: 640px) {
   .zoom { display: none; }
 }
