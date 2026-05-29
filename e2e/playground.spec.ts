@@ -164,7 +164,9 @@ test('ArrowDown / PageDown in the code panel do not move Monaco\'s caret', async
   // Click into the editor so Monaco renders its caret and owns focus.
   await page.locator('[data-testid="code-view"] .monaco-editor').first().click();
   const cursor = page.locator('[data-testid="code-view"] .cursors-layer .cursor').first();
-  await expect(cursor).toBeVisible({ timeout: 10000 });
+  // Wait for the caret to exist, not to be "visible": Monaco blinks it by toggling
+  // visibility, so toBeVisible races the blink and flakes under parallel load.
+  await expect(cursor).toBeAttached({ timeout: 10000 });
 
   // Snapshot the caret's vertical position. Monaco moves it via inline `top` on each keystroke.
   const before = await cursor.evaluate((el) => (el as HTMLElement).style.top);
