@@ -18,12 +18,9 @@ export function MobileShell() {
   const infoTab = useStore((s) => s.infoTab);
   const setInfoTab = useStore((s) => s.setInfoTab);
 
-  // Auto-close the drawer when the user picks a tree node. We watch every store
-  // mutation; when a click was just dispatched from inside the drawer's tree body,
-  // a setState arrives and we close. This handles the case where the user reselects
-  // the already-active finding (no field value changes, so id-delta detection alone
-  // would miss it).
-  const drawerClickRef = useRef<{ kind: 'findings' | 'rules' } | null>(null);
+  // Auto-close the drawer when the user picks a tree node. The trees mutate the
+  // store directly (selectFinding / selectRule), so we react to those changes here
+  // rather than threading callbacks through the tree components.
   const lastSelectionRef = useRef<{ findingId: string | null; ruleId: string | null }>({
     findingId: activeFindingId,
     ruleId: useStore.getState().activeRuleId,
@@ -33,30 +30,11 @@ export function MobileShell() {
     const fChanged = s.activeFindingId !== prev.findingId;
     const rChanged = s.activeRuleId !== prev.ruleId;
     lastSelectionRef.current = { findingId: s.activeFindingId, ruleId: s.activeRuleId };
-    const fromClick = drawerClickRef.current;
-    drawerClickRef.current = null;
-    if (s.sidebarView === null) return;
-    if (fChanged || rChanged) {
+    if ((fChanged || rChanged) && s.sidebarView !== null) {
       s.setSidebarView(null);
       s.setMobileTab(fChanged ? 'code' : 'rule');
-    } else if (fromClick) {
-      s.setSidebarView(null);
-      s.setMobileTab(fromClick.kind === 'findings' ? 'code' : 'rule');
     }
   }), []);
-
-  // Mark clicks that originate inside a drawer tree so the subscribe handler can
-  // distinguish "user reselected the active node" from other setState calls.
-  const onShellClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-    const drawer = target.closest('[data-testid="mobile-drawer"]');
-    if (!drawer) return;
-    const findingsTree = target.closest('[data-testid="findings-tree"]');
-    const rulesTree = target.closest('[data-testid="rules-tree"]');
-    if (findingsTree) drawerClickRef.current = { kind: 'findings' };
-    else if (rulesTree) drawerClickRef.current = { kind: 'rules' };
-  };
 
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
   const contextLabel = finding ? `${finding.vulnClass} — ${finding.location ?? ''}` : '';
@@ -68,7 +46,7 @@ export function MobileShell() {
   ];
 
   return (
-    <div className={styles.shell} data-testid="mobile-shell" onClickCapture={onShellClick}>
+    <div className={styles.shell} data-testid="mobile-shell">
       <TopBar />
       <div className={styles.tabs} role="tablist" aria-label="Mobile view" data-testid="mobile-tabs">
         {tabs.map((t) => (

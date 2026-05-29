@@ -51,7 +51,12 @@ describe('MobileShell', () => {
     expect(screen.getByTestId('mobile-drawer')).toBeInTheDocument();
   });
 
-  it('closes the drawer when a finding is selected from inside it', async () => {
+  it('closes the drawer when a new finding is selected from inside it', async () => {
+    // Open the drawer with the active finding set to one we'll keep away from
+    // (findings[1]) — the click below picks findings[0], so the active id
+    // genuinely changes and the auto-close subscription fires.
+    const findings = useStore.getState().content!.findings;
+    useStore.getState().selectFinding(findings[1].id);
     useStore.setState({ sidebarView: 'findings' });
     render(<MobileShell />);
     expect(screen.getByTestId('mobile-drawer')).toBeInTheDocument();
@@ -60,10 +65,11 @@ describe('MobileShell', () => {
     // role="button" divs whose visible text is the location. Scope the query
     // to the findings-tree subtree so fold rows aren't confused with findings.
     const tree = screen.getByTestId('findings-tree');
-    const firstFinding = useStore.getState().content!.findings[0];
-    const findingNode = within(tree).getByText(firstFinding.location ?? '');
+    const target = findings[0];
+    const findingNode = within(tree).getByText(target.location ?? '');
     await userEvent.click(findingNode);
 
+    expect(useStore.getState().activeFindingId).toBe(target.id);
     expect(useStore.getState().sidebarView).toBeNull();
     expect(useStore.getState().mobileTab).toBe('code');
   });
