@@ -20,37 +20,44 @@ export function MobileStepFooter() {
   const cur = activeStepIndex ?? 0;
   const atStart = cur <= 0;
   const atEnd = cur >= steps.length - 1;
+  const curStep = steps[cur];
   const nextStepFile = atEnd ? null : steps[cur + 1].file;
-  const nextFileChanges = nextStepFile && nextStepFile !== steps[cur].file;
+  const nextFileChanges = nextStepFile && nextStepFile !== curStep.file;
 
   return (
     <div className={styles.footer} data-testid="mobile-step-footer">
-      <button
-        type="button"
-        className={styles.btn}
-        disabled={atStart}
-        onClick={() => step('back')}
-        aria-label="Previous step"
-      >
-        <ChevronLeft size={18} />
-      </button>
-      <div className={styles.label}>
-        <span className={styles.counter}>{cur + 1}/{steps.length}</span>
-        {nextFileChanges && (
-          <span className={styles.hint} data-testid="mobile-step-next-file">
-            → {basename(nextStepFile)}
-          </span>
-        )}
+      <div className={styles.message} data-testid="mobile-step-message">
+        <span className={styles.messageWhere}>{basename(curStep.file)}:{curStep.line}</span>
+        <span className={styles.messageWhat}>{curStep.label}</span>
       </div>
-      <button
-        type="button"
-        className={styles.btn}
-        disabled={atEnd}
-        onClick={() => step('next')}
-        aria-label="Next step"
-      >
-        <ChevronRight size={18} />
-      </button>
+      <div className={styles.nav}>
+        <button
+          type="button"
+          className={styles.btn}
+          disabled={atStart}
+          onClick={() => step('back')}
+          aria-label="Previous step"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <div className={styles.label}>
+          <span className={styles.counter}>{cur + 1}/{steps.length}</span>
+          {nextFileChanges && (
+            <span className={styles.hint} data-testid="mobile-step-next-file">
+              → {basename(nextStepFile)}
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          className={styles.btn}
+          disabled={atEnd}
+          onClick={() => step('next')}
+          aria-label="Next step"
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
     </div>
   );
 }

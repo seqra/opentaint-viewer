@@ -6,7 +6,6 @@ import { useTheme } from '../state/theme';
 import { fileByPath, findingById, flowSteps } from '../content/loadContent';
 import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from '../util/fileTabLabel';
-import { basename } from '../util/path';
 import { otDark, otLight, monacoThemeName } from './monacoThemes';
 import { EditorZoom } from './EditorZoom';
 import styles from './CodeView.module.css';
@@ -140,12 +139,6 @@ export function CodeView() {
             </button>
           ))}
         </div>
-        {finding && steps[cur] && (
-          <div className={styles.stepLabel} data-testid="code-step-label">
-            <span className={styles.stepFile}>{basename(steps[cur].file)}:{steps[cur].line}</span>
-            <span className={styles.stepText}>{steps[cur].label}</span>
-          </div>
-        )}
         <span className={styles.grow} />
         {finding && (
           <>

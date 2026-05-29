@@ -14,35 +14,12 @@
 
 .grow { flex: 1; }
 
-/* The current-step label replaces the file tabs strip on phones — the file
-   tab area would never have room for both, and stepping is the primary phone
-   interaction anyway. Hidden on desktop. */
-.stepLabel { display: none; }
-.stepFile { color: var(--fg); font-weight: 600; flex-shrink: 0; }
-.stepText {
-  color: var(--fg-dim);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-  flex: 1;
-}
-
 @media (max-width: 640px) {
   /* MobileStepFooter already covers prev/next; the seven-button cluster
      just pushes EditorZoom off the right edge on iPhone-class viewports. */
   .stepNav { display: none; }
-  /* No room for tabbed files on phone; surface the active step's file/line
-     in the step label instead so the user still knows where they are. */
+  /* Cross-file tabs don't fit on phones; the current step's file:line lives in
+     the step message above the footer, and step nav auto-switches the active
+     file when the path crosses a boundary. */
   .fileTabs { display: none; }
-  .grow { display: none; }
-  .stepLabel {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    font-size: 11px;
-    flex: 1;
-    min-width: 0;
-  }
 }

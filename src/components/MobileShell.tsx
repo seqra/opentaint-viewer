@@ -37,9 +37,6 @@ export function MobileShell() {
   }), []);
 
   const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
-  // Show the full ruleId rather than the short vulnClass tag (XSS/SSRF/…) so the
-  // header text on the phone is unambiguous when many findings share a class.
-  const contextLabel = finding ? `${finding.ruleId} — ${finding.location ?? ''}` : '';
 
   const tabs: Array<{ id: 'code' | 'details' | 'rule'; label: string }> = [
     { id: 'code', label: 'Code' },
@@ -65,9 +62,10 @@ export function MobileShell() {
           </button>
         ))}
       </div>
-      {contextLabel && (
+      {finding && (
         <div className={styles.context} data-testid="mobile-context-strip">
-          <strong>{finding!.ruleId}</strong>{finding?.location ? ` — ${finding.location}` : ''}
+          <span className={`${styles.contextLine} ${styles.contextRule}`}>{finding.ruleId}</span>
+          {finding.location && <span className={styles.contextLine}>{finding.location}</span>}
         </div>
       )}
       <div className={styles.content}>

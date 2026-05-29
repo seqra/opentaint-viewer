@@ -24,19 +24,21 @@
 .tab.active { color: var(--fg); border-bottom-color: var(--accent); background: var(--bg-3); }
 .context {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
   background: var(--header-bg);
   border-bottom: 1px solid var(--border);
-  padding: 5px 12px;
+  padding: 4px 12px;
   font-size: 11px;
   color: var(--fg-dim);
   font-family: var(--mono);
+  line-height: 1.35;
+}
+.contextLine {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.context strong { color: var(--fg); font-weight: 600; }
+.contextRule { color: var(--fg); font-weight: 600; }
 .content { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
 .subTabs { display: flex; background: var(--bg-2); border-bottom: 1px solid var(--border); }
 .subTab {
