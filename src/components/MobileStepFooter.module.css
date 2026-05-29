@@ -44,6 +44,8 @@
 .where {
   color: var(--fg);
   font-weight: 600;
+  /* Smaller than the body so longer filenames fit on one line before wrapping. */
+  font-size: 11px;
   min-width: 0;
   /* Show the whole filename: wrap (breaking the name if needed) instead of clipping. */
   overflow-wrap: anywhere;
