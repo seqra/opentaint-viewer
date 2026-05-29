@@ -20,11 +20,11 @@ The desktop layout (`≥ 641px`) is unchanged.
 
 ## Breakpoint
 
-One breakpoint everywhere: `@media (max-width: 640px)`.
+One breakpoint everywhere: `(max-width: 640px)`.
 
-Layout selection is **CSS-only** — the desktop and mobile shells are both mounted and CSS-toggled (rationale in *Rendering strategy* below). No reactive `useMediaQuery` hook drives which shell is shown.
+Layout selection is **JS-driven** — `AppShell` subscribes to `window.matchMedia('(max-width: 640px)')` via `useSyncExternalStore` and renders **either** `<DesktopShell />` **or** `<MobileShell />`, never both. See *Rendering strategy* for the trade-off rationale (this section was revised after the initial dual-mount design caused duplicate Monaco mounts and Playwright strict-mode collisions in the e2e tests).
 
-The single JS-side exception is Monaco config: editor options aren't stylable via CSS, so the phone overrides are picked at editor mount via a one-shot `window.matchMedia('(max-width: 640px)').matches` check. This is a mount-time read, not a subscription — rotating the device after the editor mounts does not re-apply.
+Monaco config is the only other JS-side viewport read: editor options aren't stylable via CSS, so the phone overrides are picked at editor mount via a one-shot `window.matchMedia('(max-width: 640px)').matches` check. This is a mount-time read, not a subscription — rotating the device after the editor mounts does not re-apply.
 
 ## Layout structure
 
@@ -142,37 +142,43 @@ Selection state (finding, step, files, theme) is shared between desktop and phon
 
 ## Rendering strategy
 
-`AppShell.tsx` mounts both shells; CSS visibility chooses which one is laid out:
+`AppShell.tsx` subscribes to `window.matchMedia('(max-width: 640px)')` via `useSyncExternalStore` and renders **one** shell — never both:
 
 ```
 src/components/
-  AppShell.tsx           ← renders <DesktopShell /> AND <MobileShell />
+  AppShell.tsx           ← matchMedia → <DesktopShell /> OR <MobileShell />
   DesktopShell.tsx       ← today's AppShell innards (TopBar + ActivityBar + PanelGroup)
   MobileShell.tsx        ← new: phone TopBar + top tabs + content + step footer + drawer
   MobileDrawer.tsx       ← new: overlay drawer with segmented Findings/Rules
   MobileStepFooter.tsx   ← new: thumb-sized step nav
 ```
 
-CSS in `AppShell.module.css`:
-
-```css
-@media (min-width: 641px) { .mobile  { display: none; } }
-@media (max-width: 640px) { .desktop { display: none; } }
+```tsx
+// AppShell.tsx (sketch)
+const isPhone = useSyncExternalStore(subscribeViewport, readIsPhone, () => false);
+return isPhone ? <MobileShell /> : <DesktopShell />;
 ```
 
-**Why both mounted, not conditional:**
-- Monaco does not enjoy being unmounted/remounted on resize.
-- Both shells consume the same zustand store with no rehydration.
-- The mobile Monaco instance lazily mounts only once the `Code` mobile tab is active — so a desktop session with the page open never instantiates two editors.
+### Why JS-driven, not the dual-mount + CSS toggle this section originally proposed
 
-**TopBar is one component**, not two. It internally renders `.desktopOnly` and `.mobileOnly` child groups; CSS hides the inactive group. Shared logic (brand link, theme state, version chip) stays in one place.
+The first design called for both shells in the DOM with `@media (max-width: 640px)` hiding whichever didn't match. We pivoted during implementation (commit `d086bfd`) for two concrete reasons:
+
+1. **Duplicate Monaco mounts.** Even with `display: none`, React mounts hidden children, so `<CodeView />` inside the mobile-default `mobileTab === 'code'` instantiated a second Monaco editor on every desktop page load. The spec's earlier "lazy mount only when Code is active" claim was wrong — the tab is active by default.
+2. **Playwright strict-mode collisions.** All 10 existing desktop e2e tests broke because `getByTestId('top-bar')` (and similar) matched two elements (one per shell), and Playwright's strict-mode locator API doesn't tolerate that.
+
+The trade-off the original design was protecting against (Monaco re-mount on viewport flip) is vanishingly rare in practice: rotating a 640px-wide device, or dragging a desktop browser window across the breakpoint. The cost of losing Monaco's in-editor state on that flip is acceptable; selection (file, finding, step) survives via the Zustand store.
+
+**Subscription cleanup**: `MobileShell` subscribes to the store to auto-close its drawer on selection changes. With JS-side rendering, MobileShell unmounts on a desktop flip, React runs the effect cleanup, and the subscription is removed — no leak.
+
+**TopBar is one component**, not two. It internally renders chrome that's hidden via `@media` (the ☰ button is `display: none` on desktop; theme toggle and version chip are `display: none` on phone). Shared logic (brand link, theme state, version chip) stays in one place.
 
 ## Files added / changed
 
 | File | Status | Change |
 | --- | --- | --- |
-| `src/components/AppShell.tsx` | changed | Render `<DesktopShell />` + `<MobileShell />`; CSS toggles which is visible. |
-| `src/components/AppShell.module.css` | changed | Add the `@media` breakpoint and the `.desktop` / `.mobile` toggles. |
+| `src/components/AppShell.tsx` | changed | `useSyncExternalStore(matchMedia)` selects `<DesktopShell />` OR `<MobileShell />`; only one is mounted. |
+| `src/components/AppShell.module.css` | unchanged | No mobile-view changes (the dual-mount `@media` toggle from the original design was rolled back). |
+| `src/test-setup.ts` | changed | jsdom matchMedia + localStorage shims so the new viewport and persistence tests can run. |
 | `src/components/DesktopShell.tsx` | new | Extracted from current `AppShell.tsx`. No behaviour change. |
 | `src/components/MobileShell.tsx` | new | Phone layout: top tabs, context strip, content router, step footer, drawer mount. |
 | `src/components/MobileDrawer.tsx` | new | Overlay drawer + segmented Findings/Rules tab strip. |
