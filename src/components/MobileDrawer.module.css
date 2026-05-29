@@ -9,8 +9,8 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 80vw;
-  max-width: 320px;
+  width: 90vw;
+  max-width: 380px;
   background: var(--bg-2);
   border-right: 1px solid var(--border);
   z-index: 101;
