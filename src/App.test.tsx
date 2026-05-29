@@ -34,13 +34,7 @@ const active = content.findings[0];
 
 describe('App', () => {
   // Sidebar/info-tab state now lives in the store (a singleton), so reset between tests.
-  // Seed content before render so MobileShell's auto-close subscription captures the
-  // active finding at mount; otherwise App's useEffect loadContent would flip
-  // activeFindingId from null and the subscription would collapse the sidebar.
-  beforeEach(() => {
-    useStore.getState().reset();
-    useStore.getState().loadContent(content);
-  });
+  beforeEach(() => useStore.getState().reset());
 
   it('renders the shell with a finding visible on first paint', () => {
     render(<App />);
