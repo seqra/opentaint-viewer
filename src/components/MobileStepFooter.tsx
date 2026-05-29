@@ -9,6 +9,7 @@ export function MobileStepFooter() {
   const activeFindingId = useStore((s) => s.activeFindingId);
   const activeStepIndex = useStore((s) => s.activeStepIndex);
   const activeFlowIndex = useStore((s) => s.activeFlowIndex);
+  const mobileTab = useStore((s) => s.mobileTab);
   const step = useStore((s) => s.step);
 
   if (!content || !activeFindingId) return null;
@@ -26,10 +27,12 @@ export function MobileStepFooter() {
 
   return (
     <div className={styles.footer} data-testid="mobile-step-footer">
-      <div className={styles.message} data-testid="mobile-step-message">
-        <span className={styles.messageWhere}>{basename(curStep.file)}:{curStep.line}</span>
-        <span className={styles.messageWhat}>{curStep.label}</span>
-      </div>
+      {mobileTab === 'code' && (
+        <div className={styles.message} data-testid="mobile-step-message">
+          <span className={styles.messageWhere}>{basename(curStep.file)}:{curStep.line}</span>
+          <span className={styles.messageWhat}>{curStep.label}</span>
+        </div>
+      )}
       <div className={styles.nav}>
         <button
           type="button"

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '../state/store';
-import { findingById } from '../content/loadContent';
 import { CodeView } from './CodeView';
 import { RulesView } from './RulesView';
 import { FindingInfo } from './FindingInfo';
@@ -11,7 +10,6 @@ import { MobileStepFooter } from './MobileStepFooter';
 import styles from './MobileShell.module.css';
 
 export function MobileShell() {
-  const content = useStore((s) => s.content);
   const activeFindingId = useStore((s) => s.activeFindingId);
   const mobileTab = useStore((s) => s.mobileTab);
   const setMobileTab = useStore((s) => s.setMobileTab);
@@ -35,8 +33,6 @@ export function MobileShell() {
       s.setMobileTab(fChanged ? 'code' : 'rule');
     }
   }), []);
-
-  const finding = content && activeFindingId ? findingById(content, activeFindingId) : undefined;
 
   const tabs: Array<{ id: 'code' | 'details' | 'rule'; label: string }> = [
     { id: 'code', label: 'Code' },
@@ -62,12 +58,6 @@ export function MobileShell() {
           </button>
         ))}
       </div>
-      {finding && (
-        <div className={styles.context} data-testid="mobile-context-strip">
-          <span className={`${styles.contextLine} ${styles.contextRule}`}>{finding.ruleId}</span>
-          {finding.location && <span className={styles.contextLine}>{finding.location}</span>}
-        </div>
-      )}
       <div className={styles.content}>
         {mobileTab === 'code' && (
           <div className={styles.pane}><CodeView /></div>

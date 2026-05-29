@@ -16,11 +16,10 @@ beforeEach(() => {
 });
 
 describe('MobileShell', () => {
-  it('renders TopBar, top tabs, context strip, and step footer', () => {
+  it('renders TopBar, top tabs, and step footer', () => {
     render(<MobileShell />);
     expect(screen.getByTestId('top-bar')).toBeInTheDocument();
     expect(screen.getByTestId('mobile-tabs')).toBeInTheDocument();
-    expect(screen.getByTestId('mobile-context-strip')).toBeInTheDocument();
     expect(screen.getByTestId('mobile-step-footer')).toBeInTheDocument();
   });
 
