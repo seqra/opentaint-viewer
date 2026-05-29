@@ -12,6 +12,22 @@ const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
 };
 
+export function phoneEditorOverrides(): Record<string, unknown> {
+  const matches =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(max-width: 640px)').matches;
+  if (!matches) return {};
+  return {
+    readOnly: true,
+    minimap: { enabled: false },
+    lineNumbersMinChars: 3,
+    scrollBeyondLastLine: false,
+    wordWrap: 'off',
+    fontSize: 13,
+  };
+}
+
 interface DecorationCollection {
   clear: () => void;
 }
@@ -168,6 +184,7 @@ export function CodeView() {
             automaticLayout: true,
             // Instant tooltip when hovering the current step's highlight.
             hover: { enabled: true, delay: 0 },
+            ...phoneEditorOverrides(),
           }}
           onMount={onMount}
         />

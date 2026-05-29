@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 const { createDecorationsCollection, defineTheme, onKeyDown, onKeyDownHandlers } = vi.hoisted(() => {
@@ -30,7 +30,7 @@ vi.mock('@monaco-editor/react', () => ({
   },
 }));
 
-import { CodeView } from './CodeView';
+import { CodeView, phoneEditorOverrides } from './CodeView';
 import { useStore } from '../state/store';
 import { loadContent } from '../content/loadContent';
 
@@ -130,5 +130,39 @@ describe('CodeView', () => {
     const prevDisabled = before <= 0;
     await userEvent.click(screen.getByTestId(prevDisabled ? 'flow-next' : 'flow-prev'));
     expect(useStore.getState().activeFlowIndex).not.toBe(before);
+  });
+});
+
+describe('phoneEditorOverrides', () => {
+  const origMM = window.matchMedia;
+  afterEach(() => {
+    window.matchMedia = origMM;
+  });
+
+  it('returns {} when matchMedia does not match', () => {
+    window.matchMedia = (() => ({
+      matches: false, media: '', onchange: null,
+      addListener() {}, removeListener() {},
+      addEventListener() {}, removeEventListener() {},
+      dispatchEvent() { return false; },
+    })) as unknown as typeof window.matchMedia;
+    expect(phoneEditorOverrides()).toEqual({});
+  });
+
+  it('returns phone overrides when matchMedia matches', () => {
+    window.matchMedia = (() => ({
+      matches: true, media: '', onchange: null,
+      addListener() {}, removeListener() {},
+      addEventListener() {}, removeEventListener() {},
+      dispatchEvent() { return false; },
+    })) as unknown as typeof window.matchMedia;
+    expect(phoneEditorOverrides()).toMatchObject({
+      readOnly: true,
+      minimap: { enabled: false },
+      lineNumbersMinChars: 3,
+      scrollBeyondLastLine: false,
+      wordWrap: 'off',
+      fontSize: 13,
+    });
   });
 });
