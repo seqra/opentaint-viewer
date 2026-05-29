@@ -16,21 +16,34 @@ export function MobileShell() {
   const infoTab = useStore((s) => s.infoTab);
   const setInfoTab = useStore((s) => s.setInfoTab);
 
-  // Auto-close the drawer when the user picks a tree node. The trees mutate the
-  // store directly (selectFinding / selectRule), so we react to those changes here
-  // rather than threading callbacks through the tree components.
-  const lastSelectionRef = useRef<{ findingId: string | null; ruleId: string | null }>({
+  // React to selection changes from outside the shell:
+  //  - Drawer picks (Findings/Rules trees) → close the drawer + steer to Code/Rule.
+  //  - Rule link taps (the ruleId button in FindingInfo, `rule:` refs in RulesView) →
+  //    steer to the Rule tab so the user actually sees the rule they asked for.
+  // selectRule bumps `ruleFocusTick` on every call, so it's the right user-action signal
+  // even when the same rule is re-selected.
+  const lastSelectionRef = useRef<{ findingId: string | null; ruleId: string | null; ruleFocusTick: number }>({
     findingId: activeFindingId,
     ruleId: useStore.getState().activeRuleId,
+    ruleFocusTick: useStore.getState().ruleFocusTick,
   });
   useEffect(() => useStore.subscribe((s) => {
     const prev = lastSelectionRef.current;
     const fChanged = s.activeFindingId !== prev.findingId;
     const rChanged = s.activeRuleId !== prev.ruleId;
-    lastSelectionRef.current = { findingId: s.activeFindingId, ruleId: s.activeRuleId };
+    const ruleTickChanged = s.ruleFocusTick !== prev.ruleFocusTick;
+    lastSelectionRef.current = {
+      findingId: s.activeFindingId,
+      ruleId: s.activeRuleId,
+      ruleFocusTick: s.ruleFocusTick,
+    };
     if ((fChanged || rChanged) && s.sidebarView !== null) {
       s.setSidebarView(null);
       s.setMobileTab(fChanged ? 'code' : 'rule');
+      return;
+    }
+    if (ruleTickChanged) {
+      s.setMobileTab('rule');
     }
   }), []);
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('@monaco-editor/react', () => ({
@@ -71,5 +71,18 @@ describe('MobileShell', () => {
     expect(useStore.getState().activeFindingId).toBe(target.id);
     expect(useStore.getState().sidebarView).toBeNull();
     expect(useStore.getState().mobileTab).toBe('code');
+  });
+
+  it('switches to the Rule tab when selectRule is dispatched from anywhere', () => {
+    useStore.getState().setMobileTab('details');
+    render(<MobileShell />);
+    expect(useStore.getState().mobileTab).toBe('details');
+
+    // selectRule is what FindingInfo's ruleId button and the rules-editor link
+    // provider both dispatch. Either entry point should steer to the Rule tab.
+    act(() => useStore.getState().selectRule('java.security.ssti'));
+
+    expect(useStore.getState().mobileTab).toBe('rule');
+    expect(useStore.getState().activeRuleId).toBe('java.security.ssti');
   });
 });
