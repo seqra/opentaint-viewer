@@ -50,9 +50,9 @@
   font-size: 11px;
   color: var(--fg-dim);
   line-height: 1.35;
-  /* Keep the panel compact and a stable height as you step: cap the label at two
+  /* Keep the panel compact and a stable height as you step: cap the label at three
      lines and let long ones scroll within the strip rather than growing the footer. */
-  max-height: calc(2 * 1.35em);
+  max-height: calc(3 * 1.35em);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
