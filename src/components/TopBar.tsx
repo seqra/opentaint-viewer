@@ -22,6 +22,7 @@ export function TopBar() {
   const buildVer = tool?.version ? tool.version.replace(/^analyzer\//, '') : null;
   const label = [semver, buildVer].filter(Boolean).join(' · ');
 
+  // The ☰ button always opens the drawer (never toggles it shut) — close is via scrim, ✕, Escape.
   const openDrawer = () => setSidebarView(sidebarView ?? 'findings');
 
   return (
