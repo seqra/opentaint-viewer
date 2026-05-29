@@ -1,0 +1,13 @@
+.stepNav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+}
+
+/* The in-header step-nav cluster duplicates MobileStepFooter on phones and
+   pushes the EditorZoom control off the right edge on 375px-class screens. */
+@media (max-width: 640px) {
+  .stepNav { display: none; }
+}

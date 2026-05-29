@@ -8,6 +8,7 @@ import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from '../util/fileTabLabel';
 import { otDark, otLight, monacoThemeName } from './monacoThemes';
 import { EditorZoom } from './EditorZoom';
+import styles from './CodeView.module.css';
 
 const MONACO_LANG: Record<string, string> = {
   java: 'java', kotlin: 'kotlin', yaml: 'yaml', xml: 'xml', properties: 'ini', plaintext: 'plaintext',
@@ -141,7 +142,7 @@ export function CodeView() {
         <span style={{ flex: 1 }} />
         {finding && (
           <>
-            <div data-testid="step-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px', flexShrink: 0 }}>
+            <div data-testid="step-nav" className={styles.stepNav}>
               <button type="button" title="First step (Home)" aria-label="First step" disabled={atStart} onClick={() => step('start')} style={navBtn}><SkipBack size={13} /></button>
               <button type="button" title="Back over a call (Shift+←)" aria-label="Back over a call" disabled={atStart} onClick={() => step('backOver')} style={navBtn}><ChevronsLeft size={13} /></button>
               <button type="button" title="Back (←)" aria-label="Back" disabled={atStart} onClick={() => step('back')} style={navBtn}><ChevronLeft size={13} /></button>
