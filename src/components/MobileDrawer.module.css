@@ -18,28 +18,20 @@
   flex-direction: column;
   font-family: var(--mono);
 }
-.head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  color: var(--fg);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
+/* The tabs and the close button share one compact bar — there's no separate
+   title row, so the tree gets that vertical space back. */
+.bar { display: flex; align-items: stretch; border-bottom: 1px solid var(--border); }
 .close {
+  flex: 0 0 44px;
   background: transparent;
   border: none;
+  border-left: 1px solid var(--border);
   color: var(--fg-dim);
-  font-size: 18px;
-  width: 32px;
-  height: 32px;
+  font-size: 16px;
   cursor: pointer;
 }
 .close:hover { color: var(--fg); }
-.tabs { display: flex; border-bottom: 1px solid var(--border); }
+.tabs { display: flex; flex: 1; min-width: 0; }
 .tab {
   flex: 1;
   background: transparent;

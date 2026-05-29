@@ -12,7 +12,7 @@
     top: 0;
     z-index: 1;
     background: var(--bg-2);
-    padding: 6px 8px;
+    padding: 10px 8px 6px;
   }
   .rows { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .rowsInner { min-width: max-content; }

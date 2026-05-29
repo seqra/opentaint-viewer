@@ -45,8 +45,27 @@ export function MobileDrawer() {
         aria-hidden="true"
       />
       <div className={styles.drawer} data-testid="mobile-drawer" role="dialog" aria-label="Browse">
-        <div className={styles.head}>
-          <span>Browse</span>
+        <div className={styles.bar}>
+          <div className={styles.tabs} role="tablist" aria-label="Tree view">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'findings'}
+              className={`${styles.tab} ${view === 'findings' ? styles.active : ''}`}
+              onClick={() => setSidebarView('findings')}
+            >
+              <ShieldAlert size={14} /> Findings
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'rules'}
+              className={`${styles.tab} ${view === 'rules' ? styles.active : ''}`}
+              onClick={() => setSidebarView('rules')}
+            >
+              <Scale size={14} /> Rules
+            </button>
+          </div>
           <button
             type="button"
             className={styles.close}
@@ -54,26 +73,6 @@ export function MobileDrawer() {
             aria-label="Close drawer"
           >
             ✕
-          </button>
-        </div>
-        <div className={styles.tabs} role="tablist" aria-label="Tree view">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'findings'}
-            className={`${styles.tab} ${view === 'findings' ? styles.active : ''}`}
-            onClick={() => setSidebarView('findings')}
-          >
-            <ShieldAlert size={14} /> Findings
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'rules'}
-            className={`${styles.tab} ${view === 'rules' ? styles.active : ''}`}
-            onClick={() => setSidebarView('rules')}
-          >
-            <Scale size={14} /> Rules
           </button>
         </div>
         <div className={styles.body}>
