@@ -11,3 +11,12 @@
 .vHandle:hover, .vHandle[data-resize-handle-active] { background: var(--accent); }
 .main { min-width: 0; }
 .mainPane { min-height: 0; overflow: hidden; }
+
+.desktop, .mobile { height: 100%; }
+
+@media (min-width: 641px) {
+  .mobile { display: none; }
+}
+@media (max-width: 640px) {
+  .desktop { display: none; }
+}
