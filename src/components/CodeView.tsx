@@ -6,6 +6,7 @@ import { useTheme } from '../state/theme';
 import { fileByPath, findingById, flowSteps } from '../content/loadContent';
 import { pathDecorations } from '../taint/decorations';
 import { fileTabLabel } from '../util/fileTabLabel';
+import { basename } from '../util/path';
 import { otDark, otLight, monacoThemeName } from './monacoThemes';
 import { EditorZoom } from './EditorZoom';
 import styles from './CodeView.module.css';
@@ -126,7 +127,7 @@ export function CodeView() {
   return (
     <div data-testid="code-view" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-2)', borderBottom: '1px solid var(--border)', fontSize: 11, fontFamily: 'var(--mono)' }}>
-        <div role="tablist" style={{ display: 'flex', minWidth: 0, overflowX: 'auto' }}>
+        <div role="tablist" className={styles.fileTabs}>
           {tabFiles.map((path) => (
             <button
               key={path}
@@ -139,7 +140,13 @@ export function CodeView() {
             </button>
           ))}
         </div>
-        <span style={{ flex: 1 }} />
+        {finding && steps[cur] && (
+          <div className={styles.stepLabel} data-testid="code-step-label">
+            <span className={styles.stepFile}>{basename(steps[cur].file)}:{steps[cur].line}</span>
+            <span className={styles.stepText}>{steps[cur].label}</span>
+          </div>
+        )}
+        <span className={styles.grow} />
         {finding && (
           <>
             <div data-testid="step-nav" className={styles.stepNav}>
