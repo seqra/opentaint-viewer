@@ -10,6 +10,8 @@ export type EditorTab = 'code' | 'rules';
 export type SidebarView = 'findings' | 'rules';
 /** Which tab the lower info panel shows. */
 export type InfoTab = 'info' | 'steps';
+/** Phone top tab. */
+export type MobileTab = 'code' | 'details' | 'rule';
 
 interface State {
   content: ViewerContent | null;
@@ -31,6 +33,8 @@ interface State {
   infoTab: InfoTab;
   /** Lower-panel layout: one tabbed pane, or Info + Steps split side by side. */
   infoViewMode: ViewMode;
+  /** Phone top tab (Code / Details / Rule). Desktop ignores this. */
+  mobileTab: MobileTab;
 }
 
 interface Actions {
@@ -48,20 +52,21 @@ interface Actions {
   setSidebarView: (view: SidebarView | null) => void;
   setInfoTab: (tab: InfoTab) => void;
   setInfoViewMode: (m: ViewMode) => void;
+  setMobileTab: (t: MobileTab) => void;
   reset: () => void;
 }
 
 const initial: State = {
   content: null, activeFindingId: null, activeStepIndex: null, activeFlowIndex: 0,
   activeFile: null, activeRuleId: null, activeRuleAnchor: null, ruleFocusTick: 0, viewMode: 'tabs', activeTab: 'code',
-  sidebarView: 'findings', infoTab: 'info', infoViewMode: 'tabs',
+  sidebarView: 'findings', infoTab: 'info', infoViewMode: 'tabs', mobileTab: 'code',
 };
 
 /** The slice persisted to localStorage — the view, not the bundled content or transient focus. */
 type PersistedView = Pick<
   State,
   'activeFindingId' | 'activeStepIndex' | 'activeFlowIndex' | 'activeFile' | 'activeRuleId'
-  | 'activeTab' | 'sidebarView' | 'infoTab' | 'viewMode' | 'infoViewMode'
+  | 'activeTab' | 'sidebarView' | 'infoTab' | 'viewMode' | 'infoViewMode' | 'mobileTab'
 >;
 
 const oneOf = <T,>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback);
@@ -183,6 +188,7 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
   setSidebarView: (sidebarView) => set({ sidebarView }),
   setInfoTab: (infoTab) => set({ infoTab }),
   setInfoViewMode: (infoViewMode) => set({ infoViewMode }),
+  setMobileTab: (mobileTab) => set({ mobileTab }),
   reset: () => set({ ...initial }),
 }), {
   name: 'ot-view',
@@ -200,6 +206,7 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
     infoTab: s.infoTab,
     viewMode: s.viewMode,
     infoViewMode: s.infoViewMode,
+    mobileTab: s.mobileTab,
   }),
   // Validate enums on rehydrate so corrupt/old storage can't render an invalid view.
   merge: (persisted, current) => {
@@ -213,6 +220,7 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
       infoTab: oneOf(p.infoTab, ['info', 'steps'] as const, 'info'),
       viewMode: oneOf(p.viewMode, ['tabs', 'split'] as const, 'tabs'),
       infoViewMode: oneOf(p.infoViewMode, ['tabs', 'split'] as const, 'tabs'),
+      mobileTab: oneOf(p.mobileTab, ['code', 'details', 'rule'] as const, 'code'),
     };
   },
 }));
