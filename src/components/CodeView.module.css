@@ -12,6 +12,15 @@
   overflow-x: auto;
 }
 
+.flowNav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+  color: var(--fg-dim);
+}
+
 .grow { flex: 1; }
 
 @media (max-width: 640px) {
@@ -22,4 +31,7 @@
      the step message above the footer, and step nav auto-switches the active
      file when the path crosses a boundary. */
   .fileTabs { display: none; }
+  /* The flow selector would otherwise float alone in an empty header strip.
+     The Details › Steps tab already carries a Flow X/Y switcher on phones. */
+  .flowNav { display: none; }
 }

@@ -171,7 +171,7 @@ export function CodeView() {
               </span>
             </div>
             {flowCount > 1 && (
-              <div data-testid="flow-nav" style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 6px', flexShrink: 0, color: 'var(--fg-dim)' }}>
+              <div data-testid="flow-nav" className={styles.flowNav}>
                 <span style={{ width: 1, alignSelf: 'stretch', background: 'var(--border)', margin: '2px 4px' }} />
                 <button type="button" title="Previous flow" aria-label="Previous flow" data-testid="flow-prev" disabled={activeFlowIndex <= 0} onClick={() => stepFlow('prev')} style={navBtn}><ChevronLeft size={13} /></button>
                 <button type="button" title="Next flow" aria-label="Next flow" data-testid="flow-next" disabled={activeFlowIndex >= flowCount - 1} onClick={() => stepFlow('next')} style={navBtn}><ChevronRight size={13} /></button>

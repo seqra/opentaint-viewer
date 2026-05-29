@@ -5,6 +5,8 @@
 .file, .finding { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .file { padding: 2px 4px; cursor: pointer; color: var(--fg); }
 .count { color: var(--fg-dim); font-size: 9px; }
-.finding { padding: 2px 4px; cursor: pointer; border-radius: 4px; }
+/* Match the rules tree's leaf scale (.leaf is 11px) so the two trees read at the
+   same density in the mobile drawer. */
+.finding { padding: 2px 4px; cursor: pointer; border-radius: 4px; font-size: 11px; }
 .finding.activeFinding { background: var(--sel-weak); }
 .rule { color: var(--fg-dim); font-size: 10px; margin-left: 6px; }
