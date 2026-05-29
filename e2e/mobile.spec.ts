@@ -30,12 +30,15 @@ test('mobile golden path: drawer → finding → details/steps → step footer',
   await expect(page.getByTestId('info-tab-info')).toBeVisible();
   await expect(page.getByTestId('info-tab-steps')).toBeVisible();
 
-  // Tap Steps; expect the steps list to render.
+  // Tap Steps; expect the steps list to render. On Details the list is the
+  // navigator — the step-nav footer is Code-only and absent here.
   await page.getByTestId('info-tab-steps').tap();
   await expect(page.getByTestId('steps-list')).toBeVisible();
+  await expect(page.getByTestId('mobile-step-footer')).toHaveCount(0);
 
-  // Tap step footer Previous (the finding lands on the sink by default, so Prev
-  // is the enabled direction). Remain on Details — no surprise tab switch.
+  // Back on Code the merged step panel drives prev/next and stays on Code.
+  await page.getByTestId('mobile-tab-code').tap();
+  await expect(page.getByTestId('mobile-step-footer')).toBeVisible();
   await page.getByRole('button', { name: 'Previous step' }).tap();
-  await expect(page.getByTestId('mobile-tab-details')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByTestId('mobile-tab-code')).toHaveAttribute('aria-selected', 'true');
 });
