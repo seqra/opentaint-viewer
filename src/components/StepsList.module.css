@@ -26,3 +26,14 @@
 .step.active .label { color: var(--fg); }
 .meta { flex-shrink: 0; display: flex; align-items: center; gap: 8px; margin-top: 1px; }
 .loc { color: var(--fg-dim); font-family: var(--mono); font-size: 10px; white-space: nowrap; }
+
+/* On phones the file:line meta is wide enough (~150–200px) that it squeezes the
+   label into a single-word column. Stack it under the label instead so each
+   line of the label has the full row to itself. */
+@media (max-width: 640px) {
+  .step { flex-wrap: wrap; }
+  .meta {
+    flex-basis: 100%;
+    margin-left: 24px; /* align under the label, past marker (16px) + gap (8px) */
+  }
+}
