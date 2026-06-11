@@ -1,9 +1,22 @@
-import raw from '../../data/content.json';
+import { bundledContent } from './bundledContent';
 import { isViewerContent } from '../types/content';
 import type { Finding, ViewerContent, ProjectFile, RuleOrigin, RuleSpec, TaintStep } from '../types/content';
 
+/** Content injected by the CLI into the prebuilt template, if present. */
+function injectedContent(): unknown {
+  if (typeof document === 'undefined') return undefined;
+  const el = document.getElementById('opentaint-content');
+  if (!el?.textContent) return undefined;
+  try {
+    return JSON.parse(el.textContent);
+  } catch {
+    return undefined;
+  }
+}
+
 export function loadContent(): ViewerContent {
-  if (!isViewerContent(raw)) throw new Error('Bundled content is invalid');
+  const raw = injectedContent() ?? bundledContent;
+  if (!isViewerContent(raw)) throw new Error('Viewer content failed schema validation');
   return raw;
 }
 

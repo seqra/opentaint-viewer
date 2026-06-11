@@ -28,3 +28,23 @@ describe('content selectors', () => {
     expect(grouped.custom).toEqual([]);
   });
 });
+
+describe('loadContent injection', () => {
+  it('prefers injected #opentaint-content JSON over the bundled demo', () => {
+    const injected = {
+      projectId: 'injected-proj', files: [], rules: [],
+      // minimal shape — isViewerContent only checks flows/defaultFlowIndex, not full Finding fields
+      findings: [{ flows: [{ steps: [] }], defaultFlowIndex: 0 }],
+    };
+    const el = document.createElement('script');
+    el.type = 'application/json';
+    el.id = 'opentaint-content';
+    el.textContent = JSON.stringify(injected);
+    document.body.appendChild(el);
+    try {
+      expect(loadContent().projectId).toBe('injected-proj');
+    } finally {
+      el.remove();
+    }
+  });
+});
