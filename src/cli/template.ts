@@ -1,21 +1,33 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-/** Candidate template locations, in priority order, given the CLI's own URL. */
+/** Auto-discovery template locations, in priority order, relative to the CLI's own URL. */
 function candidates(cliUrl: string): string[] {
-  const list: string[] = [];
-  if (process.env.OPENTAINT_VIEWER_TEMPLATE) list.push(process.env.OPENTAINT_VIEWER_TEMPLATE);
-  // Bundled install / build: dist-cli/opentaint-viewer.js + dist-cli/template/index.html
-  list.push(fileURLToPath(new URL('./template/index.html', cliUrl)));
-  // Dev via tsx from src/cli/, or the bundle run from dist-cli/, pointing at the Vite output
-  list.push(fileURLToPath(new URL('../../dist-template/index.html', cliUrl)));
-  list.push(fileURLToPath(new URL('../dist-template/index.html', cliUrl)));
-  return list;
+  return [
+    // Bundled install / build: dist-cli/opentaint-viewer.js + dist-cli/template/index.html
+    fileURLToPath(new URL('./template/index.html', cliUrl)),
+    // Dev via tsx from src/cli/, or the bundle run from dist-cli/, pointing at the Vite output
+    fileURLToPath(new URL('../../dist-template/index.html', cliUrl)),
+    fileURLToPath(new URL('../dist-template/index.html', cliUrl)),
+  ];
 }
 
 export function loadTemplate(cliUrl: string): string {
-  for (const path of candidates(cliUrl)) {
+  // An explicit override is a user intent: if set but missing, fail loudly rather than
+  // silently falling back to a discovered template.
+  const envPath = process.env.OPENTAINT_VIEWER_TEMPLATE;
+  if (envPath !== undefined) {
+    if (!existsSync(envPath)) {
+      throw new Error(`OPENTAINT_VIEWER_TEMPLATE=${envPath} does not exist`);
+    }
+    return readFileSync(envPath, 'utf8');
+  }
+  const searched = candidates(cliUrl);
+  for (const path of searched) {
     if (existsSync(path)) return readFileSync(path, 'utf8');
   }
-  throw new Error('viewer template not found; build it first with `npm run build:template`');
+  throw new Error(
+    'viewer template not found; build it first with `npm run build:template`\n' +
+      `searched:\n${searched.map((p) => `  ${p}`).join('\n')}`,
+  );
 }
