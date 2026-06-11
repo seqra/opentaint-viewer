@@ -16,6 +16,7 @@ export function startServer(html: string, port: number): Promise<{ url: string; 
     });
     server.once('error', rejectP);
     server.listen(port, '127.0.0.1', () => {
+      server.off('error', rejectP); // listener has done its job; don't swallow later errors
       const { port: actual } = server.address() as AddressInfo;
       resolveP({
         url: `http://127.0.0.1:${actual}/`,
@@ -31,11 +32,11 @@ export function openBrowser(url: string): void {
     process.platform === 'darwin' ? ['open', [url]] :
     process.platform === 'win32' ? ['cmd', ['/c', 'start', '', url]] :
     ['xdg-open', [url]];
-  try {
-    spawn(cmd, args as string[], { stdio: 'ignore', detached: true }).unref();
-  } catch {
-    /* opening a browser is a convenience, not a requirement */
-  }
+  // Opening a browser is a convenience; an ENOENT/permission error must stay non-fatal,
+  // so attach an 'error' handler (spawn emits errors asynchronously, not via throw).
+  spawn(cmd, args as string[], { stdio: 'ignore', detached: true })
+    .on('error', () => { /* non-fatal */ })
+    .unref();
 }
 
 /** Serve `html`, retrying the next port if the preferred one is taken; keep alive until Ctrl+C. */
@@ -45,7 +46,7 @@ export async function serve(html: string, opts: ServeOptions): Promise<void> {
       const { url, close } = await startServer(html, port);
       console.log(`OpenTaint Viewer on ${url}  (Ctrl+C to stop)`);
       if (opts.open) openBrowser(url);
-      process.on('SIGINT', () => { void close().then(() => process.exit(0)); });
+      process.once('SIGINT', () => { void close().then(() => process.exit(0)); });
       return;
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') continue;
