@@ -9,7 +9,7 @@ import './theme.css';
 async function boot() {
   // The offline single-file build bundles Monaco locally; the hosted build loads it from
   // the CDN. MODE is replaced at build time, so this branch is tree-shaken out of the
-  // hosted bundle entirely — Monaco is only pulled in for `vite build --mode singlefile`.
+  // hosted bundle entirely — Monaco is only pulled in for the `singlefile` and `template` builds.
   if (import.meta.env.MODE === 'singlefile' || import.meta.env.MODE === 'template') {
     await import('./monaco-setup');
   }
