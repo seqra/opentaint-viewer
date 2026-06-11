@@ -15,7 +15,10 @@ globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObse
 
 // jsdom does not implement scrollIntoView; stub it so components that reveal the
 // active element (e.g. StepsList) can run under tests.
-Element.prototype.scrollIntoView ??= function scrollIntoView() {};
+// Guard against node-environment tests (e.g. CLI unit tests) where Element is absent.
+if (typeof Element !== 'undefined') {
+  Element.prototype.scrollIntoView ??= function scrollIntoView() {};
+}
 
 // jsdom doesn't implement window.matchMedia. AppShell uses it to pick desktop vs
 // mobile; CodeView's phoneEditorOverrides reads it once at editor mount. Default
