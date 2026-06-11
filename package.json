@@ -2,10 +2,17 @@
   "name": "opentaint-viewer",
   "private": true,
   "type": "module",
+  "bin": {
+    "opentaint-viewer": "dist-cli/opentaint-viewer.js"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "build:single": "tsc --noEmit && vite build --mode singlefile --outDir dist-single --emptyOutDir",
+    "cli": "tsx src/cli/main.ts",
+    "build:template": "tsc --noEmit && vite build --mode template --outDir dist-template --emptyOutDir",
+    "build:cli": "esbuild src/cli/main.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist-cli/opentaint-viewer.js",
+    "build:dist": "npm run build:template && npm run build:cli && node scripts/copy-template.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -35,6 +42,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "@vitest/coverage-v8": "^2.0.5",
+    "esbuild": "^0.24.0",
     "jsdom": "^25.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4",
