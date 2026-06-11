@@ -53,4 +53,10 @@ describe('opentaint-viewer export', () => {
     expect(content.files.map((f: { path: string }) => f.path)).toEqual(['src/A.java']);
     expect(content.projectId).toBe(basename(dir)); // name defaults to basename of the SARIF source root
   });
+
+  it('exits non-zero when --sarif does not exist', () => {
+    expect(() => execFileSync('npx', ['tsx', 'src/cli/main.ts', 'export',
+      '--sarif', join(dir, 'nope.sarif'), '--rules', join(dir, 'rules'),
+    ], { stdio: 'pipe', env: { ...process.env, OPENTAINT_VIEWER_TEMPLATE: join(dir, 'template.html') } })).toThrow();
+  });
 });

@@ -33,8 +33,13 @@ function buildContent(args: Record<string, string | boolean>, cliUrl: string): V
   if (!sarifPath) fail('--sarif is required\n\n' + USAGE);
   if (!existsSync(sarifPath)) fail(`--sarif not found: ${sarifPath}`);
 
-  const sarifLog = JSON.parse(readFileSync(sarifPath, 'utf8'));
-  const srcRoot = resolveSourceRoot(sarifLog, sarifPath, str(args.src));
+  let sarifLog: unknown;
+  try {
+    sarifLog = JSON.parse(readFileSync(sarifPath, 'utf8'));
+  } catch (err) {
+    fail(`--sarif is not valid JSON (${sarifPath}): ${err instanceof Error ? err.message : err}`);
+  }
+  const srcRoot = resolveSourceRoot(sarifLog as Parameters<typeof resolveSourceRoot>[0], sarifPath, str(args.src));
   const rulesDir = resolveRulesDir(cliUrl, str(args.rules));
   if (!existsSync(rulesDir)) fail(`rules dir not found: ${rulesDir} (pass --rules <dir>)`);
 
@@ -64,10 +69,15 @@ async function main(): Promise<void> {
     console.log(`Wrote ${out}: ${content.findings.length} findings, ${content.files.length} files`);
     return;
   }
-  await serve(html, {
-    port: str(args.port) ? Number(str(args.port)) : 5151,
-    open: args.open !== false,
-  });
+  let port = 5151;
+  const rawPort = str(args.port);
+  if (rawPort !== undefined) {
+    port = Number(rawPort);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      fail(`--port must be an integer between 1 and 65535, got: ${rawPort}`);
+    }
+  }
+  await serve(html, { port, open: args.open !== false });
 }
 
 main().catch((err) => {
