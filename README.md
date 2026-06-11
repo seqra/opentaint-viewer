@@ -103,6 +103,36 @@ no network required.
 
 For a hosted (multi-file) build instead, use `npm run build` → `dist/`.
 
+## Use the `opentaint-viewer` CLI
+
+Once installed alongside the engine, point the CLI at a SARIF and either view it
+or write a self-contained report. The source root is read from the SARIF's
+`%SRCROOT%` (falling back to the report's directory), and the ruleset defaults to
+`../lib/rules` next to the CLI — so the common case needs only `--sarif`:
+
+```bash
+# Open the report in a browser (localhost)
+opentaint-viewer serve  --sarif results.sarif
+
+# Write a self-contained offline HTML report
+opentaint-viewer export --sarif results.sarif --out report.html
+```
+
+Override the defaults when needed:
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--sarif <file>` | — (required) | SARIF report. |
+| `--src <dir>` | SARIF `%SRCROOT%`, else the SARIF's directory | Source root. |
+| `--rules <dir>` | `../lib/rules` relative to the CLI | Ruleset directory. |
+| `--name <id>` | basename of the source root | Project name in the UI. |
+| `--port <n>` (serve) | `5151` | Listen port. |
+| `--no-open` (serve) | — | Don't auto-open the browser. |
+| `--out <file>` (export) | `opentaint-report.html` | Output HTML path. |
+
+The build-from-scratch path below (`npm run gen` + `npm run build:single`) still
+works and is used to regenerate the committed demo.
+
 ## Try the bundled demo
 
 The repo commits a `data/content.json` built from `seqra/java-spring-demo`, so
@@ -143,6 +173,8 @@ files they reference and **47 rules**.
 | `npm run gen` | Generate `data/content.json` from a SARIF + source dir + rules dir. |
 | `npm run build:single` | Build a single self-contained offline `index.html` into `dist-single/`. |
 | `npm run build` | Type-check (`tsc --noEmit`) and build the hosted site to `dist/`. |
+| `npm run cli` | Run the CLI from source via tsx (`npm run cli -- export --sarif …`). |
+| `npm run build:dist` | Build the CLI bundle + template into `dist-cli/` (the shippable CLI). |
 | `npm run dev` | Vite dev server with HMR. |
 | `npm run preview` | Serve the production build locally. |
 | `npm test` | Run the unit/component test suite (Vitest) once. |
