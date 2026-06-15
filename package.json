@@ -1,10 +1,20 @@
 {
-  "name": "opentaint-viewer",
-  "private": true,
+  "name": "@seqra/opentaint-viewer",
+  "version": "0.1.0",
+  "description": "In-browser, VS Code–style viewer for OpenTaint taint-analysis (SARIF) results — generate a self-contained, offline HTML report from a CLI.",
+  "keywords": ["opentaint", "sarif", "taint-analysis", "sast", "security", "viewer", "cli"],
+  "homepage": "https://github.com/seqra/opentaint-viewer#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/seqra/opentaint-viewer.git" },
+  "bugs": { "url": "https://github.com/seqra/opentaint-viewer/issues" },
+  "license": "MIT",
+  "author": "Seqra Team",
   "type": "module",
+  "engines": { "node": ">=20" },
   "bin": {
     "opentaint-viewer": "dist-cli/opentaint-viewer.js"
   },
+  "files": ["dist-cli"],
+  "publishConfig": { "access": "public" },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -19,7 +29,8 @@
     "coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "gen": "tsx scripts/gen-content.ts",
-    "screenshots": "tsx scripts/screenshots.ts"
+    "screenshots": "tsx scripts/screenshots.ts",
+    "prepack": "npm run build:dist"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.2.8",

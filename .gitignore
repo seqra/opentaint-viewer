@@ -17,3 +17,4 @@ playwright-report/
 /java-spring-demo/
 /.opentaint-cache/
 /.opentaint-rules/
+release_version.txt
