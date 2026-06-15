@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'auto'
+        type: choice
+        options: [auto, patch, minor, major]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # tags + GitHub releases
+  id-token: write   # npm OIDC trusted publishing
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Manual version bump
+        if: ${{ github.event.inputs.release_type != 'auto' }}
+        id: manual_release
+        uses: ./.github/actions/manual-version-bump
+        with:
+          tag-prefix: 'v'
+          bump-type: ${{ github.event.inputs.release_type }}
+
+      - name: Write manual release version
+        if: ${{ github.event.inputs.release_type != 'auto' }}
+        run: echo "${{ steps.manual_release.outputs.new-version }}" > release_version.txt
+
+      - name: Create release tag (manual)
+        if: ${{ github.event.inputs.release_type != 'auto' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "v${{ steps.manual_release.outputs.new-version }}"
+          git push origin "v${{ steps.manual_release.outputs.new-version }}"
+
+      - name: Force-update tags
+        run: git fetch --tags --force
+
+      - name: Release (auto)
+        if: ${{ github.event.inputs.release_type == 'auto' }}
+        id: semantic_release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          semantic_version: 23.0.0
+          extra_plugins: |
+            @semantic-release/commit-analyzer@11.1.0
+            @semantic-release/exec@6.0.3
+            conventional-changelog-conventionalcommits@7.0.2
+
+      - name: Get release version
+        id: release_version
+        run: |
+          if [ -f release_version.txt ]; then
+            echo "status=succeeded" >> "$GITHUB_OUTPUT"
+            echo "RELEASE_VERSION=$(cat release_version.txt)" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=skipped" >> "$GITHUB_OUTPUT"
+          fi
+          rm -f release_version.txt
+
+      - name: Publish to npm
+        if: ${{ steps.release_version.outputs.status == 'succeeded' }}
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.RELEASE_VERSION }}
+        run: |
+          set -euo pipefail
+          # PREREQUISITE: @seqra/opentaint-viewer must have a trusted publisher
+          # configured on npmjs.com (owner: seqra, repo: opentaint-viewer,
+          # workflow: release.yml, no environment) before this runs, and the
+          # package must already exist (first publish is a manual token-based
+          # bootstrap — see the release plan/spec).
+          npm install -g npm@latest
+          npm --version
+          npm version "$RELEASE_VERSION" --no-git-tag-version --allow-same-version
+          log="$(mktemp)"
+          if npm publish --access public >"$log" 2>&1; then
+            cat "$log"
+          elif grep -qiE "cannot publish over|previously published|EPUBLISHCONFLICT" "$log"; then
+            echo "Already published (skipping)"; cat "$log"
+          else
+            echo "npm publish failed" >&2; cat "$log" >&2; exit 1
+          fi
