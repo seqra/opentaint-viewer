@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { parseArgs } from './args';
 import { generateContent } from './generateContent';
-import { resolveSourceRoot, resolveRulesDir } from './resolve';
+import { resolveSourceRoot, resolveBuiltinRulesDir } from './resolve';
 import { injectContent } from './render';
 import { loadTemplate } from './template';
 import { serve } from './serve';
@@ -11,10 +11,11 @@ import type { ViewerContent } from '../types/content';
 
 const USAGE = `opentaint-viewer <serve|export> --sarif <file> [options]
 
-  --sarif <file>   SARIF report (required)
-  --src <dir>      source root (default: SARIF %SRCROOT%, else the SARIF's directory)
-  --rules <dir>    ruleset dir (default: ../lib/rules relative to the CLI)
-  --name <id>      project name shown in the UI (default: basename of source root)
+  --sarif <file>          SARIF report (required)
+  --src <dir>             source root (default: SARIF %SRCROOT%, else the SARIF's directory)
+  --builtin-rules <dir>   builtin ruleset dir (default: ../lib/rules relative to the CLI)
+  --rules <dir>           custom ruleset dir (optional; your project's own rules)
+  --name <id>             project name shown in the UI (default: basename of source root)
 
 serve:   --port <n> (default 5151)   --no-open
 export:  --out <file> (default opentaint-report.html)`;
@@ -40,11 +41,16 @@ function buildContent(args: Record<string, string | boolean>, cliUrl: string): V
     fail(`--sarif is not valid JSON (${sarifPath}): ${err instanceof Error ? err.message : err}`);
   }
   const srcRoot = resolveSourceRoot(sarifLog as Parameters<typeof resolveSourceRoot>[0], sarifPath, str(args.src));
-  const rulesDir = resolveRulesDir(cliUrl, str(args.rules));
-  if (!existsSync(rulesDir)) fail(`rules dir not found: ${rulesDir} (pass --rules <dir>)`);
+  const rulesDir = resolveBuiltinRulesDir(cliUrl, str(args['builtin-rules']));
+  if (!existsSync(rulesDir)) fail(`builtin rules dir not found: ${rulesDir} (pass --builtin-rules <dir>)`);
+  const customArg = str(args.rules);
+  const customRulesDir = customArg !== undefined ? resolve(customArg) : undefined;
+  if (customRulesDir !== undefined && !existsSync(customRulesDir)) {
+    fail(`custom rules dir not found: ${customRulesDir} (pass --rules <dir>)`);
+  }
 
   const projectId = str(args.name) ?? basename(srcRoot);
-  const content = generateContent({ sarifLog, srcDir: srcRoot, root: srcRoot, rulesDir, projectId });
+  const content = generateContent({ sarifLog, srcDir: srcRoot, root: srcRoot, rulesDir, customRulesDir, projectId });
 
   const referenced = new Set(content.findings.flatMap((f) => f.flows.flatMap((fl) => fl.steps.map((s) => s.file))));
   if (referenced.size > 0 && content.files.length === 0) {

@@ -41,7 +41,7 @@ describe('opentaint-viewer export', () => {
     const out = join(dir, 'report.html');
     execFileSync('npx', ['tsx', 'src/cli/main.ts', 'export',
       '--sarif', join(dir, 'report.sarif'),
-      '--rules', join(dir, 'rules'),
+      '--builtin-rules', join(dir, 'rules'),
       '--out', out,
     ], { stdio: 'pipe', env: { ...process.env, OPENTAINT_VIEWER_TEMPLATE: join(dir, 'template.html') } });
 
@@ -56,7 +56,31 @@ describe('opentaint-viewer export', () => {
 
   it('exits non-zero when --sarif does not exist', () => {
     expect(() => execFileSync('npx', ['tsx', 'src/cli/main.ts', 'export',
-      '--sarif', join(dir, 'nope.sarif'), '--rules', join(dir, 'rules'),
+      '--sarif', join(dir, 'nope.sarif'), '--builtin-rules', join(dir, 'rules'),
+    ], { stdio: 'pipe', env: { ...process.env, OPENTAINT_VIEWER_TEMPLATE: join(dir, 'template.html') } })).toThrow();
+  });
+
+  it('includes custom rules (origin "custom") in the output when --rules is given', () => {
+    const out = join(dir, 'report-custom.html');
+    mkdirSync(join(dir, 'custom'), { recursive: true });
+    writeFileSync(join(dir, 'custom', 'mine.yaml'), 'id: mine\n');
+    execFileSync('npx', ['tsx', 'src/cli/main.ts', 'export',
+      '--sarif', join(dir, 'report.sarif'),
+      '--builtin-rules', join(dir, 'rules'),
+      '--rules', join(dir, 'custom'),
+      '--out', out,
+    ], { stdio: 'pipe', env: { ...process.env, OPENTAINT_VIEWER_TEMPLATE: join(dir, 'template.html') } });
+    const html = readFileSync(out, 'utf8');
+    const json = html.replace(/^[\s\S]*id="opentaint-content">/, '').replace(/<\/script>[\s\S]*$/, '');
+    const content = JSON.parse(json);
+    expect(content.rules.some((r: { origin: string; path: string }) => r.origin === 'custom' && r.path === 'mine.yaml')).toBe(true);
+  });
+
+  it('exits non-zero when --rules dir does not exist', () => {
+    expect(() => execFileSync('npx', ['tsx', 'src/cli/main.ts', 'export',
+      '--sarif', join(dir, 'report.sarif'),
+      '--builtin-rules', join(dir, 'rules'),
+      '--rules', join(dir, 'nope-custom'),
     ], { stdio: 'pipe', env: { ...process.env, OPENTAINT_VIEWER_TEMPLATE: join(dir, 'template.html') } })).toThrow();
   });
 });

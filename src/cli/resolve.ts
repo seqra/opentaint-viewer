@@ -31,9 +31,9 @@ export function resolveSourceRoot(log: SarifSrcRoot, sarifPath: string, srcArg?:
   return resolve(dirname(sarifPath));
 }
 
-/** Rules dir: --rules wins; else ../lib/rules relative to the CLI executable. */
-export function resolveRulesDir(cliUrl: string, rulesArg?: string): string {
-  if (rulesArg) return resolve(rulesArg);
+/** Builtin ruleset dir: --builtin-rules wins; else ../lib/rules relative to the CLI executable. */
+export function resolveBuiltinRulesDir(cliUrl: string, builtinRulesArg?: string): string {
+  if (builtinRulesArg) return resolve(builtinRulesArg);
   const binDir = dirname(fileURLToPath(cliUrl));
   return resolve(binDir, '..', 'lib', 'rules');
 }

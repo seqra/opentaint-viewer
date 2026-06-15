@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
-import { srcRootFromSarif, resolveSourceRoot, resolveRulesDir } from './resolve';
+import { srcRootFromSarif, resolveSourceRoot, resolveBuiltinRulesDir } from './resolve';
 
 let dir: string;
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'resolve-')); });
@@ -45,12 +45,12 @@ describe('resolveSourceRoot', () => {
   });
 });
 
-describe('resolveRulesDir', () => {
+describe('resolveBuiltinRulesDir', () => {
   const cliUrl = pathToFileURL('/opt/opentaint/bin/opentaint-viewer.js').href;
-  it('honours an explicit --rules', () => {
-    expect(resolveRulesDir(cliUrl, dir)).toBe(resolve(dir));
+  it('honours an explicit --builtin-rules', () => {
+    expect(resolveBuiltinRulesDir(cliUrl, dir)).toBe(resolve(dir));
   });
   it('defaults to ../lib/rules relative to the CLI executable', () => {
-    expect(resolveRulesDir(cliUrl)).toBe('/opt/opentaint/lib/rules');
+    expect(resolveBuiltinRulesDir(cliUrl)).toBe('/opt/opentaint/lib/rules');
   });
 });
