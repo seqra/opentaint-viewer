@@ -16,6 +16,18 @@ so you can [try the viewer instantly](#try-the-bundled-demo).
   <img alt="OpenTaint Viewer — a stored-XSS finding selected, the tainted path highlighted blue through createMessage with the sink in red, and the ordered source→sink steps listed below" src="docs/screenshots/viewer-dark.png">
 </picture>
 
+## Install the CLI from npm
+
+```bash
+npm install -g @seqra/opentaint-viewer   # global install
+# or run without installing:
+npx @seqra/opentaint-viewer --help
+```
+
+The installed command is `opentaint-viewer`. Published builds are signed with npm
+[provenance](https://docs.npmjs.com/generating-provenance-statements) (built from
+this repo via GitHub Actions OIDC — no publish tokens).
+
 ## Generate a static HTML report for your project
 
 The viewer is a generic React app that renders one committed `data/content.json`.
@@ -192,6 +204,24 @@ files they reference and **47 rules**.
 | `npm run test:watch` | Vitest in watch mode. |
 | `npm run coverage` | Vitest with V8 coverage. |
 | `npm run e2e` | Playwright end-to-end tests. |
+
+## Releasing
+
+Published to npm as [`@seqra/opentaint-viewer`](https://www.npmjs.com/package/@seqra/opentaint-viewer)
+via the **Release** workflow (`.github/workflows/release.yml`) — tokenless npm
+[OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers).
+
+1. Land changes on `main` using [Conventional Commits](https://www.conventionalcommits.org/)
+   (`feat:` → minor, `fix:`/`refactor:`/`revert:` → patch, `feat!:`/`BREAKING CHANGE` → major).
+2. Actions → **Release** → **Run workflow**:
+   - `auto` — semantic-release derives the version from commits since the last tag.
+   - `patch` / `minor` / `major` — force a specific bump.
+3. The workflow tags the release, publishes the GitHub Release notes (auto mode),
+   and runs `npm publish` over OIDC. Re-runs are idempotent.
+
+First publish only: the package is bootstrapped manually so a trusted publisher
+can be attached on npmjs.com (owner `seqra`, repo `opentaint-viewer`, workflow
+`release.yml`). After that, releases need no tokens.
 
 ## How it works
 
