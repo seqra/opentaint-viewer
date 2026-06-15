@@ -30,7 +30,10 @@ export function FindingInfo() {
             {finding.ruleId}
           </button>
         ) : (
-          <span>{finding.ruleId}</span>
+          <span>
+            {finding.ruleId}
+            <span className={styles.ruleMissing} title="No rule definition was bundled for this rule id"> · definition not available</span>
+          </span>
         )}
       </div>
       {finding.description && (
