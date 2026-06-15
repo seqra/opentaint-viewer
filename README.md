@@ -121,10 +121,24 @@ For a hosted (multi-file) build instead, use `npm run build` → `dist/`.
 
 ## Use the `opentaint-viewer` CLI
 
-Once installed alongside the engine, point the CLI at a SARIF and either view it
-or write a self-contained report. The source root is read from the SARIF's
-`%SRCROOT%` (falling back to the report's directory), and the builtin ruleset defaults to
-`../lib/rules` next to the CLI — so the common case needs only `--sarif`:
+The CLI takes a SARIF report and either opens it in a browser (`serve`) or writes
+a self-contained, offline HTML report (`export`). Run it two ways:
+
+```bash
+# Without installing — npx fetches and runs the published CLI on demand:
+npx @seqra/opentaint-viewer export --sarif results.sarif --out report.html
+
+# Or, after `npm install -g @seqra/opentaint-viewer`, call the installed binary:
+opentaint-viewer export --sarif results.sarif --out report.html
+```
+
+The examples below use the short `opentaint-viewer` form; if you didn't install it
+globally, swap in `npx @seqra/opentaint-viewer`.
+
+The source root is read from the SARIF's `%SRCROOT%` (falling back to the report's
+directory). The npm package ships only the viewer, not the engine's ruleset — so the
+CLI finds the builtin rules next to the `opentaint` engine binary on your `PATH`
+(`../lib/rules`). With the engine installed, the common case needs only `--sarif`:
 
 ```bash
 # Open the report in a browser (localhost)
@@ -134,7 +148,14 @@ opentaint-viewer serve  --sarif results.sarif
 opentaint-viewer export --sarif results.sarif --out report.html
 ```
 
-Bring your own rules alongside the builtin set:
+> If the engine isn't on your `PATH` (e.g. you only run it through Docker), point
+> `--builtin-rules` at the ruleset you extracted in the Docker fallback above:
+>
+> ```bash
+> opentaint-viewer export --sarif results.sarif --builtin-rules ./rules --out report.html
+> ```
+
+Bring your own rules alongside the builtin set with `--rules`:
 
 ```bash
 opentaint-viewer serve --sarif results.sarif --rules ./my-rules
@@ -146,7 +167,7 @@ Override the defaults when needed:
 | --- | --- | --- |
 | `--sarif <file>` | — (required) | SARIF report. |
 | `--src <dir>` | SARIF `%SRCROOT%`, else the SARIF's directory | Source root. |
-| `--builtin-rules <dir>` | `../lib/rules` relative to the CLI | Builtin ruleset directory (the engine's shipped rules). |
+| `--builtin-rules <dir>` | `../lib/rules` next to the `opentaint` binary on `PATH`, else next to the CLI | Builtin ruleset directory (the engine's shipped rules). |
 | `--rules <dir>` | — (optional) | Your project's custom rules; shown under "Custom" and linked from findings. Custom wins on an id collision with a builtin rule. A rule in neither set still renders, marked "definition not available". |
 | `--name <id>` | basename of the source root | Project name in the UI. |
 | `--port <n>` (serve) | `5151` | Listen port. |
