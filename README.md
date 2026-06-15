@@ -107,7 +107,7 @@ For a hosted (multi-file) build instead, use `npm run build` → `dist/`.
 
 Once installed alongside the engine, point the CLI at a SARIF and either view it
 or write a self-contained report. The source root is read from the SARIF's
-`%SRCROOT%` (falling back to the report's directory), and the ruleset defaults to
+`%SRCROOT%` (falling back to the report's directory), and the builtin ruleset defaults to
 `../lib/rules` next to the CLI — so the common case needs only `--sarif`:
 
 ```bash
@@ -118,13 +118,20 @@ opentaint-viewer serve  --sarif results.sarif
 opentaint-viewer export --sarif results.sarif --out report.html
 ```
 
+Bring your own rules alongside the builtin set:
+
+```bash
+opentaint-viewer serve --sarif results.sarif --rules ./my-rules
+```
+
 Override the defaults when needed:
 
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `--sarif <file>` | — (required) | SARIF report. |
 | `--src <dir>` | SARIF `%SRCROOT%`, else the SARIF's directory | Source root. |
-| `--rules <dir>` | `../lib/rules` relative to the CLI | Ruleset directory. |
+| `--builtin-rules <dir>` | `../lib/rules` relative to the CLI | Builtin ruleset directory (the engine's shipped rules). |
+| `--rules <dir>` | — (optional) | Your project's custom rules; shown under "Custom" and linked from findings. Custom wins on an id collision with a builtin rule. A rule in neither set still renders, marked "definition not available". |
 | `--name <id>` | basename of the source root | Project name in the UI. |
 | `--port <n>` (serve) | `5151` | Listen port. |
 | `--no-open` (serve) | — | Don't auto-open the browser. |
