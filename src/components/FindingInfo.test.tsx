@@ -46,6 +46,7 @@ describe('FindingInfo', () => {
     const f0 = noRule.findings[0];
     expect(screen.queryByRole('button', { name: f0.ruleId })).toBeNull();
     expect(screen.getByText(/definition not available/)).toBeInTheDocument();
+    expect(screen.getByText(/definition not available/)).toHaveAttribute('title', 'No rule definition was bundled for this rule id');
     expect(screen.getByTestId('finding-info').textContent).toContain(f0.ruleId);
     expect(screen.getByText(f0.message)).toBeInTheDocument();
   });

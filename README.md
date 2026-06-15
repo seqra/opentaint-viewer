@@ -74,6 +74,10 @@ opentaint scan --output results.sarif your-project
 Point `--rules` at the bundled ruleset that came with the install (or at the
 `rules/` directory you extracted in the Docker fallback above):
 
+> **Note:** in this legacy `npm run gen` workflow, `--rules` is the *builtin*
+> ruleset. It predates the `opentaint-viewer` CLI's flag split, where
+> `--builtin-rules` is the builtin ruleset and `--rules` is your custom rules.
+
 ```bash
 npm install   # once
 npm run gen -- \
