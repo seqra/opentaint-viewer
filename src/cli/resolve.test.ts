@@ -1,10 +1,10 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join, resolve, delimiter } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
-import { srcRootFromSarif, resolveSourceRoot, resolveBuiltinRulesDir } from './resolve';
+import { srcRootFromSarif, resolveSourceRoot, resolveBuiltinRulesDir, findOpentaintBinary } from './resolve';
 
 let dir: string;
 beforeAll(() => { dir = mkdtempSync(join(tmpdir(), 'resolve-')); });
@@ -47,10 +47,50 @@ describe('resolveSourceRoot', () => {
 
 describe('resolveBuiltinRulesDir', () => {
   const cliUrl = pathToFileURL('/opt/opentaint/bin/opentaint-viewer.js').href;
-  it('honours an explicit --builtin-rules', () => {
-    expect(resolveBuiltinRulesDir(cliUrl, dir)).toBe(resolve(dir));
+
+  it('honours an explicit --builtin-rules over an engine on PATH', () => {
+    expect(resolveBuiltinRulesDir(cliUrl, dir, () => '/engine/bin/opentaint')).toBe(resolve(dir));
   });
-  it('defaults to ../lib/rules relative to the CLI executable', () => {
-    expect(resolveBuiltinRulesDir(cliUrl)).toBe('/opt/opentaint/lib/rules');
+
+  it('derives ../lib/rules from the opentaint engine binary on PATH', () => {
+    const engineDir = mkdtempSync(join(tmpdir(), 'engine-'));
+    mkdirSync(join(engineDir, 'lib', 'rules'), { recursive: true });
+    const enginePath = join(engineDir, 'bin', 'opentaint');
+    mkdirSync(join(engineDir, 'bin'), { recursive: true });
+    writeFileSync(enginePath, '');
+    expect(resolveBuiltinRulesDir(cliUrl, undefined, () => enginePath)).toBe(resolve(engineDir, 'lib', 'rules'));
+    rmSync(engineDir, { recursive: true, force: true });
+  });
+
+  it('falls back to the CLI path when the engine binary has no ../lib/rules', () => {
+    expect(resolveBuiltinRulesDir(cliUrl, undefined, () => '/no/such/bin/opentaint')).toBe('/opt/opentaint/lib/rules');
+  });
+
+  it('falls back to ../lib/rules next to the CLI when no engine is on PATH', () => {
+    expect(resolveBuiltinRulesDir(cliUrl, undefined, () => null)).toBe('/opt/opentaint/lib/rules');
+  });
+});
+
+describe('findOpentaintBinary', () => {
+  it('finds opentaint in a PATH entry', () => {
+    const binDir = mkdtempSync(join(tmpdir(), 'path-'));
+    writeFileSync(join(binDir, 'opentaint'), '');
+    expect(findOpentaintBinary(`/no/such/dir${delimiter}${binDir}`, false)).toBe(resolve(binDir, 'opentaint'));
+    rmSync(binDir, { recursive: true, force: true });
+  });
+
+  it('matches opentaint.exe on Windows', () => {
+    const binDir = mkdtempSync(join(tmpdir(), 'winpath-'));
+    writeFileSync(join(binDir, 'opentaint.exe'), '');
+    expect(findOpentaintBinary(binDir, true)).toBe(resolve(binDir, 'opentaint.exe'));
+    rmSync(binDir, { recursive: true, force: true });
+  });
+
+  it('returns null when opentaint is not on PATH', () => {
+    expect(findOpentaintBinary('/no/such/dir', false)).toBeNull();
+  });
+
+  it('returns null for an empty PATH', () => {
+    expect(findOpentaintBinary('', false)).toBeNull();
   });
 });

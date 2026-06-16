@@ -13,7 +13,7 @@ const USAGE = `opentaint-viewer <serve|export> --sarif <file> [options]
 
   --sarif <file>          SARIF report (required)
   --src <dir>             source root (default: SARIF %SRCROOT%, else the SARIF's directory)
-  --builtin-rules <dir>   builtin ruleset dir (default: ../lib/rules relative to the CLI)
+  --builtin-rules <dir>   builtin ruleset dir (default: ../lib/rules next to the opentaint binary on PATH, else next to this CLI)
   --rules <dir>           custom ruleset dir (optional; your project's own rules)
   --name <id>             project name shown in the UI (default: basename of source root)
 

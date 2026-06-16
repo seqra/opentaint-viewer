@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { delimiter, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 interface SarifSrcRoot {
@@ -31,9 +31,44 @@ export function resolveSourceRoot(log: SarifSrcRoot, sarifPath: string, srcArg?:
   return resolve(dirname(sarifPath));
 }
 
-/** Builtin ruleset dir: --builtin-rules wins; else ../lib/rules relative to the CLI executable. */
-export function resolveBuiltinRulesDir(cliUrl: string, builtinRulesArg?: string): string {
+/** First `opentaint` engine binary found on PATH, or null. */
+export function findOpentaintBinary(
+  pathEnv: string | undefined = process.env.PATH,
+  isWindows: boolean = process.platform === 'win32',
+): string | null {
+  if (!pathEnv) return null;
+  const names = isWindows
+    ? ['opentaint.exe', 'opentaint.cmd', 'opentaint.bat', 'opentaint']
+    : ['opentaint'];
+  for (const entry of pathEnv.split(delimiter)) {
+    if (!entry) continue;
+    for (const name of names) {
+      const candidate = resolve(entry, name);
+      if (existsSync(candidate)) return candidate;
+    }
+  }
+  return null;
+}
+
+/**
+ * Builtin ruleset dir, in priority order:
+ *   1. --builtin-rules <dir> when given.
+ *   2. ../lib/rules next to the `opentaint` engine binary on PATH (the engine ships its
+ *      ruleset there) — this is what makes the npm/npx-installed viewer work standalone.
+ *   3. ../lib/rules next to this CLI — the layout when the viewer is bundled inside a
+ *      native engine install (engine and viewer share a bin/ dir, so this equals #2).
+ */
+export function resolveBuiltinRulesDir(
+  cliUrl: string,
+  builtinRulesArg?: string,
+  findEngine: () => string | null = findOpentaintBinary,
+): string {
   if (builtinRulesArg) return resolve(builtinRulesArg);
+  const engine = findEngine();
+  if (engine) {
+    const fromEngine = resolve(dirname(engine), '..', 'lib', 'rules');
+    if (existsSync(fromEngine)) return fromEngine;
+  }
   const binDir = dirname(fileURLToPath(cliUrl));
   return resolve(binDir, '..', 'lib', 'rules');
 }
