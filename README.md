@@ -127,8 +127,8 @@ npm run build:single   # writes a self-contained dist-single/index.html; use npm
 | `npm test` / `npm run coverage` | Vitest unit/component tests (+ V8 coverage). |
 | `npm run e2e` | Playwright end-to-end tests. |
 
-**Stack:** React 18 · TypeScript · Vite · Monaco Editor · Zustand · react-resizable-panels ·
-Lucide · JetBrains Mono. The viewer is fully static — it loads one bundled `data/content.json`
+**Stack:** React 18, TypeScript, Vite, Monaco Editor, Zustand, react-resizable-panels,
+Lucide, JetBrains Mono. The viewer is fully static — it loads one bundled `data/content.json`
 (shape in [`src/types/content.ts`](src/types/content.ts)) into a [Zustand store](src/state/store.ts)
 and renders everything from it; no backend, no network calls for analysis. CI
 ([`ci.yml`](.github/workflows/ci.yml)) runs the build, coverage, and Playwright suite on every push and PR.
