@@ -1,167 +1,62 @@
-# OpenTaint Viewer
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="src/assets/opentaint-header-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="src/assets/opentaint-header-light.svg">
+    <img src="src/assets/opentaint-header-light.svg" alt="OpenTaint" height="40">
+  </picture>
+</p>
 
-An in-browser, VS Code–style viewer for [OpenTaint](https://opentaint.org/)
-taint-analysis results. Point it at any project's SARIF + sources + rules and
-get a self-contained, offline HTML report — click through findings, trace each
-tainted flow from source to sink, and read the rules that fired, all without a
-server.
+<h3 align="center">In-browser, VS Code–style viewer for taint-analysis results</h3>
 
-A bundled demo built from
-[`seqra/java-spring-demo`](https://github.com/seqra/java-spring-demo) is committed
-so you can [try the viewer instantly](#try-the-bundled-demo).
+<p align="center">
+  Point it at an <a href="https://opentaint.org/">OpenTaint</a> SARIF and get a self-contained, offline HTML report — click through findings, trace each tainted flow from untrusted input to dangerous call, and read the rules that fired, all without a server.
+</p>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/viewer-light.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/viewer-dark.png">
-  <img alt="OpenTaint Viewer — a stored-XSS finding selected, the tainted path highlighted blue through createMessage with the sink in red, and the ordered source→sink steps listed below" src="docs/screenshots/viewer-dark.png">
-</picture>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@seqra/opentaint-viewer"><img src="https://img.shields.io/npm/v/@seqra/opentaint-viewer.svg" alt="npm version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node-%3E%3D20-339933?logo=node.js&logoColor=white" alt="Node >= 20"></a>
+  <a href="https://github.com/seqra/opentaint-viewer/actions/workflows/ci.yml"><img src="https://github.com/seqra/opentaint-viewer/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
 
-## Install the CLI from npm
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/viewer-light.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/viewer-dark.png">
+    <img alt="OpenTaint Viewer — a stored-XSS finding selected, the tainted path highlighted from untrusted input to dangerous call, and the ordered steps listed below" src="docs/screenshots/viewer-dark.png">
+  </picture>
+</p>
 
-```bash
-npm install -g @seqra/opentaint-viewer   # global install
-# or run without installing:
-npx @seqra/opentaint-viewer --help
-```
+---
 
-The installed command is `opentaint-viewer`. Published builds are signed with npm
-[provenance](https://docs.npmjs.com/generating-provenance-statements) (built from
-this repo via GitHub Actions OIDC — no publish tokens).
+## Why
 
-## Generate a static HTML report for your project
+- **Trace taint end to end.** A Monaco editor highlights the flow in blue and the dangerous call in red; step through it from untrusted input to dangerous call, with cross-file hops switching the active file for you.
+- **Findings and rules, side by side.** VS Code–style trees group findings by directory and list the ruleset; open a finding to read the rule that fired — markdown description, CWE tags, severity, and ordered taint steps.
+- **Offline, single file.** Export one self-contained `index.html` — JS, CSS, fonts, and Monaco all inlined. No server, no network. Share it as-is.
 
-The viewer is a generic React app that renders one committed `data/content.json`.
-To produce a self-contained, offline HTML report for your own project, run three
-commands.
+## Quick Start
 
-### 1. Run OpenTaint to produce a SARIF
-
-**Install the CLI** — it bundles the ruleset alongside the binary at
-`<install-prefix>/lib/rules`, so a native install gives you both the engine and
-the rules in one step:
-
-```bash
-# Linux / macOS
-curl -fsSL https://opentaint.org/install.sh | bash
-
-# macOS (Homebrew)
-brew install --cask seqra/tap/opentaint
-
-# Windows (PowerShell)
-irm https://opentaint.org/install.ps1 | iex
-```
-
-**Scan your project** — writes a SARIF report next to it:
+Generate a report from an OpenTaint SARIF — no install required (`npx` fetches the CLI on demand):
 
 ```bash
-opentaint scan --output results.sarif your-project
-```
+# Open the report in your browser
+npx @seqra/opentaint-viewer serve --sarif results.sarif
 
-> **Prefer not to install the CLI?** Run the engine through Docker instead:
->
-> ```bash
-> docker run --rm \
->   -v "$PWD/your-project:/project" \
->   ghcr.io/seqra/opentaint \
->   opentaint scan --output /project/results.sarif /project
-> ```
->
-> Docker users also need to extract the ruleset once (the native install
-> already includes it):
->
-> ```bash
-> mkdir -p rules
-> docker run --rm --entrypoint sh \
->   -v "$PWD/rules:/out" \
->   ghcr.io/seqra/opentaint \
->   -c 'cp -r /usr/local/lib/opentaint/lib/rules/. /out/'
-> ```
->
-> Pin the engine by digest (`ghcr.io/seqra/opentaint@sha256:…`) for reproducible
-> reports. See the [OpenTaint quick-start](https://github.com/seqra/opentaint#quick-start)
-> for the canonical invocation and the digest of the version you intend to use.
-
-### 2. Generate the viewer content
-
-Point `--rules` at the bundled ruleset that came with the install (or at the
-`rules/` directory you extracted in the Docker fallback above):
-
-> **Note:** in this legacy `npm run gen` workflow, `--rules` is the *builtin*
-> ruleset. It predates the `opentaint-viewer` CLI's flag split, where
-> `--builtin-rules` is the builtin ruleset and `--rules` is your custom rules.
-
-```bash
-npm install   # once
-npm run gen -- \
-  --sarif your-project/results.sarif \
-  --src   your-project/src \
-  --rules "$(dirname "$(command -v opentaint)")/../lib/rules" \
-  --name  your-project
-```
-
-That writes `data/content.json`: the findings, the source files they reference
-(pruned to only those), the full ruleset, and the analyzer name + version read
-from the SARIF (shown in the TopBar, e.g. `v0.3.0 · 2026.05.15.f15ed3a`).
-
-If your SARIF `artifactLocation.uri` values aren't relative to the parent of
-`--src` (the common `<root>/src/...` layout), pass `--root <dir>` so collected
-file paths match the URIs.
-
-### 3. Build the offline HTML report
-
-```bash
-npm run build:single
-```
-
-`dist-single/index.html` is a single self-contained file — JS, CSS, fonts, and
-Monaco editor all inlined. Open it in a browser or share it as-is; no server,
-no network required.
-
-For a hosted (multi-file) build instead, use `npm run build` → `dist/`.
-
-## Use the `opentaint-viewer` CLI
-
-The CLI takes a SARIF report and either opens it in a browser (`serve`) or writes
-a self-contained, offline HTML report (`export`). Run it two ways:
-
-```bash
-# Without installing — npx fetches and runs the published CLI on demand:
+# Or write a self-contained, offline HTML file
 npx @seqra/opentaint-viewer export --sarif results.sarif --out report.html
-
-# Or, after `npm install -g @seqra/opentaint-viewer`, call the installed binary:
-opentaint-viewer export --sarif results.sarif --out report.html
 ```
 
-The examples below use the short `opentaint-viewer` form; if you didn't install it
-globally, swap in `npx @seqra/opentaint-viewer`.
+Prefer a global command? `npm install -g @seqra/opentaint-viewer`, then run `opentaint-viewer serve --sarif results.sarif`.
 
-The source root is read from the SARIF's `%SRCROOT%` (falling back to the report's
-directory). The npm package ships only the viewer, not the engine's ruleset — so the
-CLI finds the builtin rules next to the `opentaint` engine binary on your `PATH`
-(`../lib/rules`). With the engine installed, the common case needs only `--sarif`:
+The builtin ruleset is found next to the `opentaint` engine binary on your `PATH`, and the
+source root is read from the SARIF — so the common case needs only `--sarif`. No SARIF yet?
+[Run OpenTaint](https://github.com/seqra/opentaint#quick-start) to produce one.
 
-```bash
-# Open the report in a browser (localhost)
-opentaint-viewer serve  --sarif results.sarif
+<details>
+<summary><b>CLI options</b></summary>
 
-# Write a self-contained offline HTML report
-opentaint-viewer export --sarif results.sarif --out report.html
-```
-
-> If the engine isn't on your `PATH` (e.g. you only run it through Docker), point
-> `--builtin-rules` at the ruleset you extracted in the Docker fallback above:
->
-> ```bash
-> opentaint-viewer export --sarif results.sarif --builtin-rules ./rules --out report.html
-> ```
-
-Bring your own rules alongside the builtin set with `--rules`:
-
-```bash
-opentaint-viewer serve --sarif results.sarif --rules ./my-rules
-```
-
-Override the defaults when needed:
+Add `--rules ./my-rules` to show your project's custom rules alongside the builtin set.
 
 | Option | Default | Meaning |
 | --- | --- | --- |
@@ -174,137 +69,76 @@ Override the defaults when needed:
 | `--no-open` (serve) | — | Don't auto-open the browser. |
 | `--out <file>` (export) | `opentaint-report.html` | Output HTML path. |
 
-The build-from-scratch path below (`npm run gen` + `npm run build:single`) still
-works and is used to regenerate the committed demo.
+Run the engine only through Docker? Extract its ruleset once and pass `--builtin-rules ./rules` —
+see the [OpenTaint quick-start](https://github.com/seqra/opentaint#quick-start) for the Docker invocation.
+</details>
 
-## Try the bundled demo
+## Try the demo
 
-The repo commits a `data/content.json` built from `seqra/java-spring-demo`, so
-you can see the viewer in action before pointing it at your own project:
+Have OpenTaint installed? Scan the [`seqra/java-spring-demo`](https://github.com/seqra/java-spring-demo)
+project and open the report — `npx` fetches the viewer, nothing to install:
+
+```bash
+git clone https://github.com/seqra/java-spring-demo
+opentaint scan --output java-spring-demo/results.sarif java-spring-demo
+
+# Open it in the browser
+npx @seqra/opentaint-viewer serve --sarif java-spring-demo/results.sarif
+# Or write a shareable offline file
+npx @seqra/opentaint-viewer export --sarif java-spring-demo/results.sarif --out report.html
+```
+
+> Just want to preview the UI? The repo commits a demo `data/content.json` —
+> **13 findings** (Template Injection, SSRF, XSS) over **47 rules** — rendered by the dev
+> server: `npm install && npm run dev`.
+
+<details>
+<summary><b>Build a static report from source (<code>npm run gen</code>)</b></summary>
+
+The viewer is a generic React app that renders one committed `data/content.json`. The CLI above
+is the easy path; this build-from-scratch flow regenerates the committed demo and works for any project:
 
 ```bash
 npm install
-npm run dev        # start the Vite dev server
+npm run gen -- \
+  --sarif your-project/results.sarif \
+  --src   your-project/src \
+  --rules "$(dirname "$(command -v opentaint)")/../lib/rules" \
+  --name  your-project
+npm run build:single   # writes a self-contained dist-single/index.html; use npm run build for a hosted dist/ build
 ```
 
-Then open the URL Vite prints (default http://localhost:5173). The demo covers
-**13 findings** — Template Injection, SSRF (Kotlin), and XSS — over the source
-files they reference and **47 rules**.
+> In this legacy `npm run gen` workflow, `--rules` is the *builtin* ruleset — it predates the CLI's
+> flag split (`--builtin-rules` builtin, `--rules` custom). If your SARIF `artifactLocation.uri`
+> values aren't relative to the parent of `--src`, pass `--root <dir>`.
+</details>
 
-## Features
-
-- **Findings & Rules trees** — a VS Code activity bar switches the left sidebar
-  between the findings tree (grouped by directory, with severity dots) and the
-  ruleset tree (built-in vs. custom rules).
-- **Monaco code editor** with taint-path decorations: the flow is highlighted in
-  blue, the sink in red. Jump step-by-step through the path; cross-file hops switch
-  the active file automatically.
-- **Finding info panel** — rule description (markdown), CWE tags, severity, and the
-  ordered list of taint steps (source → propagation → sanitizer → sink).
-- **Flexible layout** — toggle the editor and info panel between tabbed and
-  side-by-side split views; resizable panels throughout.
-- **Light/dark theme** with brand-matched Monaco themes (`ot-light` / `ot-dark`) and
-  JetBrains Mono.
-- **View persistence** — your selected finding, step, files, and layout are saved to
-  `localStorage` and restored on refresh.
-- **Offline single-file export** — build a single self-contained `index.html`
-  (JS, CSS, fonts, and Monaco all inlined).
-
-## Scripts
+<details>
+<summary><b>Development</b></summary>
 
 | Script | What it does |
 | --- | --- |
-| `npm run gen` | Generate `data/content.json` from a SARIF + source dir + rules dir. |
+| `npm run dev` | Vite dev server with HMR. |
+| `npm run cli` | Run the CLI from source via tsx (`npm run cli -- export --sarif results.sarif --out report.html`). |
+| `npm run gen` | Generate `data/content.json` from a SARIF + source + rules. |
 | `npm run build:single` | Build a single self-contained offline `index.html` into `dist-single/`. |
 | `npm run build` | Type-check (`tsc --noEmit`) and build the hosted site to `dist/`. |
-| `npm run cli` | Run the CLI from source via tsx (`npm run cli -- export --sarif …`). |
-| `npm run build:dist` | Build the CLI bundle + template into `dist-cli/` (the shippable CLI). |
-| `npm run dev` | Vite dev server with HMR. |
-| `npm run preview` | Serve the production build locally. |
-| `npm test` | Run the unit/component test suite (Vitest) once. |
-| `npm run test:watch` | Vitest in watch mode. |
-| `npm run coverage` | Vitest with V8 coverage. |
+| `npm run build:dist` | Build the shippable CLI bundle + template into `dist-cli/`. |
+| `npm test` / `npm run coverage` | Vitest unit/component tests (+ V8 coverage). |
 | `npm run e2e` | Playwright end-to-end tests. |
 
-## Releasing
-
-Published to npm as [`@seqra/opentaint-viewer`](https://www.npmjs.com/package/@seqra/opentaint-viewer)
-via the **Release** workflow (`.github/workflows/release.yml`) — tokenless npm
-[OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers).
-
-1. Land changes on `main` using [Conventional Commits](https://www.conventionalcommits.org/)
-   (`feat:` → minor, `fix:`/`refactor:`/`revert:` → patch, `feat!:`/`BREAKING CHANGE` → major).
-2. Actions → **Release** → **Run workflow**:
-   - `auto` — semantic-release derives the version from commits since the last tag.
-   - `patch` / `minor` / `major` — force a specific bump.
-3. The workflow tags the release, publishes the GitHub Release notes (auto mode),
-   and runs `npm publish` over OIDC. Re-runs are idempotent.
-
-First publish only: the package is bootstrapped manually so a trusted publisher
-can be attached on npmjs.com (owner `seqra`, repo `opentaint-viewer`, workflow
-`release.yml`). After that, releases need no tokens.
-
-## How it works
-
-The viewer is **fully static** — no backend, no network calls for analysis. It loads
-a single bundled content file and renders everything from it:
-
-```
-data/content.json   ← committed, pre-analyzed content
-        │
-        ▼
-loadContent()  →  validate (isViewerContent)  →  Zustand store  →  UI
-```
-
-The content shape is defined in [`src/types/content.ts`](src/types/content.ts):
-
-- `tool` — the analyzer name and version (semver + build) read from the SARIF.
-- `findings` — each with a rule id, vuln class, severity, CWE tags, markdown
-  description, primary location, code flows, and ordered `TaintStep`s.
-- `files` — the project source files referenced by findings.
-- `rules` — the ruleset (`builtin` or `custom`), keyed by their real ruleset-relative
-  path so findings can link straight to the rule that defined them.
-
-State lives in a single [Zustand store](src/state/store.ts). The persisted slice (the
-*view* — selected finding/step/files and layout, not the bundled content) is written to
-`localStorage` under `ot-view` and validated on rehydrate so stale or corrupt storage
-can't render an invalid view.
-
-## Project structure
-
-```
-src/
-  components/   UI: AppShell, TopBar, ActivityBar, trees, EditorArea, InfoPanel, ...
-  content/      bundled content + loader/validation
-  pipeline/     SARIF → content transform (sarif.ts)
-  rules/        rule line/ref helpers
-  state/        Zustand store + theme
-  taint/        taint-path decorations + step navigation
-  types/        content type model + guard
-  util/         path, tree, severity, file-tab helpers
-scripts/
-  gen-content.ts     generates data/content.json from a SARIF + source + rules
-e2e/                 Playwright specs
-fixtures/            sample SARIF for tests
-```
-
-## Testing
-
-- **Unit/component:** [Vitest](https://vitest.dev/) + Testing Library + jsdom
-  (`npm test`, coverage via `npm run coverage`). Tests live next to the code they cover.
-- **End-to-end:** [Playwright](https://playwright.dev/) (`npm run e2e`). The smoke test
-  derives its expectations from the committed content so it survives a `gen` run.
-
-CI (`.github/workflows/ci.yml`) runs the build, coverage, and Playwright suite on every
-push to `main` and on pull requests.
-
-## Tech stack
-
-React 18 · TypeScript · Vite · Monaco Editor · Zustand · react-resizable-panels ·
-Lucide icons · JetBrains Mono.
+**Stack:** React 18 · TypeScript · Vite · Monaco Editor · Zustand · react-resizable-panels ·
+Lucide · JetBrains Mono. The viewer is fully static — it loads one bundled `data/content.json`
+(shape in [`src/types/content.ts`](src/types/content.ts)) into a [Zustand store](src/state/store.ts)
+and renders everything from it; no backend, no network calls for analysis. CI
+([`ci.yml`](.github/workflows/ci.yml)) runs the build, coverage, and Playwright suite on every push and PR.
+</details>
 
 ## Learn more
 
-- OpenTaint: <https://opentaint.org/>
-- Engine & CLI: <https://github.com/seqra/opentaint>
-- Demo project analyzed here: <https://github.com/seqra/java-spring-demo>
+- OpenTaint engine & CLI — <https://github.com/seqra/opentaint>
+- Demo project analyzed here — <https://github.com/seqra/java-spring-demo>
+
+## License
+
+[MIT](LICENSE)
