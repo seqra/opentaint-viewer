@@ -1,23 +1,26 @@
 :root {
-  /* opentaint.org primitives — dark (HSL component triples) */
-  --bg-hsl: 215 14% 4%;
-  --card-hsl: 215 10% 7%;
-  --band-hsl: 215 12% 7.5%;
-  --muted-hsl: 215 8% 11%;
-  --fg-hsl: 215 6% 92%;
-  --muted-fg-hsl: 215 8% 38%;
-  --border-hsl: 215 8% 15%;
-  --brand-hsl: 0 72% 52%;
+  /* opentaint.org "Red Phosphor" primitives — dark (HSL component triples).
+     Mirrors opentaint.github.io .dark. --taint-hsl stays blue: the viewer
+     paints the taint PATH (blue) leading into the SINK (brand red), so the
+     two ends read as distinct hues. --amber stays warm for the warning dot. */
+  --bg-hsl: 0 70% 3.5%;
+  --card-hsl: 0 45% 7.5%;
+  --band-hsl: 0 55% 5.5%;
+  --muted-hsl: 0 30% 11%;
+  --fg-hsl: 0 50% 95%;
+  --muted-fg-hsl: 0 12% 66%;
+  --border-hsl: 0 35% 18%;
+  --brand-hsl: 0 80% 48%;
   --taint-hsl: 213 94% 68%;
   --amber: #f59e0b;
 
   /* code/syntax tokens — dark (hex; shared with Monaco theme data) */
-  --code-bg: #15181e;
-  --code-text: #d4d4d8;
-  --code-keyword: #c4b5fd;
-  --code-fn: #7dd3fc;
-  --code-string: #f87171;
-  --code-line-num: #a1a1aa;
+  --code-bg: #140505;
+  --code-text: #f0dcdc;
+  --code-keyword: #ff6b6b;
+  --code-fn: #ffffff;
+  --code-string: #ff3838;
+  --code-line-num: #5e4a4a;
 
   /* semantic aliases consumed by component CSS (full colors) */
   --bg: hsl(var(--bg-hsl));
@@ -35,25 +38,27 @@
   --sans: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 :root[data-theme='light'] {
-  /* primitives — light (aliases recompute automatically) */
-  --bg-hsl: 0 0% 100%;
-  --card-hsl: 0 0% 100%; /* same as bg: flat, border-driven cards on white */
-  --band-hsl: 215 16% 96.5%;
-  --muted-hsl: 215 10% 94%;
-  --fg-hsl: 215 14% 8%;
-  --muted-fg-hsl: 215 6% 58%;
-  --border-hsl: 215 10% 88%;
+  /* "Red Phosphor" primitives — light (warm paper; aliases recompute
+     automatically). Mirrors opentaint.github.io :root. --taint-hsl stays
+     blue so the taint path reads distinct from the brand-red sink. */
+  --bg-hsl: 36 50% 99%;
+  --card-hsl: 36 50% 99%; /* same as bg: flat, border-driven cards on paper */
+  --band-hsl: 28 25% 96.5%;
+  --muted-hsl: 28 20% 95.5%;
+  --fg-hsl: 12 65% 7%;
+  --muted-fg-hsl: 18 10% 36%;
+  --border-hsl: 24 14% 85%;
   --brand-hsl: 0 72% 46%;
   --taint-hsl: 217 91% 53%;
   --amber: #d97706;
 
   /* code/syntax tokens — light */
-  --code-bg: #f9fafb;
-  --code-text: #3f3f46;
-  --code-keyword: #7c3aed;
-  --code-fn: #0284c7;
-  --code-string: #dc2626;
-  --code-line-num: #52525b;
+  --code-bg: #f9f7f5;
+  --code-text: #44342c;
+  --code-keyword: #b91c1c;
+  --code-fn: #1e0c06;
+  --code-string: #ca2121;
+  --code-line-num: #b3a396;
 }
 * { box-sizing: border-box; }
 /* Stop iOS Safari from auto-inflating text on narrow viewports (iPhone mini-class):

@@ -7,16 +7,16 @@ describe('monacoThemes', () => {
     expect(monacoThemeName('dark')).toBe('ot-dark');
   });
 
-  it('dark theme extends vs-dark with the brand code background', () => {
+  it('dark theme extends vs-dark with the Red Phosphor code background', () => {
     expect(otDark.base).toBe('vs-dark');
-    expect(otDark.colors['editor.background']).toBe('#15181e');
-    expect(otDark.colors['editorLineNumber.foreground']).toBe('#a1a1aa');
+    expect(otDark.colors['editor.background']).toBe('#140505');
+    expect(otDark.colors['editorLineNumber.foreground']).toBe('#5e4a4a');
   });
 
-  it('light theme extends vs with the violet keyword color (no leading #)', () => {
+  it('light theme extends vs with the red keyword color (no leading #)', () => {
     expect(otLight.base).toBe('vs');
     const keyword = otLight.rules.find((r) => r.token === 'keyword');
-    expect(keyword?.foreground).toBe('7c3aed');
+    expect(keyword?.foreground).toBe('b91c1c');
   });
 
   it('inherits the base theme so unlisted tokens stay styled', () => {
